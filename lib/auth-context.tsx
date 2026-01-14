@@ -27,86 +27,102 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const [isLoading, setIsLoading] = useState(true)
 
   useEffect(() => {
-    const storedUser = localStorage.getItem("user")
-    if (storedUser) {
-      setUser(JSON.parse(storedUser))
+    let cancelled = false
+
+    const load = async () => {
+      try {
+        const res = await fetch("/api/auth/me", {
+          method: "GET",
+          headers: { "Content-Type": "application/json" },
+          credentials: "include",
+        })
+
+        if (!res.ok) {
+          if (!cancelled) setUser(null)
+          return
+        }
+
+        const data = (await res.json()) as { user?: User }
+        if (!cancelled) setUser(data.user ?? null)
+      } finally {
+        if (!cancelled) setIsLoading(false)
+      }
     }
-    setIsLoading(false)
+
+    load()
+    return () => {
+      cancelled = true
+    }
   }, [])
 
   const login = async (email: string, password: string) => {
     setIsLoading(true)
-    await new Promise((resolve) => setTimeout(resolve, 1000))
+    try {
+      const res = await fetch("/api/auth/login", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        credentials: "include",
+        body: JSON.stringify({ email, password }),
+      })
 
-    const mockUser = {
-      id: "1",
-      email,
-      name: email.split("@")[0],
-      avatar: `https://api.dicebear.com/7.x/avataaars/svg?seed=${email}`,
+      if (!res.ok) {
+        throw new Error("Credenciales inválidas")
+      }
+
+      const data = (await res.json()) as { user?: User }
+      setUser(data.user ?? null)
+    } finally {
+      setIsLoading(false)
     }
-
-    setUser(mockUser)
-    localStorage.setItem("user", JSON.stringify(mockUser))
-    setIsLoading(false)
   }
 
   const loginWithGoogle = async () => {
-    setIsLoading(true)
-    await new Promise((resolve) => setTimeout(resolve, 1000))
-
-    const mockUser = {
-      id: "2",
-      email: "user@google.com",
-      name: "Google User",
-      avatar: "https://api.dicebear.com/7.x/avataaars/svg?seed=google",
-    }
-
-    setUser(mockUser)
-    localStorage.setItem("user", JSON.stringify(mockUser))
-    setIsLoading(false)
+    throw new Error("OAuth no implementado")
   }
 
   const loginWithFacebook = async () => {
-    setIsLoading(true)
-    await new Promise((resolve) => setTimeout(resolve, 1000))
-
-    const mockUser = {
-      id: "3",
-      email: "user@facebook.com",
-      name: "Facebook User",
-      avatar: "https://api.dicebear.com/7.x/avataaars/svg?seed=facebook",
-    }
-
-    setUser(mockUser)
-    localStorage.setItem("user", JSON.stringify(mockUser))
-    setIsLoading(false)
+    throw new Error("OAuth no implementado")
   }
 
   const register = async (email: string, password: string, name: string) => {
     setIsLoading(true)
-    await new Promise((resolve) => setTimeout(resolve, 1000))
+    try {
+      const res = await fetch("/api/auth/register", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        credentials: "include",
+        body: JSON.stringify({ email, password, name }),
+      })
 
-    const mockUser = {
-      id: Math.random().toString(36).substr(2, 9),
-      email,
-      name,
-      avatar: `https://api.dicebear.com/7.x/avataaars/svg?seed=${email}`,
+      if (!res.ok) {
+        throw new Error("No se pudo registrar")
+      }
+
+      const data = (await res.json()) as { user?: User }
+      setUser(data.user ?? null)
+    } finally {
+      setIsLoading(false)
     }
-
-    setUser(mockUser)
-    localStorage.setItem("user", JSON.stringify(mockUser))
-    setIsLoading(false)
   }
 
   const logout = () => {
     setUser(null)
-    localStorage.removeItem("user")
+    void fetch("/api/auth/logout", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      credentials: "include",
+    })
     localStorage.removeItem("cart")
     localStorage.removeItem("favorites")
   }
 
   const resetPassword = async (email: string) => {
-    await new Promise((resolve) => setTimeout(resolve, 1000))
+    await fetch("/api/auth/forgot-password", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      credentials: "include",
+      body: JSON.stringify({ email }),
+    })
   }
 
   return (

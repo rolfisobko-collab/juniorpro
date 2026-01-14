@@ -1,6 +1,6 @@
 "use client"
 
-import { useState } from "react"
+import { useEffect, useState } from "react"
 import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table"
@@ -24,41 +24,29 @@ interface AbandonedCart {
 
 export default function AdminCartsPage() {
   const { toast } = useToast()
-  const [carts, setCarts] = useState<AbandonedCart[]>([
-    {
-      id: "1",
-      userEmail: "maria@example.com",
-      userName: "María Sánchez",
-      items: [
-        { productName: "iPhone 15 Pro Max", quantity: 1, price: 1299 },
-        { productName: "AirPods Pro", quantity: 1, price: 279 },
-      ],
-      total: 1578,
-      abandonedAt: "2024-01-03T14:30:00",
-      daysSinceAbandoned: 1,
-    },
-    {
-      id: "2",
-      userEmail: "jose@example.com",
-      userName: "José Ramírez",
-      items: [{ productName: "MacBook Pro 16", quantity: 1, price: 2499 }],
-      total: 2499,
-      abandonedAt: "2024-01-02T10:15:00",
-      daysSinceAbandoned: 2,
-    },
-    {
-      id: "3",
-      userEmail: "carmen@example.com",
-      userName: "Carmen Torres",
-      items: [
-        { productName: "Chanel No. 5", quantity: 2, price: 150 },
-        { productName: "Dior Sauvage", quantity: 1, price: 120 },
-      ],
-      total: 420,
-      abandonedAt: "2023-12-30T16:45:00",
-      daysSinceAbandoned: 5,
-    },
-  ])
+  const [carts, setCarts] = useState<AbandonedCart[]>([])
+
+  useEffect(() => {
+    let cancelled = false
+
+    const load = async () => {
+      const res = await fetch("/api/admin/carts", {
+        method: "GET",
+        headers: { "Content-Type": "application/json" },
+        credentials: "include",
+      })
+
+      if (!res.ok) return
+
+      const data = (await res.json()) as { carts?: AbandonedCart[] }
+      if (!cancelled) setCarts(data.carts ?? [])
+    }
+
+    void load()
+    return () => {
+      cancelled = true
+    }
+  }, [])
 
   const handleSendReminder = (cart: AbandonedCart) => {
     toast({
@@ -118,7 +106,7 @@ export default function AdminCartsPage() {
               <p className="text-sm text-muted-foreground">Valor Promedio</p>
             </div>
             <p className="text-2xl font-bold">
-              ${Math.round(carts.reduce((sum, cart) => sum + cart.total, 0) / carts.length).toLocaleString()}
+              ${carts.length === 0 ? 0 : Math.round(carts.reduce((sum, cart) => sum + cart.total, 0) / carts.length).toLocaleString()}
             </p>
           </div>
         </div>

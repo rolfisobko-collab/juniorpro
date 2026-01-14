@@ -2,7 +2,7 @@
 
 import type React from "react"
 import PanelLayout from "@/components/panel-layout"
-import { useState } from "react"
+import { useEffect, useState } from "react"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table"
@@ -20,10 +20,22 @@ import { Textarea } from "@/components/ui/textarea"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { Plus, Pencil, Trash2, Search } from "lucide-react"
 import { useToast } from "@/hooks/use-toast"
-import { products as initialProducts, type Product } from "@/lib/products-data"
+
+interface Product {
+  id: string
+  name: string
+  category: string
+  price: number
+  image: string
+  description: string
+  brand: string
+  rating: number
+  reviews: number
+  inStock: boolean
+}
 
 export default function AdminProductsPage() {
-  const [products, setProducts] = useState<Product[]>(initialProducts)
+  const [products, setProducts] = useState<Product[]>([])
   const [searchQuery, setSearchQuery] = useState("")
   const [isDialogOpen, setIsDialogOpen] = useState(false)
   const [editingProduct, setEditingProduct] = useState<Product | null>(null)
@@ -34,9 +46,44 @@ export default function AdminProductsPage() {
     brand: "",
     description: "",
     price: "",
-    category: "" as "" | Product["category"],
+    category: "",
     image: "",
   })
+
+  useEffect(() => {
+    let cancelled = false
+
+    const load = async () => {
+      const res = await fetch(`/api/admin/products?search=${encodeURIComponent(searchQuery)}`, {
+        method: "GET",
+        headers: { "Content-Type": "application/json" },
+        credentials: "include",
+      })
+
+      if (!res.ok) return
+
+      const data = (await res.json()) as { products?: any[] }
+      const mapped = (data.products ?? []).map((p) => ({
+        id: p.id,
+        name: p.name,
+        brand: p.brand,
+        description: p.description,
+        price: p.price,
+        category: p.categoryKey,
+        image: p.image,
+        rating: p.rating,
+        reviews: p.reviews,
+        inStock: p.inStock,
+      })) as Product[]
+
+      if (!cancelled) setProducts(mapped)
+    }
+
+    void load()
+    return () => {
+      cancelled = true
+    }
+  }, [searchQuery])
 
   const filteredProducts = products.filter(
     (product) =>
@@ -49,9 +96,23 @@ export default function AdminProductsPage() {
 
     if (formData.category === "") return
 
-    const category: Product["category"] = formData.category
+    const category = formData.category
 
     if (editingProduct) {
+      void fetch(`/api/admin/products/${editingProduct.id}`, {
+        method: "PUT",
+        headers: { "Content-Type": "application/json" },
+        credentials: "include",
+        body: JSON.stringify({
+          name: formData.name,
+          brand: formData.brand,
+          description: formData.description,
+          price: Number.parseFloat(formData.price),
+          categoryKey: category,
+          image: formData.image,
+        }),
+      })
+
       setProducts(
         products.map((p) =>
           p.id === editingProduct.id
@@ -69,19 +130,42 @@ export default function AdminProductsPage() {
       )
       toast({ title: "Producto actualizado", description: "Los cambios se han guardado correctamente" })
     } else {
-      const newProduct: Product = {
-        id: (products.length + 1).toString(),
-        name: formData.name,
-        brand: formData.brand,
-        description: formData.description,
-        price: Number.parseFloat(formData.price),
-        category,
-        image: formData.image,
-        rating: 5,
-        reviews: 0,
-        inStock: true,
-      }
-      setProducts([...products, newProduct])
+      void (async () => {
+        const res = await fetch("/api/admin/products", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          credentials: "include",
+          body: JSON.stringify({
+            name: formData.name,
+            brand: formData.brand,
+            description: formData.description,
+            price: Number.parseFloat(formData.price),
+            categoryKey: category,
+            image: formData.image,
+            inStock: true,
+          }),
+        })
+
+        if (!res.ok) return
+
+        const data = (await res.json()) as { product?: any }
+        const p = data.product
+        if (!p) return
+        const mapped: Product = {
+          id: p.id,
+          name: p.name,
+          brand: p.brand,
+          description: p.description,
+          price: p.price,
+          category: p.categoryKey,
+          image: p.image,
+          rating: p.rating,
+          reviews: p.reviews,
+          inStock: p.inStock,
+        }
+        setProducts((current) => [mapped, ...current])
+      })()
+
       toast({ title: "Producto creado", description: "El nuevo producto se ha agregado al catálogo" })
     }
 
@@ -103,6 +187,11 @@ export default function AdminProductsPage() {
   }
 
   const handleDelete = (id: string) => {
+    void fetch(`/api/admin/products/${id}`, {
+      method: "DELETE",
+      headers: { "Content-Type": "application/json" },
+      credentials: "include",
+    })
     setProducts(products.filter((p) => p.id !== id))
     toast({ title: "Producto eliminado", description: "El producto se ha eliminado del catálogo" })
   }
@@ -193,7 +282,7 @@ export default function AdminProductsPage() {
                       <Label htmlFor="category">Categoría</Label>
                       <Select
                         value={formData.category}
-                        onValueChange={(value) => setFormData({ ...formData, category: value as Product["category"] })}
+                        onValueChange={(value) => setFormData({ ...formData, category: value })}
                       >
                         <SelectTrigger>
                           <SelectValue placeholder="Seleccionar" />

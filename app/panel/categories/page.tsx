@@ -12,7 +12,6 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Plus, Pencil, Trash2, FolderTree } from "lucide-react"
 import { useToast } from "@/hooks/use-toast"
 import { Badge } from "@/components/ui/badge"
-import { getCategories, setCategories, type Category as CategoryType } from "@/lib/categories-data"
 
 interface Category {
   id: string
@@ -33,13 +32,41 @@ export default function AdminCategoriesPage() {
   const [categories, setLocalCategories] = useState<Category[]>([])
 
   useEffect(() => {
-    const loadedCategories = getCategories()
-    setLocalCategories(loadedCategories as Category[])
+    let cancelled = false
+
+    const load = async () => {
+      const res = await fetch("/api/admin/categories", {
+        method: "GET",
+        headers: { "Content-Type": "application/json" },
+        credentials: "include",
+      })
+
+      if (!res.ok) return
+
+      const data = (await res.json()) as { categories?: any[] }
+      const mapped = (data.categories ?? []).map((c) => ({
+        id: c.key,
+        name: c.name,
+        slug: c.slug,
+        description: c.description ?? "",
+        subcategories: (c.subcategories ?? []).map((s: any) => ({
+          id: s.id,
+          name: s.name,
+          slug: s.slug,
+        })),
+      })) as Category[]
+
+      if (!cancelled) setLocalCategories(mapped)
+    }
+
+    void load()
+    return () => {
+      cancelled = true
+    }
   }, [])
 
   const updateCategories = (newCategories: Category[]) => {
     setLocalCategories(newCategories)
-    setCategories(newCategories as CategoryType[])
   }
 
   const [isCategoryDialogOpen, setIsCategoryDialogOpen] = useState(false)
@@ -65,22 +92,54 @@ export default function AdminCategoriesPage() {
     e.preventDefault()
 
     if (editingCategory) {
-      const updated = categories.map((c) =>
-        c.id === editingCategory.id
-          ? { ...c, name: categoryForm.name, slug: categoryForm.slug, description: categoryForm.description }
-          : c,
+      void fetch(`/api/admin/categories/${editingCategory.id}`, {
+        method: "PUT",
+        headers: { "Content-Type": "application/json" },
+        credentials: "include",
+        body: JSON.stringify({
+          name: categoryForm.name,
+          slug: categoryForm.slug,
+          description: categoryForm.description,
+        }),
+      })
+
+      updateCategories(
+        categories.map((c) =>
+          c.id === editingCategory.id
+            ? { ...c, name: categoryForm.name, slug: categoryForm.slug, description: categoryForm.description }
+            : c,
+        ),
       )
-      updateCategories(updated)
       toast({ title: "Categoría actualizada", description: "Los cambios se han guardado correctamente" })
     } else {
-      const newCategory: Category = {
-        id: (categories.length + 1).toString(),
-        name: categoryForm.name,
-        slug: categoryForm.slug,
-        description: categoryForm.description,
-        subcategories: [],
-      }
-      updateCategories([...categories, newCategory])
+      void (async () => {
+        const res = await fetch("/api/admin/categories", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          credentials: "include",
+          body: JSON.stringify({
+            name: categoryForm.name,
+            slug: categoryForm.slug,
+            description: categoryForm.description,
+          }),
+        })
+
+        if (!res.ok) return
+
+        const data = (await res.json()) as { category?: any }
+        const c = data.category
+        if (!c) return
+
+        const mapped: Category = {
+          id: c.key,
+          name: c.name,
+          slug: c.slug,
+          description: c.description ?? "",
+          subcategories: [],
+        }
+        updateCategories([...categories, mapped])
+      })()
+
       toast({ title: "Categoría creada", description: "La nueva categoría se ha agregado" })
     }
 
@@ -92,37 +151,55 @@ export default function AdminCategoriesPage() {
     e.preventDefault()
 
     if (editingSubcategory) {
-      const updated = categories.map((c) =>
-        c.id === editingSubcategory.categoryId
-          ? {
-              ...c,
-              subcategories: c.subcategories.map((s) =>
-                s.id === editingSubcategory.subcategory.id
-                  ? { ...s, name: subcategoryForm.name, slug: subcategoryForm.slug }
-                  : s,
-              ),
-            }
-          : c,
+      void fetch(`/api/admin/subcategories/${editingSubcategory.subcategory.id}`, {
+        method: "PUT",
+        headers: { "Content-Type": "application/json" },
+        credentials: "include",
+        body: JSON.stringify({ name: subcategoryForm.name, slug: subcategoryForm.slug }),
+      })
+
+      updateCategories(
+        categories.map((c) =>
+          c.id === editingSubcategory.categoryId
+            ? {
+                ...c,
+                subcategories: c.subcategories.map((s) =>
+                  s.id === editingSubcategory.subcategory.id
+                    ? { ...s, name: subcategoryForm.name, slug: subcategoryForm.slug }
+                    : s,
+                ),
+              }
+            : c,
+        ),
       )
-      updateCategories(updated)
       toast({ title: "Subcategoría actualizada", description: "Los cambios se han guardado" })
     } else {
-      const updated = categories.map((c) =>
-        c.id === selectedCategoryForSub
-          ? {
-              ...c,
-              subcategories: [
-                ...c.subcategories,
-                {
-                  id: `${c.id}-${c.subcategories.length + 1}`,
-                  name: subcategoryForm.name,
-                  slug: subcategoryForm.slug,
-                },
-              ],
-            }
-          : c,
-      )
-      updateCategories(updated)
+      void (async () => {
+        const res = await fetch(`/api/admin/categories/${selectedCategoryForSub}/subcategories`, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          credentials: "include",
+          body: JSON.stringify({ name: subcategoryForm.name, slug: subcategoryForm.slug }),
+        })
+
+        if (!res.ok) return
+
+        const data = (await res.json()) as { subcategory?: any }
+        const s = data.subcategory
+        if (!s) return
+
+        updateCategories(
+          categories.map((c) =>
+            c.id === selectedCategoryForSub
+              ? {
+                  ...c,
+                  subcategories: [...c.subcategories, { id: s.id, name: s.name, slug: s.slug }],
+                }
+              : c,
+          ),
+        )
+      })()
+
       toast({ title: "Subcategoría creada", description: "La nueva subcategoría se ha agregado" })
     }
 
@@ -131,11 +208,21 @@ export default function AdminCategoriesPage() {
   }
 
   const handleDeleteCategory = (id: string) => {
+    void fetch(`/api/admin/categories/${id}`, {
+      method: "DELETE",
+      headers: { "Content-Type": "application/json" },
+      credentials: "include",
+    })
     updateCategories(categories.filter((c) => c.id !== id))
     toast({ title: "Categoría eliminada", description: "La categoría se ha eliminado" })
   }
 
   const handleDeleteSubcategory = (categoryId: string, subcategoryId: string) => {
+    void fetch(`/api/admin/subcategories/${subcategoryId}`, {
+      method: "DELETE",
+      headers: { "Content-Type": "application/json" },
+      credentials: "include",
+    })
     const updated = categories.map((c) =>
       c.id === categoryId ? { ...c, subcategories: c.subcategories.filter((s) => s.id !== subcategoryId) } : c,
     )

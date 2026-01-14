@@ -8,19 +8,50 @@ import { Label } from "@/components/ui/label"
 import { Input } from "@/components/ui/input"
 import { Button } from "@/components/ui/button"
 import { Save, Upload, X } from "lucide-react"
-import { getBrandingConfig, updateBrandingConfig, type BrandingConfig } from "@/lib/branding-data"
 import PanelLayout from "@/components/panel-layout"
 
+interface BrandingConfig {
+  siteName: string
+  logoText: string
+  logoImage?: string | null
+  faviconImage?: string | null
+  primaryColor?: string | null
+  updatedAt?: string
+}
+
 function BrandingManagementContent() {
-  const [branding, setBranding] = useState<BrandingConfig>(getBrandingConfig())
+  const [branding, setBranding] = useState<BrandingConfig>({
+    siteName: "",
+    logoText: "",
+    logoImage: "",
+    faviconImage: "",
+    primaryColor: "",
+  })
   const [previewImage, setPreviewImage] = useState<string>("")
   const [isSaving, setIsSaving] = useState(false)
 
   useEffect(() => {
-    const config = getBrandingConfig()
-    setBranding(config)
-    if (config.logoImage) {
-      setPreviewImage(config.logoImage)
+    let cancelled = false
+
+    const load = async () => {
+      const res = await fetch("/api/settings/branding", {
+        method: "GET",
+        headers: { "Content-Type": "application/json" },
+        credentials: "include",
+      })
+
+      if (!res.ok) return
+
+      const data = (await res.json()) as BrandingConfig
+      if (cancelled) return
+
+      setBranding(data)
+      if (data.logoImage) setPreviewImage(data.logoImage)
+    }
+
+    void load()
+    return () => {
+      cancelled = true
     }
   }, [])
 
@@ -44,14 +75,28 @@ function BrandingManagementContent() {
 
   const handleSave = () => {
     setIsSaving(true)
-    updateBrandingConfig(branding)
+    void (async () => {
+      try {
+        const res = await fetch("/api/admin/settings/branding", {
+          method: "PUT",
+          headers: { "Content-Type": "application/json" },
+          credentials: "include",
+          body: JSON.stringify({
+            siteName: branding.siteName,
+            logoText: branding.logoText,
+            logoImage: branding.logoImage ?? "",
+            faviconImage: branding.faviconImage ?? "",
+            primaryColor: branding.primaryColor ?? "",
+          }),
+        })
 
-    // Dispatch event to update all logo instances
-    window.dispatchEvent(new Event("branding-updated"))
+        if (!res.ok) return
 
-    setTimeout(() => {
-      setIsSaving(false)
-    }, 500)
+        window.dispatchEvent(new Event("branding-updated"))
+      } finally {
+        setIsSaving(false)
+      }
+    })()
   }
 
   return (

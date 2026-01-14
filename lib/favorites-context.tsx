@@ -17,9 +17,34 @@ export function FavoritesProvider({ children }: { children: ReactNode }) {
   const [favorites, setFavorites] = useState<Product[]>([])
 
   useEffect(() => {
-    const storedFavorites = localStorage.getItem("favorites")
-    if (storedFavorites) {
-      setFavorites(JSON.parse(storedFavorites))
+    let cancelled = false
+
+    const load = async () => {
+      try {
+        const res = await fetch("/api/favorites", {
+          method: "GET",
+          headers: { "Content-Type": "application/json" },
+          credentials: "include",
+        })
+
+        if (res.ok) {
+          const data = (await res.json()) as { favorites?: Product[] }
+          if (!cancelled) setFavorites(data.favorites ?? [])
+          return
+        }
+      } catch {
+        // ignore
+      }
+
+      const storedFavorites = localStorage.getItem("favorites")
+      if (storedFavorites && !cancelled) {
+        setFavorites(JSON.parse(storedFavorites))
+      }
+    }
+
+    load()
+    return () => {
+      cancelled = true
     }
   }, [])
 
@@ -28,6 +53,12 @@ export function FavoritesProvider({ children }: { children: ReactNode }) {
   }, [favorites])
 
   const addFavorite = (product: Product) => {
+    void fetch(`/api/favorites/${product.id}`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      credentials: "include",
+    })
+
     setFavorites((current) => {
       if (current.some((item) => item.id === product.id)) {
         return current
@@ -37,6 +68,12 @@ export function FavoritesProvider({ children }: { children: ReactNode }) {
   }
 
   const removeFavorite = (productId: string) => {
+    void fetch(`/api/favorites/${productId}`, {
+      method: "DELETE",
+      headers: { "Content-Type": "application/json" },
+      credentials: "include",
+    })
+
     setFavorites((current) => current.filter((item) => item.id !== productId))
   }
 

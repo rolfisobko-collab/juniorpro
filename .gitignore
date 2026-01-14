@@ -22,6 +22,10 @@ yarn-error.log*
 # vercel
 .vercel
 
+# local smoke-test cookie jars
+.cookies_*.txt
+
 # typescript
 *.tsbuildinfo
 next-env.d.ts
+/lib/generated/prisma

@@ -1,6 +1,6 @@
 "use client"
 
-import { Suspense, useState } from "react"
+import { Suspense, useEffect, useState } from "react"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Badge } from "@/components/ui/badge"
@@ -15,14 +15,51 @@ import {
 } from "@/components/ui/dialog"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { Search, Eye, Package } from "lucide-react"
-import { orders as initialOrders, type Order } from "@/lib/orders-data"
 import PanelLayout from "@/components/panel-layout"
 
+interface OrderItem {
+  id: string
+  name: string
+  image: string
+  price: number
+  quantity: number
+}
+
+interface Order {
+  id: string
+  createdAt: string
+  status: "processing" | "shipped" | "delivered" | "cancelled"
+  total: number
+  items: OrderItem[]
+}
+
 function OrdersContent() {
-  const [orders, setOrders] = useState<Order[]>(initialOrders)
+  const [orders, setOrders] = useState<Order[]>([])
   const [searchQuery, setSearchQuery] = useState("")
   const [statusFilter, setStatusFilter] = useState<"all" | Order["status"]>("all")
   const [selectedOrder, setSelectedOrder] = useState<any>(null)
+
+  useEffect(() => {
+    let cancelled = false
+
+    const load = async () => {
+      const res = await fetch("/api/admin/orders", {
+        method: "GET",
+        headers: { "Content-Type": "application/json" },
+        credentials: "include",
+      })
+
+      if (!res.ok) return
+
+      const data = (await res.json()) as { orders?: Order[] }
+      if (!cancelled) setOrders(data.orders ?? [])
+    }
+
+    void load()
+    return () => {
+      cancelled = true
+    }
+  }, [])
 
   const filteredOrders = orders.filter((order) => {
     const matchesSearch =
@@ -59,6 +96,13 @@ function OrdersContent() {
   }
 
   const handleStatusChange = (orderId: string, newStatus: Order["status"]) => {
+    void fetch(`/api/admin/orders/${orderId}/status`, {
+      method: "PUT",
+      headers: { "Content-Type": "application/json" },
+      credentials: "include",
+      body: JSON.stringify({ status: newStatus }),
+    })
+
     setOrders(orders.map((order) => (order.id === orderId ? { ...order, status: newStatus } : order)))
   }
 
@@ -110,7 +154,7 @@ function OrdersContent() {
             {filteredOrders.map((order) => (
               <TableRow key={order.id}>
                 <TableCell className="font-mono text-sm">{order.id}</TableCell>
-                <TableCell>{new Date(order.date).toLocaleDateString("es-ES")}</TableCell>
+                <TableCell>{new Date(order.createdAt).toLocaleDateString("es-ES")}</TableCell>
                 <TableCell>{order.items.length} producto(s)</TableCell>
                 <TableCell className="font-semibold">${order.total.toLocaleString()}</TableCell>
                 <TableCell>
@@ -146,7 +190,7 @@ function OrdersContent() {
                         <div className="grid grid-cols-2 gap-4">
                           <div>
                             <p className="text-sm text-muted-foreground">Fecha</p>
-                            <p className="font-medium">{new Date(order.date).toLocaleDateString("es-ES")}</p>
+                            <p className="font-medium">{new Date(order.createdAt).toLocaleDateString("es-ES")}</p>
                           </div>
                           <div>
                             <p className="text-sm text-muted-foreground">Estado</p>

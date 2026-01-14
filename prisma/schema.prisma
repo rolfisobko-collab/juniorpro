@@ -1,0 +1,321 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+// Looking for ways to speed up your queries, or scale easily with your serverless or edge functions?
+// Try Prisma Accelerate: https://pris.ly/cli/accelerate-init
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+model Product {
+  id          String   @id
+  name        String
+  categoryKey String
+  price       Float
+  image       String
+  description String
+  brand       String
+  rating      Float
+  reviews     Int
+  inStock     Boolean
+  stockQuantity Int     @default(0)
+  featured    Boolean  @default(false)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  category Category @relation(fields: [categoryKey], references: [key])
+  views    ProductView[]
+  cartItems CartItem[]
+  favorites Favorite[]
+  orderItems OrderItem[]
+
+  @@index([categoryKey])
+}
+
+model User {
+  id           String   @id @default(cuid())
+  email        String   @unique
+  name         String
+  passwordHash String
+  avatar       String?
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+
+  refreshTokens RefreshToken[]
+  cart          Cart?
+  favorites     Favorite[]
+  addresses     UserAddress[]
+  orders        Order[]
+}
+
+model UserAddress {
+  id        String   @id @default(cuid())
+  userId    String
+  label     String?
+  address   String
+  city      String
+  state     String
+  zipCode   String
+  phone     String?
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+}
+
+model Order {
+  id             String   @id @default(cuid())
+  userId         String
+  status         String
+  total          Float
+  shippingAddress String
+  shippingCity    String
+  shippingState   String
+  shippingZipCode String
+  shippingMethod  String
+  contactEmail    String
+  contactPhone    String
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
+
+  user   User        @relation(fields: [userId], references: [id], onDelete: Cascade)
+  items  OrderItem[]
+  statusHistory OrderStatusHistory[]
+
+  @@index([userId])
+  @@index([status])
+}
+
+model OrderItem {
+  id        String   @id @default(cuid())
+  orderId   String
+  productId String
+  name      String
+  image     String
+  price     Float
+  quantity  Int
+
+  order   Order   @relation(fields: [orderId], references: [id], onDelete: Cascade)
+  product Product @relation(fields: [productId], references: [id])
+
+  @@index([orderId])
+  @@index([productId])
+}
+
+model OrderStatusHistory {
+  id        String   @id @default(cuid())
+  orderId   String
+  status    String
+  note      String?
+  adminUserId String?
+  createdAt DateTime @default(now())
+
+  order     Order      @relation(fields: [orderId], references: [id], onDelete: Cascade)
+  adminUser AdminUser? @relation(fields: [adminUserId], references: [id], onDelete: SetNull)
+
+  @@index([orderId])
+  @@index([adminUserId])
+}
+
+model Cart {
+  id        String   @id @default(cuid())
+  userId    String   @unique
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  user  User       @relation(fields: [userId], references: [id], onDelete: Cascade)
+  items CartItem[]
+}
+
+model CartItem {
+  id        String   @id @default(cuid())
+  cartId    String
+  productId String
+  quantity  Int
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  cart    Cart    @relation(fields: [cartId], references: [id], onDelete: Cascade)
+  product Product @relation(fields: [productId], references: [id], onDelete: Cascade)
+
+  @@unique([cartId, productId])
+  @@index([productId])
+}
+
+model Favorite {
+  id        String   @id @default(cuid())
+  userId    String
+  productId String
+  createdAt DateTime @default(now())
+
+  user    User    @relation(fields: [userId], references: [id], onDelete: Cascade)
+  product Product @relation(fields: [productId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, productId])
+  @@index([productId])
+}
+
+model AdminUser {
+  id           String   @id
+  email        String   @unique
+  username     String   @unique
+  name         String
+  passwordHash String
+  role         String
+  permissions  String[]
+  active       Boolean  @default(true)
+  createdAt    DateTime @default(now())
+  lastLogin    DateTime?
+
+  refreshTokens RefreshToken[]
+  orderStatusHistory OrderStatusHistory[]
+}
+
+model RefreshToken {
+  id          String   @id @default(cuid())
+  tokenHash   String
+  userId      String?
+  adminUserId String?
+  expiresAt   DateTime
+  createdAt   DateTime @default(now())
+  revokedAt   DateTime?
+
+  user      User?      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  adminUser AdminUser? @relation(fields: [adminUserId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+  @@index([adminUserId])
+  @@index([expiresAt])
+}
+
+model ProductView {
+  id        String   @id @default(cuid())
+  productId String
+  userId    String?
+  sessionId String?
+  createdAt DateTime @default(now())
+
+  product Product @relation(fields: [productId], references: [id], onDelete: Cascade)
+
+  @@index([productId])
+  @@index([userId])
+  @@index([sessionId])
+}
+
+model Category {
+  key           String        @id
+  name          String
+  slug          String        @unique
+  description   String?
+  subcategories SubCategory[]
+  products      Product[]
+  createdAt     DateTime      @default(now())
+  updatedAt     DateTime      @updatedAt
+}
+
+model SubCategory {
+  id          String   @id
+  name        String
+  slug        String
+  categoryKey String
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  category Category @relation(fields: [categoryKey], references: [key])
+
+  @@unique([categoryKey, slug])
+  @@index([categoryKey])
+}
+
+model CarouselSlide {
+  id              Int     @id
+  title           String
+  subtitle        String
+  description     String
+  buttonText      String
+  buttonLink      String
+  image           String
+  imageMobile     String
+  backgroundColor String
+  textColor       String
+  position        Int
+  isActive        Boolean @default(true)
+}
+
+model Cta {
+  id            String  @id
+  title         String
+  description   String
+  buttonText    String
+  buttonLink    String
+  imageDesktop  String
+  imageMobile   String
+  desktopWidth  Int
+  desktopHeight Int
+  mobileWidth   Int
+  mobileHeight  Int
+  position      Int
+  isActive      Boolean @default(true)
+  backgroundColor String
+  textColor       String
+}
+
+model HomeCategory {
+  id     String  @id
+  name   String
+  image  String
+  link   String
+  order  Int     @map("order")
+  active Boolean @default(true)
+}
+
+model LegalContent {
+  id          String   @id
+  slug        String   @unique
+  title       String
+  content     String
+  lastUpdated String
+}
+
+model BrandingSetting {
+  id           String   @id
+  siteName     String
+  logoText     String
+  logoImage    String?
+  faviconImage String?
+  primaryColor String?
+  updatedAt    String
+}
+
+model ContactInformation {
+  id          String   @id
+  description String
+  address     String
+  city        String
+  country     String
+  phone       String
+  email       String
+  weekdays    String
+  saturday    String
+  updatedAt   String
+  socialLinks SocialLink[]
+}
+
+model SocialLink {
+  id                String @id
+  platform          String
+  url               String
+  enabled           Boolean @default(true)
+  contactInformationId String
+
+  contactInformation ContactInformation @relation(fields: [contactInformationId], references: [id])
+
+  @@index([contactInformationId])
+}

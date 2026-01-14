@@ -2,6 +2,228 @@
 
 E-commerce de lujo para electrónica, electrodomésticos y perfumes de alta gama en Paraguay.
 
+## 📅 Estado del Proyecto (2026-01-13)
+
+### Implementado (backend real + panel conectado)
+
+- **Base de datos**: PostgreSQL (Neon/Vercel) + Prisma ORM.
+- **Auth**: usuarios y admin separados (cookies HttpOnly + refresh tokens).
+- **E-commerce core**: carrito, favoritos, órdenes/checkout (incluye validación de stock y transacciones).
+- **Admin**:
+  - CRUD **Productos** (APIs + panel).
+  - CRUD **Categorías/Subcategorías** (APIs + panel).
+  - CRUD **Contenido**: Carrusel, CTAs, Home Categories (APIs + panel, incluye activación y orden).
+  - **Legal/Branding/Contact**: panel guarda en DB (APIs admin protegidas).
+  - **Stats**: `GET /api/admin/dashboard/stats`.
+
+### Pendiente
+
+- **Deploy Vercel**: configurar env vars, ejecutar migrate/seed y verificar endpoints en producción.
+- **Fix TS lint**: warning/error del import de `PrismaClient` bajo `moduleResolution=bundler` (no afecta runtime).
+
+## ✅ Checklist Deploy (Vercel)
+
+### 1) Environment Variables (Vercel → Project → Settings → Environment Variables)
+
+Requeridas:
+
+```
+DATABASE_URL=postgresql://...
+JWT_SECRET=...
+```
+
+Recomendadas:
+
+```
+NODE_ENV=production
+```
+
+### 2) Prisma (producción)
+
+En Vercel, correr (o configurar como build/deploy step) lo siguiente:
+
+```
+npm run db:migrate:deploy
+npm run db:seed
+```
+
+Notas:
+
+- `db:migrate:deploy` ejecuta `prisma migrate deploy` contra `DATABASE_URL`.
+- `db:seed` corre `prisma/seed.ts` (necesita `DATABASE_URL`).
+
+### 3) Verificación rápida (smoke test)
+
+Reemplazar en los comandos:
+
+```
+BASE_URL=https://TU-PROYECTO.vercel.app
+```
+
+Tip: para probar rutas protegidas por cookies (admin/user), usar `curl` con cookie jar.
+
+```
+COOKIE_JAR=./.cookies.txt
+```
+
+Backend público:
+
+```
+GET /api/products
+GET /api/categories
+GET /api/content/carousel
+GET /api/content/ctas
+GET /api/content/home-categories
+```
+
+Ejemplos:
+
+```
+curl -sS "$BASE_URL/api/products" | head
+curl -sS "$BASE_URL/api/categories" | head
+curl -sS "$BASE_URL/api/content/carousel" | head
+curl -sS "$BASE_URL/api/content/ctas" | head
+curl -sS "$BASE_URL/api/content/home-categories" | head
+```
+
+Admin:
+
+```
+POST /api/admin/login
+GET  /api/admin/me
+GET  /api/admin/products
+GET  /api/admin/categories
+GET  /api/admin/orders
+```
+
+Notas importantes:
+
+- El login de admin usa `username` + `password` (no `email`).
+- Si el login es OK, se setean cookies HttpOnly `tz_admin_access` y `tz_admin_refresh`.
+
+Credenciales seed (por defecto):
+
+```
+username=admin
+password=admin123
+```
+
+Login + verificación de sesión (usa cookie jar):
+
+```
+curl -sS -c "$COOKIE_JAR" \
+  -H "Content-Type: application/json" \
+  -d '{"username":"admin","password":"admin123"}' \
+  "$BASE_URL/api/admin/login" | head
+
+curl -sS -b "$COOKIE_JAR" \
+  "$BASE_URL/api/admin/me" | head
+```
+
+Verificación CRUD/listados admin:
+
+```
+curl -sS -b "$COOKIE_JAR" "$BASE_URL/api/admin/products" | head
+curl -sS -b "$COOKIE_JAR" "$BASE_URL/api/admin/categories" | head
+curl -sS -b "$COOKIE_JAR" "$BASE_URL/api/admin/orders" | head
+```
+
+### 4) Build
+
+Antes de deploy:
+
+```
+npm run build
+```
+
+## 🧭 Para terminar el proyecto (cuando vuelva la luz)
+
+Este proyecto depende de que el **código esté pusheado a GitHub**, porque Vercel deploya desde el repo remoto.
+
+### 1) Confirmar y subir cambios a Git (esto es lo que hace que Vercel tenga las APIs)
+
+Desde la raíz del proyecto:
+
+```bash
+git status -sb
+```
+
+Si ves archivos modificados o `??` (nuevos), hacé:
+
+```bash
+# Ignorar archivos locales temporales
+echo .cookies_*.txt >> .gitignore
+
+git add -A
+git commit -m "Backend APIs + Prisma + seed + panel wiring"
+git push origin main
+```
+
+Notas:
+
+- Si `git log -n 1` sigue mostrando solo `init`, significa que todavía no se subió el backend y Vercel va a servir un build viejo.
+
+### 2) Vercel: settings mínimos para que existan `/api/*`
+
+En Vercel → Project → Settings:
+
+- **Framework Preset**: Next.js
+- **Root Directory**: la carpeta donde está `package.json` y `app/`
+- **Build Command**: `npm run build`
+- **Output Directory**: vacío / default (NO usar `out`)
+
+Si `/api/products` responde HTML 404 (`X-Matched-Path: /404`), casi seguro el deploy está apuntando a un repo/dir equivocado o el código no fue pusheado.
+
+### 3) Prisma en producción
+
+Con `DATABASE_URL` seteada en Vercel:
+
+```bash
+npm run db:migrate:deploy
+npm run db:seed
+```
+
+Notas:
+
+- `db:seed` requiere `.env` o variables en el entorno. Para ejecución local con `tsx`, el seed carga `.env`.
+
+### 4) Smoke test en Vercel (comandos copy/paste)
+
+Setear:
+
+```bash
+BASE_URL=https://TU-PROYECTO.vercel.app
+COOKIE_JAR=./.cookies.txt
+```
+
+Público (debe devolver JSON, no HTML):
+
+```bash
+curl -sS -i "$BASE_URL/api/products" | head -n 20
+curl -sS -i "$BASE_URL/api/categories" | head -n 20
+curl -sS -i "$BASE_URL/api/content/carousel" | head -n 20
+```
+
+Admin (login por username + cookies HttpOnly):
+
+```bash
+curl -sS -c "$COOKIE_JAR" \
+  -H "Content-Type: application/json" \
+  -d '{"username":"admin","password":"admin123"}' \
+  "$BASE_URL/api/admin/login" | head
+
+curl -sS -b "$COOKIE_JAR" \
+  "$BASE_URL/api/admin/me" | head
+```
+
+Listados admin:
+
+```bash
+curl -sS -b "$COOKIE_JAR" "$BASE_URL/api/admin/products" | head
+curl -sS -b "$COOKIE_JAR" "$BASE_URL/api/admin/categories" | head
+curl -sS -b "$COOKIE_JAR" "$BASE_URL/api/admin/orders" | head
+```
+
 ## 🚀 Características Implementadas
 
 ### Frontend (Actual - Next.js 16)
@@ -55,7 +277,7 @@ app/
 │   ├── home-categories/page.tsx  # Categorías destacadas home
 │   ├── legal-content/page.tsx    # Editor contenido legal
 │   ├── branding/page.tsx         # Configuración de branding
-│   └── contact-info/page.tsx     # Información de contacto
+│   └── contact/page.tsx          # Información de contacto
 ├── products/
 │   ├── page.tsx              # Catálogo de productos
 │   └── [id]/page.tsx         # Detalle de producto
@@ -99,6 +321,94 @@ lib/
 ├── branding-data.ts          # Configuración de branding (Logo, Nombre)
 ├── contact-data.ts           # Información de contacto y redes sociales
 └── orders-data.ts            # Pedidos mock
+```
+
+---
+
+## ✅ Backend (Next.js Route Handlers + Prisma)
+
+### Autenticación
+
+**User**
+
+```
+POST /api/auth/register
+POST /api/auth/login
+GET  /api/auth/me
+POST /api/auth/refresh
+POST /api/auth/logout
+```
+
+**Admin**
+
+```
+POST /api/admin/login
+GET  /api/admin/me
+POST /api/admin/refresh
+POST /api/admin/logout
+```
+
+### E-commerce
+
+```
+GET    /api/cart
+POST   /api/cart/items
+PUT    /api/cart/items/[productId]
+DELETE /api/cart/items/[productId]
+
+GET    /api/favorites
+POST   /api/favorites/[productId]
+DELETE /api/favorites/[productId]
+
+GET    /api/orders
+POST   /api/orders
+GET    /api/orders/[id]
+PUT    /api/orders/[id]/cancel
+```
+
+### Admin
+
+```
+GET    /api/admin/orders
+GET    /api/admin/orders/[id]
+PUT    /api/admin/orders/[id]/status
+
+GET    /api/admin/carts
+
+GET    /api/admin/products
+POST   /api/admin/products
+GET    /api/admin/products/[id]
+PUT    /api/admin/products/[id]
+DELETE /api/admin/products/[id]
+
+GET    /api/admin/categories
+POST   /api/admin/categories
+PUT    /api/admin/categories/[key]
+DELETE /api/admin/categories/[key]
+POST   /api/admin/categories/[key]/subcategories
+PUT    /api/admin/subcategories/[id]
+DELETE /api/admin/subcategories/[id]
+
+GET    /api/admin/carousel
+POST   /api/admin/carousel
+PUT    /api/admin/carousel/[id]
+DELETE /api/admin/carousel/[id]
+
+GET    /api/admin/ctas
+POST   /api/admin/ctas
+PUT    /api/admin/ctas/[id]
+DELETE /api/admin/ctas/[id]
+
+GET    /api/admin/home-categories
+POST   /api/admin/home-categories
+PUT    /api/admin/home-categories/[id]
+DELETE /api/admin/home-categories/[id]
+
+PUT    /api/admin/legal/[slug]
+PUT    /api/admin/settings/branding
+PUT    /api/admin/contact-info
+
+GET    /api/admin/dashboard/stats
 ```
 
 ### Mapeo Frontend → Base de Datos

@@ -1,7 +1,7 @@
 "use client"
 
 import type React from "react"
-import { useState } from "react"
+import { useEffect, useState } from "react"
 import { Search, Edit, Eye, Calendar } from "lucide-react"
 import { Input } from "@/components/ui/input"
 import { Button } from "@/components/ui/button"
@@ -10,14 +10,43 @@ import { Badge } from "@/components/ui/badge"
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog"
 import { Label } from "@/components/ui/label"
 import { Textarea } from "@/components/ui/textarea"
-import { defaultLegalContent, type LegalContent } from "@/lib/legal-content-data"
 import Link from "next/link"
+
+interface LegalContent {
+  id: string
+  slug: string
+  title: string
+  content: string
+  lastUpdated: string
+}
 
 export function LegalContentManagement() {
   const [searchQuery, setSearchQuery] = useState("")
-  const [legalContents, setLegalContents] = useState<LegalContent[]>(defaultLegalContent)
+  const [legalContents, setLegalContents] = useState<LegalContent[]>([])
   const [editingContent, setEditingContent] = useState<LegalContent | null>(null)
   const [isDialogOpen, setIsDialogOpen] = useState(false)
+
+  useEffect(() => {
+    let cancelled = false
+
+    const load = async () => {
+      const res = await fetch("/api/legal-content", {
+        method: "GET",
+        headers: { "Content-Type": "application/json" },
+        credentials: "include",
+      })
+
+      if (!res.ok) return
+
+      const data = (await res.json()) as LegalContent[]
+      if (!cancelled) setLegalContents(data)
+    }
+
+    void load()
+    return () => {
+      cancelled = true
+    }
+  }, [])
 
   const filteredContents = legalContents.filter(
     (content) =>
@@ -30,13 +59,23 @@ export function LegalContentManagement() {
     const formData = new FormData(e.currentTarget)
 
     if (editingContent) {
+      const title = formData.get("title") as string
+      const contentText = formData.get("content") as string
+
+      void fetch(`/api/admin/legal/${editingContent.slug}`, {
+        method: "PUT",
+        headers: { "Content-Type": "application/json" },
+        credentials: "include",
+        body: JSON.stringify({ title, content: contentText }),
+      })
+
       setLegalContents(
         legalContents.map((content) =>
           content.id === editingContent.id
             ? {
                 ...content,
-                title: formData.get("title") as string,
-                content: formData.get("content") as string,
+                title,
+                content: contentText,
                 lastUpdated: new Date().toISOString().split("T")[0],
               }
             : content,

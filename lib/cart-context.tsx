@@ -23,9 +23,34 @@ export function CartProvider({ children }: { children: ReactNode }) {
   const [items, setItems] = useState<CartItem[]>([])
 
   useEffect(() => {
-    const storedCart = localStorage.getItem("cart")
-    if (storedCart) {
-      setItems(JSON.parse(storedCart))
+    let cancelled = false
+
+    const load = async () => {
+      try {
+        const res = await fetch("/api/cart", {
+          method: "GET",
+          headers: { "Content-Type": "application/json" },
+          credentials: "include",
+        })
+
+        if (res.ok) {
+          const data = (await res.json()) as { items?: CartItem[] }
+          if (!cancelled) setItems(data.items ?? [])
+          return
+        }
+      } catch {
+        // ignore
+      }
+
+      const storedCart = localStorage.getItem("cart")
+      if (storedCart && !cancelled) {
+        setItems(JSON.parse(storedCart))
+      }
+    }
+
+    load()
+    return () => {
+      cancelled = true
     }
   }, [])
 
@@ -34,6 +59,13 @@ export function CartProvider({ children }: { children: ReactNode }) {
   }, [items])
 
   const addItem = (product: Product, quantity = 1) => {
+    void fetch("/api/cart/items", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      credentials: "include",
+      body: JSON.stringify({ productId: product.id, quantity }),
+    })
+
     setItems((currentItems) => {
       const existingItem = currentItems.find((item) => item.id === product.id)
 
@@ -48,6 +80,12 @@ export function CartProvider({ children }: { children: ReactNode }) {
   }
 
   const removeItem = (productId: string) => {
+    void fetch(`/api/cart/items/${productId}`, {
+      method: "DELETE",
+      headers: { "Content-Type": "application/json" },
+      credentials: "include",
+    })
+
     setItems((currentItems) => currentItems.filter((item) => item.id !== productId))
   }
 
@@ -57,10 +95,24 @@ export function CartProvider({ children }: { children: ReactNode }) {
       return
     }
 
+    void fetch(`/api/cart/items/${productId}`, {
+      method: "PUT",
+      headers: { "Content-Type": "application/json" },
+      credentials: "include",
+      body: JSON.stringify({ quantity }),
+    })
+
     setItems((currentItems) => currentItems.map((item) => (item.id === productId ? { ...item, quantity } : item)))
   }
 
   const clearCart = () => {
+    for (const item of items) {
+      void fetch(`/api/cart/items/${item.id}`, {
+        method: "DELETE",
+        headers: { "Content-Type": "application/json" },
+        credentials: "include",
+      })
+    }
     setItems([])
   }
 

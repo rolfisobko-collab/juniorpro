@@ -1,22 +1,67 @@
 "use client"
 
-import { useEffect } from "react"
+import { useEffect, useState } from "react"
 import { useRouter } from "next/navigation"
 import Link from "next/link"
 import Image from "next/image"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent } from "@/components/ui/card"
 import { useAuth } from "@/lib/auth-context"
-import { mockOrders } from "@/lib/orders-data"
 import { Package, Truck, CheckCircle, XCircle, Clock, ChevronRight } from "lucide-react"
+
+interface OrderItem {
+  id: string
+  name: string
+  image: string
+  price: number
+  quantity: number
+}
+
+interface Order {
+  id: string
+  status: string
+  total: number
+  createdAt: string
+  items: OrderItem[]
+}
 
 export default function OrdersPage() {
   const { user } = useAuth()
   const router = useRouter()
+  const [orders, setOrders] = useState<Order[]>([])
+  const [isLoading, setIsLoading] = useState(true)
 
   useEffect(() => {
     if (!user) {
       router.push("/login")
+      return
+    }
+
+    let cancelled = false
+
+    const load = async () => {
+      try {
+        const res = await fetch("/api/orders", {
+          method: "GET",
+          headers: { "Content-Type": "application/json" },
+          credentials: "include",
+        })
+
+        if (!res.ok) {
+          if (!cancelled) setOrders([])
+          return
+        }
+
+        const data = (await res.json()) as { orders?: Order[] }
+        if (!cancelled) setOrders(data.orders ?? [])
+      } finally {
+        if (!cancelled) setIsLoading(false)
+      }
+    }
+
+    load()
+    return () => {
+      cancelled = true
     }
   }, [router, user])
 
@@ -61,7 +106,7 @@ export default function OrdersPage() {
             <p className="text-muted-foreground">Revisa el estado de tus pedidos recientes</p>
           </div>
 
-          {mockOrders.length === 0 ? (
+          {!isLoading && orders.length === 0 ? (
             <Card>
               <CardContent className="p-12 text-center">
                 <div className="flex justify-center mb-4">
@@ -78,7 +123,7 @@ export default function OrdersPage() {
             </Card>
           ) : (
             <div className="space-y-4">
-              {mockOrders.map((order) => (
+              {orders.map((order) => (
                 <Card key={order.id} className="hover:border-primary/50 transition-colors">
                   <CardContent className="p-6">
                     <div className="space-y-4">
@@ -88,7 +133,7 @@ export default function OrdersPage() {
                           <div>
                             <p className="font-semibold text-lg">{order.id}</p>
                             <p className="text-sm text-muted-foreground">
-                              {new Date(order.date).toLocaleDateString("es-ES", {
+                              {new Date(order.createdAt).toLocaleDateString("es-ES", {
                                 year: "numeric",
                                 month: "long",
                                 day: "numeric",
@@ -130,16 +175,12 @@ export default function OrdersPage() {
                         </div>
 
                         <div className="flex gap-2">
-                          {order.tracking && (
+                          <Link href={`/orders/${order.id}`}>
                             <Button variant="outline" size="sm" className="bg-transparent">
-                              <Truck className="mr-2 h-4 w-4" />
-                              Rastrear Pedido
+                              Ver Detalles
+                              <ChevronRight className="ml-2 h-4 w-4" />
                             </Button>
-                          )}
-                          <Button variant="outline" size="sm" className="bg-transparent">
-                            Ver Detalles
-                            <ChevronRight className="ml-2 h-4 w-4" />
-                          </Button>
+                          </Link>
                         </div>
                       </div>
                     </div>

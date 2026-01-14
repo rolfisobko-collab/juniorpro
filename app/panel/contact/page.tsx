@@ -7,31 +7,114 @@ import { Label } from "@/components/ui/label"
 import { Input } from "@/components/ui/input"
 import { Button } from "@/components/ui/button"
 import { Switch } from "@/components/ui/switch"
-import { getContactConfig, updateContactConfig, type ContactConfig, type SocialLink } from "@/lib/contact-data"
 import { Save, Phone, MapPin, Globe } from "lucide-react"
 
+interface SocialLink {
+  platform: string
+  url: string
+  enabled: boolean
+}
+
+interface ContactConfig {
+  id: string
+  description: string
+  address: string
+  city: string
+  country: string
+  phone: string
+  email: string
+  workingHours: {
+    weekdays: string
+    saturday: string
+  }
+  socialLinks: SocialLink[]
+  updatedAt: string
+}
+
 export default function ContactPage() {
-  const [config, setConfig] = useState<ContactConfig>(getContactConfig())
+  const [config, setConfig] = useState<ContactConfig>({
+    id: "1",
+    description: "",
+    address: "",
+    city: "",
+    country: "",
+    phone: "",
+    email: "",
+    workingHours: { weekdays: "", saturday: "" },
+    socialLinks: [],
+    updatedAt: "",
+  })
   const [isSaving, setIsSaving] = useState(false)
   const [saveMessage, setSaveMessage] = useState("")
 
   useEffect(() => {
-    setConfig(getContactConfig())
+    let cancelled = false
+
+    const load = async () => {
+      const res = await fetch("/api/contact-info", {
+        method: "GET",
+        headers: { "Content-Type": "application/json" },
+        credentials: "include",
+      })
+
+      if (!res.ok) return
+
+      const data = (await res.json()) as any
+      if (cancelled || !data) return
+
+      setConfig({
+        id: data.id,
+        description: data.description,
+        address: data.address,
+        city: data.city,
+        country: data.country,
+        phone: data.phone,
+        email: data.email,
+        workingHours: { weekdays: data.weekdays, saturday: data.saturday },
+        socialLinks: (data.socialLinks ?? []).map((s: any) => ({ platform: s.platform, url: s.url, enabled: s.enabled })),
+        updatedAt: data.updatedAt,
+      })
+    }
+
+    void load()
+    return () => {
+      cancelled = true
+    }
   }, [])
 
   const handleSave = () => {
     setIsSaving(true)
     setSaveMessage("")
 
-    try {
-      updateContactConfig(config)
-      setSaveMessage("Configuración guardada exitosamente")
-      setTimeout(() => setSaveMessage(""), 3000)
-    } catch (error) {
-      setSaveMessage("Error al guardar la configuración")
-    } finally {
-      setIsSaving(false)
-    }
+    void (async () => {
+      try {
+        const res = await fetch("/api/admin/contact-info", {
+          method: "PUT",
+          headers: { "Content-Type": "application/json" },
+          credentials: "include",
+          body: JSON.stringify({
+            description: config.description,
+            address: config.address,
+            city: config.city,
+            country: config.country,
+            phone: config.phone,
+            email: config.email,
+            weekdays: config.workingHours.weekdays,
+            saturday: config.workingHours.saturday,
+            socialLinks: config.socialLinks,
+          }),
+        })
+
+        if (!res.ok) throw new Error("save failed")
+
+        setSaveMessage("Configuración guardada exitosamente")
+        setTimeout(() => setSaveMessage(""), 3000)
+      } catch {
+        setSaveMessage("Error al guardar la configuración")
+      } finally {
+        setIsSaving(false)
+      }
+    })()
   }
 
   const handleSocialLinkChange = (index: number, field: keyof SocialLink, value: string | boolean) => {

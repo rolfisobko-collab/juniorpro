@@ -55,12 +55,41 @@ export default function CheckoutPage() {
 
     setIsProcessing(true)
 
-    await new Promise((resolve) => setTimeout(resolve, 2000))
+    try {
+      const res = await fetch("/api/orders", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        credentials: "include",
+        body: JSON.stringify({
+          shipping: {
+            address: formData.address,
+            city: formData.city,
+            state: formData.state,
+            zipCode: formData.zipCode,
+            method: formData.shippingMethod,
+          },
+          contact: {
+            email: formData.email,
+            phone: formData.phone,
+          },
+        }),
+      })
 
-    const orderId = Math.random().toString(36).substr(2, 9).toUpperCase()
-    clearCart()
+      if (!res.ok) {
+        throw new Error("No se pudo crear el pedido")
+      }
 
-    router.push(`/checkout/success?orderId=${orderId}`)
+      const data = (await res.json()) as { order?: { id: string } }
+      const orderId = data.order?.id
+      if (!orderId) {
+        throw new Error("Respuesta inválida")
+      }
+
+      clearCart()
+      router.push(`/checkout/success?orderId=${orderId}`)
+    } finally {
+      setIsProcessing(false)
+    }
   }
 
   useEffect(() => {

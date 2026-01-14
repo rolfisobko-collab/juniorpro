@@ -1,6 +1,6 @@
 "use client"
 
-import { Suspense, useState } from "react"
+import { Suspense, useEffect, useState } from "react"
 import PanelLayout from "@/components/panel-layout"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
@@ -18,15 +18,50 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
 import { Plus, Pencil, Trash2, Eye, EyeOff, MoveUp, MoveDown } from "lucide-react"
-import { carouselSlides } from "@/lib/carousel-data"
-import type { CarouselSlide } from "@/lib/carousel-data"
 import { useToast } from "@/hooks/use-toast"
 
+interface CarouselSlide {
+  id: number
+  title: string
+  subtitle: string
+  description: string
+  buttonText: string
+  buttonLink: string
+  image: string
+  imageMobile: string
+  backgroundColor: string
+  textColor: string
+  position: number
+  isActive: boolean
+}
+
 function CarouselManagementContent() {
-  const [slides, setSlides] = useState(carouselSlides)
+  const [slides, setSlides] = useState<CarouselSlide[]>([])
   const [isDialogOpen, setIsDialogOpen] = useState(false)
   const [editingSlide, setEditingSlide] = useState<CarouselSlide | null>(null)
   const { toast } = useToast()
+
+  useEffect(() => {
+    let cancelled = false
+
+    const load = async () => {
+      const res = await fetch("/api/admin/carousel", {
+        method: "GET",
+        headers: { "Content-Type": "application/json" },
+        credentials: "include",
+      })
+
+      if (!res.ok) return
+
+      const data = (await res.json()) as { slides?: CarouselSlide[] }
+      if (!cancelled) setSlides(data.slides ?? [])
+    }
+
+    void load()
+    return () => {
+      cancelled = true
+    }
+  }, [])
 
   const [formData, setFormData] = useState({
     title: "",
@@ -74,37 +109,41 @@ function CarouselManagementContent() {
 
   const handleSave = () => {
     if (editingSlide) {
-      setSlides(
-        slides.map((s) =>
-          s.id === editingSlide.id
-            ? {
-                ...s,
-                ...formData,
-              }
-            : s,
-        ),
-      )
-      toast({
-        title: "Slide actualizado",
-        description: "El slide se ha actualizado correctamente",
+      void fetch(`/api/admin/carousel/${editingSlide.id}`, {
+        method: "PUT",
+        headers: { "Content-Type": "application/json" },
+        credentials: "include",
+        body: JSON.stringify({ ...formData }),
       })
+
+      setSlides(slides.map((s) => (s.id === editingSlide.id ? { ...s, ...formData } : s)))
+      toast({ title: "Slide actualizado", description: "El slide se ha actualizado correctamente" })
     } else {
-      const newSlide: CarouselSlide = {
-        id: Math.max(...slides.map((s) => s.id), 0) + 1,
-        ...formData,
-        position: slides.length + 1,
-        isActive: true,
-      }
-      setSlides([...slides, newSlide])
-      toast({
-        title: "Slide creado",
-        description: "El nuevo slide se ha creado correctamente",
-      })
+      void (async () => {
+        const res = await fetch("/api/admin/carousel", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          credentials: "include",
+          body: JSON.stringify({ ...formData, isActive: true }),
+        })
+
+        if (!res.ok) return
+        const data = (await res.json()) as { slide?: CarouselSlide }
+        setSlides((current) => (data.slide ? [...current, data.slide] : current))
+      })()
+
+      toast({ title: "Slide creado", description: "El nuevo slide se ha creado correctamente" })
     }
+
     setIsDialogOpen(false)
   }
 
   const handleDelete = (id: number) => {
+    void fetch(`/api/admin/carousel/${id}`, {
+      method: "DELETE",
+      headers: { "Content-Type": "application/json" },
+      credentials: "include",
+    })
     setSlides(slides.filter((s) => s.id !== id))
     toast({
       title: "Slide eliminado",
@@ -113,16 +152,17 @@ function CarouselManagementContent() {
   }
 
   const handleToggleActive = (id: number) => {
-    setSlides(
-      slides.map((s) =>
-        s.id === id
-          ? {
-              ...s,
-              isActive: !s.isActive,
-            }
-          : s,
-      ),
-    )
+    const target = slides.find((s) => s.id === id)
+    if (!target) return
+
+    void fetch(`/api/admin/carousel/${id}`, {
+      method: "PUT",
+      headers: { "Content-Type": "application/json" },
+      credentials: "include",
+      body: JSON.stringify({ isActive: !target.isActive }),
+    })
+
+    setSlides(slides.map((s) => (s.id === id ? { ...s, isActive: !s.isActive } : s)))
   }
 
   const handleMoveUp = (id: number) => {
@@ -133,6 +173,16 @@ function CarouselManagementContent() {
       newSlides.forEach((s, i) => {
         s.position = i + 1
       })
+
+      for (const s of newSlides) {
+        void fetch(`/api/admin/carousel/${s.id}`, {
+          method: "PUT",
+          headers: { "Content-Type": "application/json" },
+          credentials: "include",
+          body: JSON.stringify({ position: s.position }),
+        })
+      }
+
       setSlides(newSlides)
     }
   }
@@ -145,6 +195,16 @@ function CarouselManagementContent() {
       newSlides.forEach((s, i) => {
         s.position = i + 1
       })
+
+      for (const s of newSlides) {
+        void fetch(`/api/admin/carousel/${s.id}`, {
+          method: "PUT",
+          headers: { "Content-Type": "application/json" },
+          credentials: "include",
+          body: JSON.stringify({ position: s.position }),
+        })
+      }
+
       setSlides(newSlides)
     }
   }

@@ -33,51 +33,63 @@ export function AdminProvider({ children }: { children: React.ReactNode }) {
   console.log("[v0] AdminProvider - isLoading:", isLoading)
 
   useEffect(() => {
-    console.log("[v0] AdminProvider - Loading from localStorage")
-    const storedAdmin = localStorage.getItem("admin")
-    console.log("[v0] AdminProvider - storedAdmin:", storedAdmin)
-    if (storedAdmin) {
+    let cancelled = false
+
+    const load = async () => {
       try {
-        const parsed = JSON.parse(storedAdmin)
-        console.log("[v0] AdminProvider - Setting admin:", parsed)
-        setAdmin(parsed)
-      } catch (e) {
-        console.error("[v0] AdminProvider - Error parsing admin:", e)
+        const res = await fetch("/api/admin/me", {
+          method: "GET",
+          headers: { "Content-Type": "application/json" },
+          credentials: "include",
+        })
+
+        if (!res.ok) {
+          if (!cancelled) setAdmin(null)
+          return
+        }
+
+        const data = (await res.json()) as { admin?: Admin }
+        if (!cancelled) setAdmin(data.admin ?? null)
+      } finally {
+        if (!cancelled) setIsLoading(false)
       }
     }
-    setIsLoading(false)
-    console.log("[v0] AdminProvider - Loading complete")
+
+    load()
+    return () => {
+      cancelled = true
+    }
   }, [])
 
   const login = async (username: string, password: string) => {
-    const user = adminUsers.find((u) => u.username === username && u.password === password && u.active)
+    setIsLoading(true)
+    try {
+      const res = await fetch("/api/admin/login", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        credentials: "include",
+        body: JSON.stringify({ username, password }),
+      })
 
-    if (user) {
-      const adminData: Admin = {
-        id: user.id,
-        email: user.email,
-        username: user.username,
-        name: user.name,
-        role: user.role,
-        permissions: user.permissions,
-      }
-      setAdmin(adminData)
-      localStorage.setItem("admin", JSON.stringify(adminData))
-
-      const userIndex = adminUsers.findIndex((u) => u.id === user.id)
-      if (userIndex !== -1) {
-        adminUsers[userIndex].lastLogin = new Date().toISOString()
+      if (!res.ok) {
+        throw new Error("Credenciales inválidas o usuario inactivo")
       }
 
+      const data = (await res.json()) as { admin?: Admin }
+      setAdmin(data.admin ?? null)
       router.push("/panel")
-    } else {
-      throw new Error("Credenciales inválidas o usuario inactivo")
+    } finally {
+      setIsLoading(false)
     }
   }
 
   const logout = () => {
     setAdmin(null)
-    localStorage.removeItem("admin")
+    void fetch("/api/admin/logout", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      credentials: "include",
+    })
     router.push("/admin/login")
   }
 

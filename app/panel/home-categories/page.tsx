@@ -1,6 +1,6 @@
 "use client"
 
-import { useState, Suspense } from "react"
+import { useEffect, useState, Suspense } from "react"
 import PanelLayout from "@/components/panel-layout"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
@@ -14,18 +14,20 @@ import {
   DialogFooter,
 } from "@/components/ui/dialog"
 import { Badge } from "@/components/ui/badge"
-import {
-  homeCategories,
-  updateHomeCategory,
-  createHomeCategory,
-  deleteHomeCategory,
-  type HomeCategory,
-} from "@/lib/home-categories-data"
 import { Plus, Pencil, Trash2, MoveUp, MoveDown, Eye, EyeOff, ImageIcon } from "lucide-react"
 import Image from "next/image"
 
+interface HomeCategory {
+  id: string
+  name: string
+  image: string
+  link: string
+  order: number
+  active: boolean
+}
+
 function HomeCategoriesContent() {
-  const [categories, setCategories] = useState<HomeCategory[]>(homeCategories.sort((a, b) => a.order - b.order))
+  const [categories, setCategories] = useState<HomeCategory[]>([])
   const [isDialogOpen, setIsDialogOpen] = useState(false)
   const [editingCategory, setEditingCategory] = useState<HomeCategory | null>(null)
   const [formData, setFormData] = useState({
@@ -34,6 +36,28 @@ function HomeCategoriesContent() {
     link: "",
     active: true,
   })
+
+  useEffect(() => {
+    let cancelled = false
+
+    const load = async () => {
+      const res = await fetch("/api/admin/home-categories", {
+        method: "GET",
+        headers: { "Content-Type": "application/json" },
+        credentials: "include",
+      })
+
+      if (!res.ok) return
+
+      const data = (await res.json()) as { categories?: HomeCategory[] }
+      if (!cancelled) setCategories((data.categories ?? []).sort((a, b) => a.order - b.order))
+    }
+
+    void load()
+    return () => {
+      cancelled = true
+    }
+  }, [])
 
   const handleCreate = () => {
     setEditingCategory(null)
@@ -54,34 +78,74 @@ function HomeCategoriesContent() {
 
   const handleSubmit = () => {
     if (editingCategory) {
-      updateHomeCategory(editingCategory.id, formData)
+      void fetch(`/api/admin/home-categories/${editingCategory.id}`, {
+        method: "PUT",
+        headers: { "Content-Type": "application/json" },
+        credentials: "include",
+        body: JSON.stringify({ ...formData }),
+      })
+
+      setCategories(categories.map((c) => (c.id === editingCategory.id ? { ...c, ...formData } : c)))
     } else {
       const newOrder = Math.max(...categories.map((c) => c.order), 0) + 1
-      createHomeCategory({ ...formData, order: newOrder })
+      void (async () => {
+        const res = await fetch("/api/admin/home-categories", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          credentials: "include",
+          body: JSON.stringify({ ...formData, order: newOrder }),
+        })
+
+        if (!res.ok) return
+
+        const data = (await res.json()) as { category?: HomeCategory }
+        setCategories((current) =>
+          data.category ? [...current, data.category].sort((a, b) => a.order - b.order) : current
+        )
+      })()
     }
-    setCategories([...homeCategories].sort((a, b) => a.order - b.order))
     setIsDialogOpen(false)
   }
 
   const handleDelete = (id: string) => {
     if (confirm("¿Estás seguro de eliminar esta categoría?")) {
-      deleteHomeCategory(id)
-      setCategories([...homeCategories].sort((a, b) => a.order - b.order))
+      void fetch(`/api/admin/home-categories/${id}`, {
+        method: "DELETE",
+        headers: { "Content-Type": "application/json" },
+        credentials: "include",
+      })
+      setCategories(categories.filter((c) => c.id !== id))
     }
   }
 
   const handleToggleActive = (category: HomeCategory) => {
-    updateHomeCategory(category.id, { active: !category.active })
-    setCategories([...homeCategories].sort((a, b) => a.order - b.order))
+    void fetch(`/api/admin/home-categories/${category.id}`, {
+      method: "PUT",
+      headers: { "Content-Type": "application/json" },
+      credentials: "include",
+      body: JSON.stringify({ active: !category.active }),
+    })
+
+    setCategories(categories.map((c) => (c.id === category.id ? { ...c, active: !c.active } : c)).sort((a, b) => a.order - b.order))
   }
 
   const handleMoveUp = (category: HomeCategory) => {
     const index = categories.findIndex((c) => c.id === category.id)
     if (index > 0) {
       const prevCategory = categories[index - 1]
-      updateHomeCategory(category.id, { order: prevCategory.order })
-      updateHomeCategory(prevCategory.id, { order: category.order })
-      setCategories([...homeCategories].sort((a, b) => a.order - b.order))
+      void fetch(`/api/admin/home-categories/${category.id}`, {
+        method: "PUT",
+        headers: { "Content-Type": "application/json" },
+        credentials: "include",
+        body: JSON.stringify({ order: prevCategory.order }),
+      })
+      void fetch(`/api/admin/home-categories/${prevCategory.id}`, {
+        method: "PUT",
+        headers: { "Content-Type": "application/json" },
+        credentials: "include",
+        body: JSON.stringify({ order: category.order }),
+      })
+      setCategories(categories.map((c) => (c.id === category.id ? { ...c, order: prevCategory.order } : c.id === prevCategory.id ? { ...c, order: category.order } : c)).sort((a, b) => a.order - b.order))
     }
   }
 
@@ -89,9 +153,19 @@ function HomeCategoriesContent() {
     const index = categories.findIndex((c) => c.id === category.id)
     if (index < categories.length - 1) {
       const nextCategory = categories[index + 1]
-      updateHomeCategory(category.id, { order: nextCategory.order })
-      updateHomeCategory(nextCategory.id, { order: category.order })
-      setCategories([...homeCategories].sort((a, b) => a.order - b.order))
+      void fetch(`/api/admin/home-categories/${category.id}`, {
+        method: "PUT",
+        headers: { "Content-Type": "application/json" },
+        credentials: "include",
+        body: JSON.stringify({ order: nextCategory.order }),
+      })
+      void fetch(`/api/admin/home-categories/${nextCategory.id}`, {
+        method: "PUT",
+        headers: { "Content-Type": "application/json" },
+        credentials: "include",
+        body: JSON.stringify({ order: category.order }),
+      })
+      setCategories(categories.map((c) => (c.id === category.id ? { ...c, order: nextCategory.order } : c.id === nextCategory.id ? { ...c, order: category.order } : c)).sort((a, b) => a.order - b.order))
     }
   }
 

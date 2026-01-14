@@ -3,7 +3,7 @@
 import type React from "react"
 import PanelLayout from "@/components/panel-layout"
 
-import { useState } from "react"
+import { useEffect, useState } from "react"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
@@ -21,14 +21,52 @@ import {
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Plus, Pencil, Trash2, Eye, EyeOff, ImageIcon } from "lucide-react"
 import { useToast } from "@/hooks/use-toast"
-import { defaultCTAs, type CTA } from "@/lib/ctas-data"
 import { Badge } from "@/components/ui/badge"
+
+interface CTA {
+  id: string
+  title: string
+  description: string
+  buttonText: string
+  buttonLink: string
+  imageDesktop: string
+  imageMobile: string
+  desktopWidth: number
+  desktopHeight: number
+  mobileWidth: number
+  mobileHeight: number
+  position: number
+  isActive: boolean
+  backgroundColor: string
+  textColor: string
+}
 
 export default function AdminCTAsPage() {
   const { toast } = useToast()
-  const [ctas, setCTAs] = useState<CTA[]>(defaultCTAs)
+  const [ctas, setCTAs] = useState<CTA[]>([])
   const [isDialogOpen, setIsDialogOpen] = useState(false)
   const [editingCTA, setEditingCTA] = useState<CTA | null>(null)
+
+  useEffect(() => {
+    let cancelled = false
+
+    const load = async () => {
+      const res = await fetch("/api/admin/ctas", {
+        method: "GET",
+        headers: { "Content-Type": "application/json" },
+        credentials: "include",
+      })
+
+      if (!res.ok) return
+      const data = (await res.json()) as { ctas?: CTA[] }
+      if (!cancelled) setCTAs(data.ctas ?? [])
+    }
+
+    void load()
+    return () => {
+      cancelled = true
+    }
+  }, [])
 
   const [formData, setFormData] = useState<Omit<CTA, "id">>({
     title: "",
@@ -51,14 +89,29 @@ export default function AdminCTAsPage() {
     e.preventDefault()
 
     if (editingCTA) {
+      void fetch(`/api/admin/ctas/${editingCTA.id}`, {
+        method: "PUT",
+        headers: { "Content-Type": "application/json" },
+        credentials: "include",
+        body: JSON.stringify({ ...formData }),
+      })
+
       setCTAs(ctas.map((c) => (c.id === editingCTA.id ? { ...formData, id: editingCTA.id } : c)))
       toast({ title: "CTA actualizado", description: "Los cambios se han guardado correctamente" })
     } else {
-      const newCTA: CTA = {
-        ...formData,
-        id: (ctas.length + 1).toString(),
-      }
-      setCTAs([...ctas, newCTA])
+      void (async () => {
+        const res = await fetch("/api/admin/ctas", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          credentials: "include",
+          body: JSON.stringify({ ...formData }),
+        })
+
+        if (!res.ok) return
+        const data = (await res.json()) as { cta?: CTA }
+        setCTAs((current) => (data.cta ? [...current, data.cta] : current))
+      })()
+
       toast({ title: "CTA creado", description: "El nuevo CTA se ha agregado" })
     }
 
@@ -88,11 +141,26 @@ export default function AdminCTAsPage() {
   }
 
   const handleDelete = (id: string) => {
+    void fetch(`/api/admin/ctas/${id}`, {
+      method: "DELETE",
+      headers: { "Content-Type": "application/json" },
+      credentials: "include",
+    })
     setCTAs(ctas.filter((c) => c.id !== id))
     toast({ title: "CTA eliminado", description: "El CTA se ha eliminado" })
   }
 
   const toggleActive = (id: string) => {
+    const target = ctas.find((c) => c.id === id)
+    if (!target) return
+
+    void fetch(`/api/admin/ctas/${id}`, {
+      method: "PUT",
+      headers: { "Content-Type": "application/json" },
+      credentials: "include",
+      body: JSON.stringify({ isActive: !target.isActive }),
+    })
+
     setCTAs(ctas.map((c) => (c.id === id ? { ...c, isActive: !c.isActive } : c)))
   }
 
