@@ -3,9 +3,9 @@
 import { useRouter } from "next/navigation"
 import Image from "next/image"
 import { Button } from "@/components/ui/button"
-import { products } from "@/lib/products-data"
+import type { Product } from "@/lib/products-data"
 import { Star, Heart, ShoppingCart, Truck, ShieldCheck, ArrowLeft } from "lucide-react"
-import { useState } from "react"
+import { useEffect, useState } from "react"
 import { useCart } from "@/lib/cart-context"
 import { useFavorites } from "@/lib/favorites-context"
 import { useToast } from "@/hooks/use-toast"
@@ -13,11 +13,74 @@ import { useToast } from "@/hooks/use-toast"
 export default function ProductDetailPage({ params }: { params: { id: string } }) {
   const { id } = params
   const router = useRouter()
-  const product = products.find((p) => p.id === id)
+  const [product, setProduct] = useState<Product | null>(null)
+  const [loading, setLoading] = useState(true)
   const [quantity, setQuantity] = useState(1)
   const { addItem } = useCart()
   const { toggleFavorite, isFavorite } = useFavorites()
   const { toast } = useToast()
+
+  useEffect(() => {
+    let cancelled = false
+
+    const load = async () => {
+      setLoading(true)
+      try {
+        const res = await fetch(`/api/products/${id}`, { method: "GET" })
+        if (!res.ok) {
+          if (!cancelled) setProduct(null)
+          return
+        }
+
+        const apiProduct = (await res.json()) as {
+          id: string
+          name: string
+          categoryKey: string
+          price: number
+          image: string
+          description: string
+          brand: string
+          rating: number
+          reviews: number
+          inStock: boolean
+          featured?: boolean
+        }
+
+        const mapped: Product = {
+          id: apiProduct.id,
+          name: apiProduct.name,
+          category: (apiProduct.categoryKey as Product["category"]) ?? "electronics",
+          price: apiProduct.price,
+          image: apiProduct.image,
+          description: apiProduct.description,
+          brand: apiProduct.brand,
+          rating: apiProduct.rating,
+          reviews: apiProduct.reviews,
+          inStock: apiProduct.inStock,
+          featured: apiProduct.featured,
+        }
+
+        if (!cancelled) setProduct(mapped)
+      } catch {
+        if (!cancelled) setProduct(null)
+      } finally {
+        if (!cancelled) setLoading(false)
+      }
+    }
+
+    void load()
+    return () => {
+      cancelled = true
+    }
+  }, [id])
+
+  if (loading) {
+    return (
+      <div className="container mx-auto px-4 py-16 text-center">
+        <h1 className="text-2xl font-bold mb-4">Cargando...</h1>
+      </div>
+    )
+  }
 
   if (!product) {
     return (
