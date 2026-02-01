@@ -168,8 +168,7 @@ export default function CheckoutPage() {
           quantity: item.quantity,
           weight: 1,
           value: item.product.price,
-          paisOrigen: (item.product as any).paisOrigen || "China",
-          quantity: item.quantity
+          paisOrigen: (item.product as any).paisOrigen || "China"
         })),
         destination: {
           city: currentCity,
