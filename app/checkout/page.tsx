@@ -162,12 +162,15 @@ export default function CheckoutPage() {
 
     try {
       const shippingRequest = {
-        items: items.map(item => ({
-          sku: item.product.id,
-          description: item.product.name,
+        products: items.map(item => ({
+          id: item.product.id,
+          name: item.product.name,
           quantity: item.quantity,
-          weight: 1,
-          value: item.product.price,
+          weight: (item.product as any).weight || 0.5,
+          length: (item.product as any).length || 20,
+          width: (item.product as any).width || 15,
+          height: (item.product as any).height || 10,
+          valorDeclarado: item.product.price,
           paisOrigen: (item.product as any).paisOrigen || "China"
         })),
         destination: {
