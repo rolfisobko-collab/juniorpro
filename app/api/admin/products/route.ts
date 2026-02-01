@@ -46,6 +46,7 @@ export async function GET(req: Request) {
         categoryKey: true,
         description: true,
         image: true,
+        images: true,
         rating: true,
         reviews: true,
         inStock: true,

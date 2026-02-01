@@ -1,4 +1,5 @@
 import { NextResponse } from "next/server"
+import { prisma } from "@/lib/db"
 
 // Mock products for when database is not available
 const MOCK_PRODUCTS = [
@@ -126,58 +127,80 @@ export async function GET(req: Request) {
     const sort = searchParams.get("sort")
     const search = (searchParams.get("search") ?? "").trim()
 
-    // Always use mock products for now since database is not configured
-    let products = MOCK_PRODUCTS
+    // Build where clause
+    const where: any = {}
     
-    // Filter products based on params
     if (category && category !== "all") {
-      products = products.filter(p => p.categoryKey === category)
+      where.categoryKey = category
     }
 
     if (search) {
-      products = products.filter(p => 
-        p.name.toLowerCase().includes(search.toLowerCase()) ||
-        p.description.toLowerCase().includes(search.toLowerCase()) ||
-        p.brand.toLowerCase().includes(search.toLowerCase())
-      )
+      where.OR = [
+        { name: { contains: search, mode: "insensitive" } },
+        { description: { contains: search, mode: "insensitive" } },
+        { brand: { contains: search, mode: "insensitive" } }
+      ]
     }
 
     if (minPrice) {
-      products = products.filter(p => p.price >= Number(minPrice))
+      where.price = { ...where.price, gte: Number(minPrice) }
     }
 
     if (maxPrice) {
-      products = products.filter(p => p.price <= Number(maxPrice))
+      where.price = { ...where.price, lte: Number(maxPrice) }
     }
 
-    // Apply sorting
-    products.sort((a, b) => {
-      switch (sort) {
-        case "price_asc":
-          return a.price - b.price
-        case "price_desc":
-          return b.price - a.price
-        case "rating_desc":
-          return b.rating - a.rating
-        case "latest":
-          return new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()
-        default:
-          return (b.featured ? -1 : 1) || a.name.localeCompare(b.name)
-      }
-    })
-
-    const paginatedProducts = products.slice((page - 1) * limit, page * limit)
-    const total = products.length
+    // Build order by clause
+    let orderBy: any[] = [{ featured: "desc" }, { name: "asc" }]
     
+    switch (sort) {
+      case "price_asc":
+        orderBy = [{ price: "asc" }]
+        break
+      case "price_desc":
+        orderBy = [{ price: "desc" }]
+        break
+      case "rating_desc":
+        orderBy = [{ rating: "desc" }]
+        break
+      case "latest":
+        orderBy = [{ createdAt: "desc" }]
+        break
+    }
+
+    // Get products with categories
+    const [products, total] = await Promise.all([
+      prisma.product.findMany({
+        where,
+        include: {
+          category: {
+            select: {
+              key: true,
+              name: true,
+              slug: true,
+              description: true
+            }
+          }
+        },
+        orderBy,
+        skip: (page - 1) * limit,
+        take: limit
+      }),
+      prisma.product.count({ where })
+    ])
+
     return NextResponse.json({ 
-      products: paginatedProducts,
+      products: products.map(product => ({
+        ...product,
+        stockQuantity: product.stockQuantity || 0
+      })),
       pagination: {
         page,
         limit,
         total,
         totalPages: Math.max(1, Math.ceil(total / limit)),
       },
-      fromMock: true
+      fromMock: false
     })
   } catch (error) {
     console.error("Error fetching products:", error)

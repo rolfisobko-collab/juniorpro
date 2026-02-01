@@ -1,0 +1,892 @@
+"use client"
+
+import { useState, useEffect } from "react"
+import { useRouter } from "next/navigation"
+import { Button } from "@/components/ui/button"
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
+import { Input } from "@/components/ui/input"
+import { Label } from "@/components/ui/label"
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
+import { Truck, Package, MapPin, Store, Clock, ChevronLeft, ChevronRight, Check, CreditCard, Home, Loader2, Lock, ShoppingBag } from "lucide-react"
+import ParaguayLocationSelect from "@/components/paraguay-location-select"
+import { useAEXShipping } from "@/hooks/use-aex-shipping"
+import { useToast } from "@/hooks/use-toast"
+import { useCart } from "@/lib/cart-context"
+import BancardCheckout from "@/components/bancard-checkout"
+import Image from "next/image"
+import Link from "next/link"
+
+export default function CheckoutPage() {
+  const router = useRouter()
+  const { toast } = useToast()
+  const { items, total, itemCount } = useCart()
+  
+  // Redirigir si el carrito está vacío
+  useEffect(() => {
+    if (items.length === 0) {
+      router.push('/cart')
+    }
+  }, [items, router])
+  
+  const [currentStep, setCurrentStep] = useState(1)
+  const [shippingData, setShippingData] = useState({
+    method: "",
+    cost: 0,
+    address: "",
+    city: "",
+    department: "",
+    notes: ""
+  })
+  const [paymentData, setPaymentData] = useState({
+    cardNumber: "",
+    cardName: "",
+    cardExpiry: "",
+    cardCvv: "",
+    method: "bancard" // Método de pago por defecto
+  })
+  const [bancardProcessId, setBancardProcessId] = useState<string | null>(null)
+  const [paymentLoading, setPaymentLoading] = useState(false)
+  const [isLocationModalOpen, setIsLocationModalOpen] = useState(false)
+  const [isConvenirModalOpen, setIsConvenirModalOpen] = useState(false)
+  
+  // Hook para cálculo de envío AEX
+  const { calculateShipping, loading: aexLoading, error: aexError, shippingOptions: aexServices } = useAEXShipping()
+
+  // useEffect para autocalcular cuando los datos de envío están completos
+  useEffect(() => {
+    if (shippingData.method === "aex" && 
+        shippingData.city && 
+        shippingData.department && 
+        shippingData.address && 
+        !aexLoading &&
+        shippingData.cost === 0) { // Solo calcular si no hay costo previo
+      console.log('🔄 useEffect: Datos completos, calculando envío AEX automáticamente')
+      calculateAEXShipping()
+    }
+  }, [shippingData.city, shippingData.department, shippingData.address, shippingData.method])
+
+  // Función para generar process_id de Bancard
+  const generateBancardProcessId = async () => {
+    try {
+      setPaymentLoading(true)
+      const totalAmount = total + (shippingData.cost || 0)
+      
+      const response = await fetch('/api/bancard/create-single-buy', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          amount: totalAmount,
+          currency: "PYG",
+          description: `Compra TechZone - ${items.length} productos`,
+          shop_process_id: `TZ_${Date.now()}`
+        })
+      })
+
+      const data = await response.json()
+      
+      if (data.success) {
+        setBancardProcessId(data.process_id)
+        toast({
+          title: "Formulario de pago listo",
+          description: "Formulario seguro de Bancard cargado correctamente"
+        })
+      } else {
+        throw new Error(data.error || 'Error generando process_id')
+      }
+    } catch (error) {
+      console.error('Error generando process_id:', error)
+      toast({
+        title: "Error en el pago",
+        description: "No se pudo inicializar el formulario de pago",
+        variant: "destructive"
+      })
+    } finally {
+      setPaymentLoading(false)
+    }
+  }
+
+  // Manejar éxito del pago
+  const handlePaymentSuccess = (response: any) => {
+    toast({
+      title: "¡Pago exitoso!",
+      description: "Tu compra ha sido procesada correctamente"
+    })
+    
+    // Aquí podrías redirigir a una página de confirmación
+    setTimeout(() => {
+      router.push('/checkout/success')
+    }, 2000)
+  }
+
+  // Manejar error en el pago
+  const handlePaymentError = (error: any) => {
+    toast({
+      title: "Error en el pago",
+      description: error.message || "Hubo un error procesando tu pago",
+      variant: "destructive"
+    })
+  }
+
+  const user = { name: "Usuario Demo", email: "demo@email.com" }
+
+  // Función para calcular envío AEX
+  const calculateAEXShipping = async () => {
+    console.log('🚀 Iniciando cálculo AEX...')
+    console.log('📊 Estado actual shippingData:', shippingData)
+    
+    // Obtener los valores más recientes del estado
+    const currentCity = shippingData.city
+    const currentDepartment = shippingData.department  
+    const currentAddress = shippingData.address
+    
+    console.log('📍 Datos para cálculo:', {
+      city: currentCity,
+      department: currentDepartment,
+      address: currentAddress,
+      method: shippingData.method
+    })
+    
+    if (!currentCity || !currentDepartment || !currentAddress) {
+      console.error('❌ Datos incompletos:', {
+        hasCity: !!currentCity,
+        hasDepartment: !!currentDepartment,
+        hasAddress: !!currentAddress
+      })
+      
+      toast({
+        title: "Datos incompletos",
+        description: "Por favor completa la dirección de envío",
+        variant: "destructive"
+      })
+      return
+    }
+
+    const shippingRequest = {
+      products: items.map(item => ({
+        id: item.product.id,
+        name: item.product.name,
+        weight: (item.product as any).weight || 0.5,
+        length: (item.product as any).length || 15,
+        width: (item.product as any).width || 10,
+        height: (item.product as any).height || 5,
+        valorDeclarado: (item.product as any).valorDeclarado || item.product.price || 100,
+        descripcionAduana: (item.product as any).descripcionAduana || `${item.product.name} - Producto`,
+        categoriaArancelaria: (item.product as any).categoriaArancelaria || "8517.13.00",
+        paisOrigen: (item.product as any).paisOrigen || "China",
+        quantity: item.quantity
+      })),
+      destination: {
+        city: currentCity,
+        department: currentDepartment,
+        address: currentAddress
+      }
+    }
+
+    console.log('🚚 Enviando solicitud AEX:', shippingRequest)
+
+    const result = await calculateShipping(shippingRequest)
+    
+    console.log('📋 Resultado AEX:', result)
+    
+    if (result.success && result.shipping_cost) {
+      setShippingData(prev => ({
+        ...prev,
+        cost: result.shipping_cost || 0
+      }))
+      
+      toast({
+        title: "Envío calculado",
+        description: `Costo de envío: Gs. ${result.shipping_cost.toLocaleString('es-PY')}`
+      })
+    } else {
+      console.error('❌ Error en cálculo AEX:', result.error)
+      toast({
+        title: "Error al calcular envío",
+        description: result.error || "No se pudo calcular el costo de envío",
+        variant: "destructive"
+      })
+    }
+  }
+
+  const shippingOptions = [
+    {
+      id: "pickup",
+      name: "Retiro en Local",
+      description: "Retira tu pedido en nuestro local",
+      cost: 0,
+      icon: Store,
+      time: "Inmediato",
+      address: "Av. Eusebio Ayala 1234, Asunción"
+    },
+    {
+      id: "aex",
+      name: "Envío AEX",
+      description: "Envío por Agencia de Envíos Express",
+      cost: null, // Se calcula dinámicamente
+      icon: Truck,
+      time: "Próximamente",
+      requiresAddress: true,
+      disabled: true
+    },
+    {
+      id: "convenir",
+      name: "Envío a Convenir",
+      description: "Coordinamos envío directamente contigo",
+      cost: null, // Se calcula según ubicación
+      icon: Package,
+      time: "A coordinar",
+      requiresAddress: true
+    }
+  ]
+
+  const handleNextStep = () => {
+    if (currentStep < 3) {
+      // Saltar el paso de pago (paso 2) y pasar directamente a confirmación (paso 3)
+      if (currentStep === 1) {
+        setCurrentStep(3) // Saltar del paso 1 (envío) al paso 3 (confirmación)
+      } else {
+        setCurrentStep(currentStep + 1)
+      }
+    }
+  }
+
+  const handlePreviousStep = () => {
+    if (currentStep > 1) {
+      // Saltar el paso de pago (paso 2) al volver
+      if (currentStep === 3) {
+        setCurrentStep(1) // Volver del paso 3 (confirmación) al paso 1 (envío)
+      } else {
+        setCurrentStep(currentStep - 1)
+      }
+    }
+  }
+
+  const handleShippingSelect = (option: any) => {
+    setShippingData(prev => ({
+      ...prev,
+      method: option.id,
+      cost: option.cost || 0
+    }))
+    
+    // Si es AEX y ya hay dirección, calcular automáticamente
+    if (option.id === "aex") {
+      if (shippingData.city && shippingData.department && shippingData.address) {
+        // Pequeño delay para asegurar que el método se actualizó
+        setTimeout(() => calculateAEXShipping(), 100)
+      } else {
+        setIsLocationModalOpen(true)
+      }
+    }
+    // Si requiere dirección, abrir modal de ubicación correspondiente
+    else if (option.requiresAddress) {
+      if (option.id === "convenir") {
+        setIsConvenirModalOpen(true)
+      }
+    }
+  }
+
+  const handleLocationSelect = (location: { 
+    address: string; 
+    city: string; 
+    department: string;
+  }) => {
+    console.log('📍 Ubicación seleccionada:', location)
+    
+    setShippingData(prev => ({
+      ...prev,
+      address: location.address,
+      city: location.city,
+      department: location.department
+    }))
+    
+    // Si el método seleccionado es AEX, calcular el envío automáticamente
+    // Usamos un callback para asegurar que tenemos el estado actualizado
+    setTimeout(() => {
+      setShippingData(currentData => {
+        console.log('🔄 Estado actualizado:', currentData)
+        
+        if (currentData.method === "aex" && currentData.city && currentData.department && currentData.address) {
+          console.log('🚚 Disparando cálculo automático de AEX')
+          calculateAEXShipping()
+        }
+        
+        return currentData
+      })
+    }, 200)
+  }
+
+  const calculateTotalWeight = () => {
+    return items.reduce((total, item) => total + ((item.product as any).weight || 0.5) * item.quantity, 0)
+  }
+
+  const calculateFinalTotal = () => {
+    const shippingCost = shippingData.cost || 0
+    const taxAmount = total * 0.1
+    return total + shippingCost + taxAmount
+  }
+
+  return (
+    <div className="container mx-auto px-4 py-6 md:py-8 min-h-screen">
+      <div className="mb-6 md:mb-8">
+        <h1 className="text-2xl md:text-3xl font-bold">Checkout</h1>
+        <p className="text-muted-foreground text-sm md:text-base">
+          Completa los siguientes pasos para finalizar tu pedido
+        </p>
+      </div>
+
+      {/* Progress Bar - Responsive */}
+      <div className="flex items-center justify-between mb-6 md:mb-8 overflow-x-auto">
+        <div className="flex items-center space-x-2 md:space-x-4 min-w-max">
+          {[1, 2, 3].map((step) => (
+            <div key={step} className="flex items-center">
+              <div
+                className={`w-8 h-8 md:w-10 md:h-10 rounded-full flex items-center justify-center text-xs md:text-sm font-medium ${
+                  currentStep >= step
+                    ? "bg-primary text-primary-foreground"
+                    : "bg-muted text-muted-foreground"
+                }`}
+              >
+                {currentStep > step ? (
+                  <Check className="w-3 h-3 md:w-5 md:h-5" />
+                ) : (
+                  step
+                )}
+              </div>
+              <div className="ml-2 md:ml-3">
+                <p className={`text-xs md:text-sm font-medium ${
+                  currentStep >= step ? "text-foreground" : "text-muted-foreground"
+                }`}>
+                  {step === 1 && "Envío"}
+                  {step === 2 && "Pago"}
+                  {step === 3 && "Confirmación"}
+                </p>
+              </div>
+              {step < 3 && (
+                <div className={`w-2 md:w-4 h-0.5 ml-2 md:ml-4 ${
+                  currentStep > step ? "bg-primary" : "bg-muted"
+                }`} />
+              )}
+            </div>
+          ))}
+        </div>
+      </div>
+
+      {/* Step 1: Shipping Method */}
+      {currentStep === 1 && (
+        <Card className="border-0 shadow-md bg-gradient-to-br from-white via-blue-50/30 to-white">
+          <CardHeader className="bg-gradient-to-r from-blue-600 to-blue-700 text-white rounded-t-lg">
+            <CardTitle className="flex items-center gap-3 text-xl md:text-2xl">
+              <div className="w-10 h-10 bg-white/20 backdrop-blur-sm rounded-full flex items-center justify-center">
+                <Truck className="h-5 w-5 text-white" />
+              </div>
+              <div>
+                <h2>Método de Envío</h2>
+                <p className="text-blue-100 text-sm font-normal mt-1">Selecciona cómo quieres recibir tu pedido</p>
+              </div>
+            </CardTitle>
+          </CardHeader>
+          <CardContent className="p-6 md:p-8 space-y-6">
+            <div className="space-y-4">
+              {shippingOptions.map((option) => {
+                const Icon = option.icon
+                return (
+                  <div
+                    key={option.id}
+                    className={`group relative overflow-hidden rounded-2xl border-2 transition-all duration-300 hover:shadow-md ${
+                      option.disabled
+                        ? "border-gray-200 bg-gray-50 cursor-not-allowed opacity-60"
+                        : shippingData.method === option.id
+                        ? "border-blue-500 bg-gradient-to-r from-blue-50 to-indigo-50 shadow-md cursor-pointer"
+                        : "border-gray-200 hover:border-blue-300 bg-white cursor-pointer"
+                    }`}
+                    onClick={() => !option.disabled && handleShippingSelect(option)}
+                  >
+                    {/* Selected indicator */}
+                    {shippingData.method === option.id && (
+                      <div className="absolute top-4 right-4 z-10">
+                        <div className="w-6 h-6 bg-blue-500 rounded-full flex items-center justify-center animate-pulse">
+                          <Check className="w-4 h-4 text-white" />
+                        </div>
+                      </div>
+                    )}
+                    
+                    <div className="p-5 md:p-6">
+                      <div className="flex items-start gap-4">
+                        <div className={`w-12 h-12 md:w-14 md:h-14 rounded-full flex items-center justify-center flex-shrink-0 transition-all duration-300 ${
+                          shippingData.method === option.id
+                            ? "bg-gradient-to-br from-blue-500 to-blue-600 shadow-md"
+                            : "bg-gray-100 group-hover:bg-blue-100"
+                        }`}>
+                          <Icon className={`h-6 w-6 md:h-7 md:w-7 transition-colors ${
+                            shippingData.method === option.id ? "text-white" : "text-gray-600 group-hover:text-blue-600"
+                          }`} />
+                        </div>
+                        <div className="flex-1 min-w-0">
+                          <div className="flex justify-between items-start mb-3">
+                            <div className="min-w-0 flex-1">
+                              <h3 className={`font-bold text-lg md:text-xl truncate mb-1 ${
+                                shippingData.method === option.id ? "text-blue-700" : "text-gray-900"
+                              }`}>
+                                {option.name}
+                              </h3>
+                              <p className="text-gray-600 text-sm md:text-base leading-relaxed">{option.description}</p>
+                              <div className="flex flex-wrap items-center gap-3 mt-3 text-sm">
+                                <div className={`flex items-center gap-2 px-3 py-1 rounded-full ${
+                                  shippingData.method === option.id
+                                    ? "bg-blue-100 text-blue-700"
+                                    : "bg-gray-100 text-gray-600"
+                                }`}>
+                                  <Clock className="h-4 w-4" />
+                                  {option.time}
+                                </div>
+                                {option.address && (
+                                  <div className="flex items-center gap-2 text-gray-500">
+                                    <MapPin className="h-4 w-4" />
+                                    <span className="truncate max-w-[200px]">{option.address}</span>
+                                  </div>
+                                )}
+                              </div>
+                              {option.requiresAddress && (
+                                <div className="mt-4">
+                                  <Button 
+                                    variant={shippingData.method === option.id ? "default" : "outline"}
+                                    size="sm"
+                                    disabled={option.disabled}
+                                    onClick={(e) => {
+                                      e.stopPropagation()
+                                      if (option.id === "aex") {
+                                        setIsLocationModalOpen(true)
+                                      } else if (option.id === "convenir") {
+                                        setIsConvenirModalOpen(true)
+                                      }
+                                    }}
+                                    className={`w-full sm:w-auto transition-all duration-300 ${
+                                      option.disabled
+                                        ? "bg-gray-300 text-gray-500 cursor-not-allowed"
+                                        : shippingData.method === option.id
+                                        ? "bg-blue-600 hover:bg-blue-700 shadow-sm"
+                                        : "hover:bg-blue-50 hover:border-blue-300"
+                                    }`}
+                                  >
+                                    {option.disabled ? "Próximamente" : "Seleccionar"}
+                                  </Button>
+                                </div>
+                              )}
+                            </div>
+                            <div className="text-right ml-4 flex-shrink-0">
+                              <p className={`font-bold text-xl md:text-2xl ${
+                                shippingData.method === option.id ? "text-blue-700" : "text-gray-900"
+                              }`}>
+                                {option.cost !== null ? `$${option.cost}` : "A calcular"}
+                              </p>
+                              {option.id === "aex" && aexError && (
+                                <div className="mt-2 text-sm text-red-600 bg-red-50 px-2 py-1 rounded">
+                                  {aexError}
+                                </div>
+                              )}
+                            </div>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                )
+              })}
+            </div>
+            
+            {/* Navigation Buttons */}
+            <div className="flex justify-between pt-6 border-t border-gray-200">
+              <Button 
+                variant="outline" 
+                onClick={() => router.back()}
+                className="h-11 px-6 border-2 hover:bg-gray-50 transition-all duration-300 flex items-center gap-2"
+              >
+                <ChevronLeft className="h-4 w-4" />
+                <span>Anterior</span>
+              </Button>
+              <Button 
+                onClick={handleNextStep}
+                disabled={
+                  !shippingData.method || 
+                  (shippingData.method === "convenir" && !shippingData.address)
+                }
+                className="h-11 px-6 bg-gradient-to-r from-blue-600 to-blue-700 hover:from-blue-700 hover:to-blue-800 shadow-lg hover:shadow-xl transition-all duration-300 flex items-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed"
+              >
+                <span>Siguiente: Confirmación</span>
+                <ChevronRight className="h-4 w-4" />
+              </Button>
+            </div>
+          </CardContent>
+        </Card>
+      )}
+
+      {/* Step 2: Payment Information - TEMPORALMENTE DESHABILITADO */}
+      {/* {currentStep === 2 && (
+        <div className="grid md:grid-cols-3 gap-6 md:gap-8">
+          {/* Payment Form */}
+          <div className="md:col-span-2 space-y-6">
+            <Card className="border-0 shadow-md bg-gradient-to-br from-white via-green-50/30 to-white">
+              <CardHeader className="bg-gradient-to-r from-green-600 to-green-700 text-white rounded-t-lg">
+                <CardTitle className="flex items-center gap-3 text-xl md:text-2xl">
+                  <div className="w-10 h-10 bg-white/20 backdrop-blur-sm rounded-full flex items-center justify-center">
+                    <CreditCard className="h-5 w-5 text-white" />
+                  </div>
+                  <div>
+                    <h2>Información de Pago</h2>
+                    <p className="text-green-100 text-sm font-normal mt-1">Selecciona tu método de pago seguro</p>
+                  </div>
+                </CardTitle>
+              </CardHeader>
+              <CardContent className="p-6 md:p-8 space-y-6">
+                {/* Selección de método de pago */}
+                <div className="space-y-4">
+                  <Label className="text-base font-semibold text-gray-700">Método de Pago</Label>
+                  <div className="grid grid-cols-1 gap-4">
+                    <div 
+                      className={`group relative overflow-hidden rounded-2xl border-2 cursor-pointer transition-all duration-300 hover:shadow-md ${
+                        paymentData.method === "bancard" 
+                          ? "border-green-500 bg-gradient-to-r from-green-50 to-emerald-50 shadow-md" 
+                          : "border-gray-200 hover:border-green-300 bg-white"
+                      }`}
+                      onClick={() => setPaymentData(prev => ({ ...prev, method: "bancard" }))}
+                    >
+                      {/* Selected indicator */}
+                      {paymentData.method === "bancard" && (
+                        <div className="absolute top-4 right-4 z-10">
+                          <div className="w-6 h-6 bg-green-500 rounded-full flex items-center justify-center animate-pulse">
+                            <Check className="w-4 h-4 text-white" />
+                          </div>
+                        </div>
+                      )}
+                      
+                      <div className="p-4 md:p-5">
+                        <div className="flex items-center gap-4">
+                          <div className={`w-12 h-10 md:w-14 md:h-10 rounded-lg flex items-center justify-center transition-all duration-300 ${
+                            paymentData.method === "bancard"
+                              ? "bg-gradient-to-r from-blue-600 to-blue-800 shadow-md"
+                              : "bg-gray-100 group-hover:bg-blue-100"
+                          }`}>
+                            <CreditCard className="h-5 w-5 md:h-6 md:w-6 text-white" />
+                          </div>
+                          <div className="flex-1 min-w-0">
+                            <div className={`font-bold text-base md:text-lg truncate mb-1 ${
+                              paymentData.method === "bancard" ? "text-green-700" : "text-gray-900"
+                            }`}>
+                              Bancard vPOS
+                            </div>
+                            <div className="text-sm text-gray-600 leading-relaxed">
+                              Pago seguro con tarjeta de crédito/débito
+                            </div>
+                            <div className="flex items-center gap-2 mt-2">
+                              <div className="w-8 h-5 bg-gradient-to-r from-blue-600 to-blue-800 rounded flex items-center justify-center">
+                                <Lock className="h-3 w-3 text-white" />
+                              </div>
+                              <span className="text-xs text-gray-500">Encriptado y seguro</span>
+                            </div>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+
+                {/* Formulario de Bancard */}
+                {paymentData.method === "bancard" && (
+                  <div className="space-y-4">
+                    {!bancardProcessId ? (
+                      <div className="text-center py-8">
+                        <div className="mb-4">
+                          <CreditCard className="h-12 w-12 text-blue-600 mx-auto mb-2" />
+                          <h3 className="text-lg font-medium">Formulario de Pago Seguro</h3>
+                          <p className="text-gray-600">Serás redirigido al formulario seguro de Bancard</p>
+                        </div>
+                        <Button 
+                          onClick={generateBancardProcessId}
+                          disabled={paymentLoading}
+                          className="bg-blue-600 hover:bg-blue-700"
+                        >
+                          {paymentLoading ? (
+                            <>
+                              <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                              Inicializando pago...
+                            </>
+                          ) : (
+                            <>
+                              <CreditCard className="h-4 w-4 mr-2" />
+                              Continuar al Pago Seguro
+                            </>
+                          )}
+                        </Button>
+                      </div>
+                    ) : (
+                      <div>
+                        <div className="mb-4 p-3 bg-green-50 border border-green-200 rounded-lg">
+                          <div className="flex items-center gap-2 text-green-700">
+                            <Check className="w-4 h-4" />
+                            <span className="text-sm font-medium">Formulario de pago seguro activo</span>
+                          </div>
+                        </div>
+                        <BancardCheckout
+                          processId={bancardProcessId}
+                          amount={total + (shippingData.cost || 0)}
+                          onSuccess={handlePaymentSuccess}
+                          onError={handlePaymentError}
+                          onCancel={() => {
+                            setBancardProcessId(null)
+                            toast({
+                              title: "Pago cancelado",
+                              description: "Has cancelado el proceso de pago"
+                            })
+                          }}
+                        />
+                      </div>
+                    )}
+                  </div>
+                )}
+
+                <div className="flex justify-between pt-6 border-t border-gray-200">
+                  <Button 
+                    variant="outline" 
+                    onClick={handlePreviousStep} 
+                    className="h-11 px-6 border-2 hover:bg-gray-50 transition-all duration-300 flex items-center gap-2"
+                  >
+                    <ChevronLeft className="h-4 w-4" />
+                    <span>Anterior</span>
+                  </Button>
+                  {!bancardProcessId && (
+                    <Button 
+                      onClick={handleNextStep} 
+                      className="h-11 px-6 bg-gradient-to-r from-green-600 to-green-700 hover:from-green-700 hover:to-green-800 shadow-lg hover:shadow-xl transition-all duration-300 flex items-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed"
+                      disabled={paymentData.method !== "bancard"}
+                    >
+                      <span>Realizar Compra</span>
+                      <ChevronRight className="h-4 w-4" />
+                    </Button>
+                  )}
+                </div>
+              </CardContent>
+            </Card>
+          </div>
+
+          {/* Order Summary Sidebar */}
+          <div className="space-y-6">
+            <Card className="border-0 shadow-md bg-gradient-to-br from-white via-purple-50/30 to-white relative">
+              <CardHeader className="bg-gradient-to-r from-purple-600 to-purple-700 text-white rounded-t-lg">
+                <CardTitle className="flex items-center gap-3 text-xl">
+                  <div className="w-10 h-10 bg-white/20 backdrop-blur-sm rounded-full flex items-center justify-center">
+                    <Package className="h-5 w-5 text-white" />
+                  </div>
+                  <div>
+                    <h3>Resumen del Pedido</h3>
+                    <p className="text-purple-100 text-sm font-normal mt-1">Detalles de tu compra</p>
+                  </div>
+                </CardTitle>
+              </CardHeader>
+              <CardContent className="p-6 space-y-6">
+                {/* Product Summary */}
+                <div className="space-y-4">
+                  {items.map((item, index) => (
+                    <div key={`${item.product.id}-${index}`} className="flex items-center justify-between p-4 bg-gradient-to-r from-gray-50 to-gray-100 rounded-xl">
+                      <div className="flex items-center gap-3">
+                        <div className="relative w-16 h-16 rounded-lg overflow-hidden bg-white shadow-sm border border-gray-200 flex items-center justify-center">
+                          {item.product.image ? (
+                            <Image
+                              src={item.product.image}
+                              alt={item.product.name}
+                              fill
+                              className="object-contain transition-transform duration-300 hover:scale-105 p-1"
+                              sizes="64px"
+                              quality={85}
+                            />
+                          ) : (
+                            <div className="w-full h-full flex items-center justify-center bg-gradient-to-br from-gray-100 to-gray-200">
+                              <ShoppingBag className="w-6 h-6 text-gray-400" />
+                            </div>
+                          )}
+                          {/* Badge de cantidad */}
+                          <div className="absolute -top-1 -right-1 w-5 h-5 bg-blue-500 rounded-full flex items-center justify-center text-xs text-white font-bold shadow-md">
+                            {item.quantity}
+                          </div>
+                        </div>
+                        <div>
+                          <p className="font-semibold text-gray-900 line-clamp-1">{item.product.name}</p>
+                          <p className="text-sm text-gray-600">{item.product.brand}</p>
+                        </div>
+                      </div>
+                      <p className="font-bold text-lg text-gray-900">
+                        ${(item.product.price * item.quantity).toFixed(2)}
+                      </p>
+                    </div>
+                  ))}
+                </div>
+
+                {/* Price Breakdown */}
+                <div className="space-y-3 pt-4 border-t border-gray-200">
+                  <div className="flex justify-between items-center py-2">
+                    <span className="text-gray-600 font-medium">Subtotal</span>
+                    <span className="font-semibold text-gray-900">${total.toFixed(2)}</span>
+                  </div>
+                  <div className="flex justify-between items-center py-2">
+                    <span className="text-gray-600 font-medium">Envío</span>
+                    <span className={`font-semibold ${
+                      shippingData.cost === 0 ? "text-green-600" : "text-gray-900"
+                    }`}>
+                      {shippingData.cost === 0 ? "Gratis" : `$${shippingData.cost}`}
+                    </span>
+                  </div>
+                </div>
+
+                {/* Total */}
+                <div className="pt-4 border-t-2 border-gray-300">
+                  <div className="flex justify-between items-center">
+                    <div>
+                      <p className="text-sm text-gray-600 font-medium">Total a Pagar</p>
+                      <p className="text-xs text-gray-500">Incluye impuestos y envío</p>
+                    </div>
+                    <p className="text-2xl md:text-3xl font-bold text-gray-900">
+                      ${(total + shippingData.cost + (total * 0.1)).toFixed(2)}
+                    </p>
+                  </div>
+                </div>
+
+                {/* Términos y Condiciones */}
+                <div className="pt-2">
+                  <p className="text-xs text-gray-500 text-center">
+                    Al realizar la compra aceptas nuestros 
+                    <a href="/terms" className="text-blue-600 hover:text-blue-700 underline mx-1">
+                      términos y condiciones
+                    </a>
+                    y 
+                    <a href="/privacy" className="text-blue-600 hover:text-blue-700 underline mx-1">
+                      política de privacidad
+                    </a>
+                  </p>
+                </div>
+
+                {/* Security Badge */}
+                <div className="flex items-center justify-center gap-2 pt-4 border-t border-gray-200">
+                  <div className="w-6 h-6 bg-green-100 rounded-full flex items-center justify-center">
+                    <Lock className="h-3 w-3 text-green-600" />
+                  </div>
+                  <span className="text-sm text-gray-600">Compra 100% segura</span>
+                </div>
+              </CardContent>
+            </Card>
+          </div>
+        </div>
+      )}
+      {/* Step 3: Order Success */}
+      {currentStep === 3 && (
+        <div className="max-w-4xl mx-auto">
+          <Card className="border-0 shadow-lg bg-gradient-to-br from-white via-green-50/30 to-white overflow-hidden">
+            <div className="bg-gradient-to-r from-green-600 to-green-700 text-white p-8 text-center relative overflow-hidden">
+              <div className="absolute inset-0 opacity-10" style={{backgroundImage: "url('/grid.svg')"}}></div>
+              <div className="relative z-10">
+                <div className="w-24 h-24 bg-white/20 backdrop-blur-sm rounded-full flex items-center justify-center mx-auto mb-6 animate-pulse">
+                  <Check className="w-12 h-12 text-white" />
+                </div>
+                <h1 className="text-3xl md:text-4xl font-bold mb-3">¡Compra Realizada con Éxito!</h1>
+                <p className="text-green-100 text-lg">Felicitaciones! Tu pedido ha sido procesado correctamente</p>
+              </div>
+            </div>
+            
+            <CardContent className="p-8 md:p-12">
+              <div className="grid md:grid-cols-2 gap-8 mb-8">
+                {/* Order Details */}
+                <div className="space-y-6">
+                  <div className="bg-gradient-to-r from-gray-50 to-gray-100 rounded-2xl p-6">
+                    <h3 className="font-bold text-lg mb-4 flex items-center gap-2">
+                      <Package className="h-5 w-5 text-green-600" />
+                      Detalles del Pedido
+                    </h3>
+                    <div className="space-y-4">
+                      <div className="flex justify-between items-center py-3 border-b border-gray-200">
+                        <span className="text-gray-600 font-medium">Número de Orden</span>
+                        <span className="font-bold text-green-600 bg-green-50 px-3 py-1 rounded-full text-sm">
+                          #ORD-2024-{Math.random().toString(36).substring(2, 11).toUpperCase()}
+                        </span>
+                      </div>
+                      <div className="flex justify-between items-center py-3 border-b border-gray-200">
+                        <span className="text-gray-600 font-medium">Total Pagado</span>
+                        <span className="font-bold text-xl text-gray-900">
+                          ${(total + (shippingData.cost || 0) + total * 0.1).toFixed(2)}
+                        </span>
+                      </div>
+                      <div className="flex justify-between items-center py-3 border-b border-gray-200">
+                        <span className="text-gray-600 font-medium">Método de Pago</span>
+                        <span className="font-medium">Bancard vPOS</span>
+                      </div>
+                      <div className="flex justify-between items-center py-3">
+                        <span className="text-gray-600 font-medium">Fecha</span>
+                        <span className="font-medium">{new Date().toLocaleDateString('es-PY')}</span>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+
+                {/* Shipping Details */}
+                <div className="space-y-6">
+                  <div className="bg-gradient-to-r from-blue-50 to-blue-100 rounded-2xl p-6">
+                    <h3 className="font-bold text-lg mb-4 flex items-center gap-2">
+                      <Truck className="h-5 w-5 text-blue-600" />
+                      Información de Envío
+                    </h3>
+                    <div className="space-y-4">
+                      <div className="flex justify-between items-center py-3 border-b border-blue-200">
+                        <span className="text-gray-600 font-medium">Método de Envío</span>
+                        <span className="font-medium text-blue-700">
+                          {shippingOptions.find(opt => opt.id === shippingData.method)?.name}
+                        </span>
+                      </div>
+                      <div className="flex justify-between items-center py-3 border-b border-blue-200">
+                        <span className="text-gray-600 font-medium">Estado</span>
+                        <span className="font-medium text-orange-600 bg-orange-50 px-3 py-1 rounded-full text-sm">
+                          En preparación
+                        </span>
+                      </div>
+                      <div className="flex justify-between items-center py-3">
+                        <span className="text-gray-600 font-medium">Dirección</span>
+                        <span className="font-medium text-right max-w-[200px]">
+                          {shippingData.address || "Retiro en local"}
+                        </span>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              {/* Action Buttons */}
+              <div className="flex flex-col sm:flex-row gap-4 justify-center pt-6 border-t border-gray-200">
+                <Button 
+                  onClick={() => router.push('/orders')}
+                  size="lg"
+                  className="h-12 px-6 bg-gradient-to-r from-blue-600 to-blue-700 hover:from-blue-700 hover:to-blue-800 shadow-lg hover:shadow-xl transition-all duration-300 flex items-center gap-2"
+                >
+                  <Package className="h-5 w-5" />
+                  <span>Ver Mis Órdenes</span>
+                </Button>
+                <Button 
+                  onClick={() => router.push('/products')}
+                  variant="outline"
+                  size="lg"
+                  className="h-12 px-6 border-2 hover:bg-gray-50 transition-all duration-300 flex items-center gap-2"
+                >
+                  <Home className="h-5 w-5" />
+                  <span>Seguir Comprando</span>
+                </Button>
+              </div>
+            </CardContent>
+          </Card>
+        </div>
+      )}
+      {/* Convenir Modal */}
+      <ParaguayLocationSelect
+        isOpen={isConvenirModalOpen}
+        onClose={() => setIsConvenirModalOpen(false)}
+        onLocationSelect={handleLocationSelect}
+      />
+    </div>
+  )
+}

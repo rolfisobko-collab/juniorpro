@@ -310,6 +310,7 @@ export const translations = {
     'Attention Hours': 'Horario de atención:',
     'Monday to Friday: 9:00 - 18:00': 'Lun - Vie: 9:00 - 18:00',
     'Saturday: 10:00 - 14:00': 'Sáb: 10:00 - 14:00',
+    'Sunday: Closed': 'Domingo: Cerrado',
     
     // Product Page
     'Product not found': 'Producto no encontrado',
@@ -321,6 +322,7 @@ export const translations = {
     'Product reviews': 'reseñas',
     'Product Taxes included': 'Impuestos incluidos',
     'Product Quantity:': 'Cantidad:',
+    'Product Total:': 'Total:',
     'Product Add to Cart': 'Agregar al Carrito',
     'Product Out of stock': 'Agotado',
     'Product Free shipping': 'Envío gratuito en compras superiores a $100',
@@ -458,6 +460,7 @@ export const translations = {
     'Attention Hours': 'Horário de atendimento:',
     'Monday to Friday: 9:00 - 18:00': 'Seg - Sex: 9:00 - 18:00',
     'Saturday: 10:00 - 14:00': 'Sáb: 10:00 - 14:00',
+    'Sunday: Closed': 'Domingo: Fechado',
     
     // Product Page
     'Product not found': 'Produto não encontrado',
@@ -469,6 +472,7 @@ export const translations = {
     'Product reviews': 'avaliações',
     'Product Taxes included': 'Impostos incluídos',
     'Product Quantity:': 'Quantidade:',
+    'Product Total:': 'Total:',
     'Product Add to Cart': 'Adicionar ao Carrinho',
     'Product Out of stock': 'Esgotado',
     'Product Free shipping': 'Envio gratuito em compras acima de $100',

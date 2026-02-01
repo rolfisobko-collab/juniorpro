@@ -38,9 +38,9 @@ export function PanelLayout({ children }: { children: React.ReactNode }) {
   }
 
   return (
-    <div className="flex h-screen overflow-hidden">
+    <div className="flex h-screen">
       <AdminSidebar />
-      <main className="flex-1 overflow-y-auto bg-muted/30">{children}</main>
+      <main className="flex-1 overflow-y-auto bg-[#fbfcfd] ml-64">{children}</main>
     </div>
   )
 }

@@ -268,7 +268,8 @@ export async function POST(request: NextRequest) {
       largo: pkg.largo,
       alto: pkg.alto,
       ancho: pkg.ancho,
-      valor: pkg.valor_declarado || 0
+      valor: pkg.valor_declarado || 0,
+      pais_origen: pkg.pais_origen || 'Importado'
     }))
 
     // Calcular envío con API real

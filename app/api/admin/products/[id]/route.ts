@@ -10,7 +10,34 @@ export async function GET(_req: NextRequest, { params }: { params: Promise<{ id:
 
     const { id } = await params
 
-    const product = await prisma.product.findUnique({ where: { id } })
+    const product = await prisma.product.findUnique({ 
+      where: { id },
+      select: {
+        id: true,
+        name: true,
+        brand: true,
+        price: true,
+        categoryKey: true,
+        description: true,
+        image: true,
+        images: true,
+        rating: true,
+        reviews: true,
+        inStock: true,
+        stockQuantity: true,
+        featured: true,
+        weight: true,
+        length: true,
+        width: true,
+        height: true,
+        valorDeclarado: true,
+        descripcionAduana: true,
+        categoriaArancelaria: true,
+        paisOrigen: true,
+        createdAt: true,
+        updatedAt: true,
+      }
+    })
     if (!product) return NextResponse.json({ error: "Not found" }, { status: 404 })
 
     return NextResponse.json({ product })

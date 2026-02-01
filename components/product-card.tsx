@@ -12,6 +12,8 @@ import { useFavorites } from "@/lib/favorites-context"
 import { useCurrency } from "@/lib/currency-context"
 import { useToast } from "@/hooks/use-toast"
 import { useTranslation } from "@/lib/i18n/translation-provider"
+import { CartAnimation } from "@/components/cart-animation"
+import { useState } from "react"
 
 interface ProductCardProps {
   product: UnifiedProduct
@@ -23,14 +25,24 @@ export function ProductCard({ product }: ProductCardProps) {
   const { toggleFavorite, isFavorite } = useFavorites()
   const { formatPrice } = useCurrency()
   const { toast } = useToast()
+  const [animationTrigger, setAnimationTrigger] = useState<{x: number, y: number} | false>(false)
 
   const handleAddToCart = (e: React.MouseEvent) => {
     e.preventDefault()
-    addItem(product)
-    toast({
-      title: t('Product Added to cart'),
-      description: `${product.name} ha sido agregado a tu carrito`,
-    })
+    
+    // Capturar posición exacta del click
+    const clickPosition = {
+      x: e.clientX,
+      y: e.clientY
+    }
+    
+    // Guardar posición en el estado para la animación
+    setAnimationTrigger(clickPosition)
+    
+    // Agregar producto cuando la animación está avanzada
+    setTimeout(() => {
+      addItem(product)
+    }, 600) // Agregar producto cuando la animación está a 60% del camino
   }
 
   const handleToggleFavorite = (e: React.MouseEvent) => {
@@ -46,60 +58,90 @@ export function ProductCard({ product }: ProductCardProps) {
 
   return (
     <Link href={`/products/${product.id}`}>
-      <Card className="group overflow-hidden border-0 shadow-md hover:shadow-xl transition-all duration-300 hover:scale-105 h-full bg-white rounded-2xl">
-        <CardContent className="p-0">
-          <div className="relative aspect-square overflow-hidden bg-gradient-to-br from-gray-50 to-gray-100">
-            <img
-              src={product.image || "/placeholder.svg"}
-              alt={product.name}
-              className="absolute inset-0 w-full h-full object-cover object-[0_0] transition-transform duration-700 group-hover:scale-110"
-              style={{ objectPosition: 'top center' }}
-              onError={(e) => {
-                const target = e.target as HTMLImageElement;
-                target.src = "/placeholder.svg";
-              }}
-              loading="lazy"
-            />
-            <Button
-              size="icon"
-              variant="secondary"
-              className="absolute top-3 right-3 h-8 w-8 rounded-full shadow-lg opacity-0 group-hover:opacity-100 transition-all duration-300 bg-white/95 hover:bg-white hover:scale-110 z-10"
-              onClick={handleToggleFavorite}
-            >
-              <Heart className={`h-4 w-4 ${isFavorite(product.id) ? "fill-current text-red-500" : "text-gray-600"}`} />
-            </Button>
-            {!product.inStock && (
-              <div className="absolute inset-0 bg-white/95 backdrop-blur-sm flex items-center justify-center z-10">
-                <span className="text-sm font-semibold text-gray-800 px-4 py-2 bg-gray-100 rounded-full">Agotado</span>
+      <div className="group relative bg-white rounded-3xl shadow-lg hover:shadow-2xl transition-all duration-500 hover:-translate-y-2 overflow-hidden border border-gray-100">
+        {/* Imagen con overlay */}
+        <div className="relative aspect-[4/5] overflow-hidden bg-gradient-to-br from-gray-50 via-white to-gray-100">
+          <img
+            src={product.image || "/placeholder.svg"}
+            alt={product.name}
+            className="absolute inset-0 w-full h-full object-cover transition-all duration-700 group-hover:scale-110 group-hover:rotate-1"
+            style={{ objectPosition: 'top center' }}
+            onError={(e) => {
+              const target = e.target as HTMLImageElement;
+              target.src = "/placeholder.svg";
+            }}
+            loading="lazy"
+          />
+          
+          {/* Overlay gradient */}
+          <div className="absolute inset-0 bg-gradient-to-t from-black/20 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
+          
+          {/* Botón de favoritos */}
+          <button
+            onClick={handleToggleFavorite}
+            className="absolute top-4 right-4 h-10 w-10 rounded-full bg-white/90 backdrop-blur-md shadow-lg opacity-0 group-hover:opacity-100 transition-all duration-300 hover:scale-110 hover:bg-white z-20 flex items-center justify-center"
+          >
+            <Heart className={`h-5 w-5 transition-all duration-300 ${isFavorite(product.id) ? "fill-current text-red-500 scale-110" : "text-gray-600 hover:text-red-500"}`} />
+          </button>
+          
+          {/* Badge de stock */}
+          {!product.inStock && (
+            <div className="absolute inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center z-30">
+              <div className="bg-white/95 backdrop-blur-md px-6 py-3 rounded-2xl shadow-2xl">
+                <span className="text-sm font-bold text-gray-800 uppercase tracking-wide">Agotado</span>
               </div>
-            )}
+            </div>
+          )}
+        </div>
+
+        {/* Contenido */}
+        <div className="p-4 sm:p-5 space-y-3 sm:space-y-4">
+          {/* Brand y nombre */}
+          <div className="space-y-1 sm:space-y-2">
+            <p className="text-xs text-gray-500 uppercase tracking-wider font-semibold truncate">
+              {product.brand}
+            </p>
+            <h3 className="font-bold text-sm sm:text-base leading-snug text-gray-900 line-clamp-2 group-hover:text-blue-600 transition-colors duration-300">
+              {product.name}
+            </h3>
           </div>
 
-          <div className="p-3 space-y-2">
-            <div className="space-y-1">
-              <p className="text-xs text-gray-500 uppercase tracking-wide font-medium truncate">
-                {product.brand}
+          {/* Precio y acciones */}
+          <div className="space-y-2 sm:space-y-3">
+            <div className="flex items-center justify-between">
+              <p className="text-lg sm:text-xl font-bold text-gray-900">
+                {formatPrice(product.price)}
               </p>
-              <h3 className="font-semibold text-sm line-clamp-2 leading-tight group-hover:text-blue-500 transition-colors duration-200 min-h-[2rem] text-gray-800">
-                {product.name}
-              </h3>
+              
+              {/* Indicador de peso para envío */}
+              {product.weight && (
+                <div className="bg-blue-100 text-blue-700 px-2 py-1 rounded-full text-xs font-medium">
+                  {product.weight}kg
+                </div>
+              )}
             </div>
 
-            <div className="space-y-2 pt-1">
-              <p className="text-base font-bold text-gray-900">{formatPrice(product.price)}</p>
-              <Button
-                size="sm"
-                className="w-full h-8 text-xs bg-gradient-to-r from-blue-500 to-blue-600 hover:from-blue-600 hover:to-blue-700 text-white border-0 shadow-md hover:shadow-lg transition-all duration-200 font-medium"
-                onClick={handleAddToCart}
-                disabled={!product.inStock}
-              >
-                <ShoppingCart className="h-3 w-3 mr-1" />
-                {t('Add')}
-              </Button>
-            </div>
+            <button
+              onClick={handleAddToCart}
+              disabled={!product.inStock}
+              className="w-full bg-gradient-to-r from-blue-500 via-blue-600 to-blue-700 hover:from-blue-600 hover:via-blue-700 hover:to-blue-800 text-white font-semibold py-3 px-4 rounded-2xl shadow-lg hover:shadow-xl transition-all duration-300 hover:scale-[1.02] disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:scale-100 flex items-center justify-center gap-2"
+            >
+              <ShoppingCart className="h-4 w-4" />
+              <span>{t('Add')}</span>
+            </button>
           </div>
-        </CardContent>
-      </Card>
+        </div>
+
+        {/* Efecto de brillo en hover */}
+        <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/10 to-transparent -translate-x-full group-hover:translate-x-full transition-transform duration-1000 pointer-events-none" />
+      </div>
+      
+      {/* Animación de producto volando al carrito */}
+      <CartAnimation 
+        product={product} 
+        trigger={animationTrigger} 
+        onComplete={() => setAnimationTrigger(false)} 
+      />
     </Link>
   )
 }

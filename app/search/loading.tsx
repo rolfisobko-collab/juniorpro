@@ -11,10 +11,10 @@ export default function Loading() {
         <div className="h-10 w-full md:w-[200px] bg-muted animate-pulse rounded" />
       </div>
 
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+      <div className="grid grid-cols-1 max-[325px]:grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 sm:gap-6">
         {Array.from({ length: 8 }).map((_, i) => (
           <div key={i} className="space-y-4">
-            <div className="aspect-square bg-muted animate-pulse rounded-lg" />
+            <div className="aspect-[4/5] bg-muted animate-pulse rounded-lg" />
             <div className="h-6 bg-muted animate-pulse rounded w-3/4" />
             <div className="h-4 bg-muted animate-pulse rounded w-1/2" />
             <div className="h-10 bg-muted animate-pulse rounded" />

@@ -42,7 +42,7 @@ export default function Footer() {
   }
 
   return (
-    <footer className="border-t border-border/50 bg-muted/30">
+    <footer className="relative z-[99999] border-t border-border/50 bg-muted/30">
       <div className="container mx-auto px-4">
         {/* Main Footer Content */}
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8 py-8">
@@ -56,13 +56,29 @@ export default function Footer() {
                 .filter((social) => social.enabled)
                 .map((social) => {
                   const Icon = getSocialIcon(social.platform)
+                  const getSocialClasses = (platform: string) => {
+                    switch (platform.toLowerCase()) {
+                      case "facebook":
+                        return "bg-gradient-to-br from-blue-500 to-blue-600 hover:from-blue-600 hover:to-blue-700 text-white"
+                      case "instagram":
+                        return "bg-gradient-to-br from-purple-500 via-pink-500 to-orange-500 hover:from-purple-600 hover:via-pink-600 hover:to-orange-600 text-white"
+                      case "twitter":
+                        return "bg-gradient-to-br from-sky-400 to-sky-500 hover:from-sky-500 hover:to-sky-600 text-white"
+                      case "linkedin":
+                        return "bg-gradient-to-br from-blue-600 to-blue-700 hover:from-blue-700 hover:to-blue-800 text-white"
+                      case "youtube":
+                        return "bg-gradient-to-br from-red-500 to-red-600 hover:from-red-600 hover:to-red-700 text-white"
+                      default:
+                        return "bg-gradient-to-br from-gray-500 to-gray-600 hover:from-gray-600 hover:to-gray-700 text-white"
+                    }
+                  }
                   return (
                     <Link
                       key={social.platform}
                       href={social.url}
                       target="_blank"
                       rel="noopener noreferrer"
-                      className="h-10 w-10 rounded-full bg-primary/10 hover:bg-primary hover:text-primary-foreground flex items-center justify-center transition-colors"
+                      className={`h-10 w-10 rounded-full flex items-center justify-center transition-all duration-300 shadow-lg hover:shadow-xl hover:scale-110 ${getSocialClasses(social.platform)}`}
                       aria-label={social.platform}
                     >
                       <Icon className="h-5 w-5" />
@@ -206,6 +222,7 @@ export default function Footer() {
               <p className="text-xs text-muted-foreground">{t('Attention Hours')}</p>
               <p className="text-sm font-medium">{t('Monday to Friday: 9:00 - 18:00')}</p>
               <p className="text-sm font-medium">{t('Saturday: 10:00 - 14:00')}</p>
+              <p className="text-xs text-muted-foreground font-medium">{t('Sunday: Closed')}</p>
             </div>
           </div>
         </div>

@@ -6,23 +6,11 @@ import { useEffect, useState } from "react"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table"
-import {
-  Dialog,
-  DialogContent,
-  DialogDescription,
-  DialogFooter,
-  DialogHeader,
-  DialogTitle,
-  DialogTrigger,
-} from "@/components/ui/dialog"
-import { Label } from "@/components/ui/label"
-import { Textarea } from "@/components/ui/textarea"
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
-import { Plus, Pencil, Trash2, Search, Building, Eye, Package, FileText } from "lucide-react"
+import { Plus, Pencil, Trash2, Search, Building, Eye, Upload } from "lucide-react"
 import { useToast } from "@/hooks/use-toast"
-import { ImageUpload } from "@/components/image-upload"
-import { MediaGallery } from "@/components/media-gallery"
 import { BrandsModal } from "@/components/brands-modal"
+import Link from "next/link"
+import { useRouter } from "next/navigation"
 
 interface Product {
   id: string
@@ -42,31 +30,14 @@ export default function AdminProductsPage() {
   const [categories, setCategories] = useState<any[]>([])
   const [brands, setBrands] = useState<any[]>([])
   const [searchQuery, setSearchQuery] = useState("")
-  const [isDialogOpen, setIsDialogOpen] = useState(false)
   const [isBrandsModalOpen, setIsBrandsModalOpen] = useState(false)
-  const [editingProduct, setEditingProduct] = useState<Product | null>(null)
+  const [isImporting, setIsImporting] = useState(false)
+  const [pendingImport, setPendingImport] = useState<any>(null)
+  const [showConfirmDialog, setShowConfirmDialog] = useState(false)
+  const [showPreviewDialog, setShowPreviewDialog] = useState(false)
+  const [extractedProducts, setExtractedProducts] = useState<any[]>([])
   const { toast } = useToast()
-
-  const [formData, setFormData] = useState({
-    name: "",
-    brand: "",
-    description: "",
-    price: "",
-    category: "",
-    subcategory: "",
-    images: [] as string[],
-    videos: [] as string[],
-    // Campos de AEX - Dimensiones
-    weight: "",
-    length: "",
-    width: "",
-    height: "",
-    // Campos de AEX - Tributos
-    valorDeclarado: "",
-    descripcionAduana: "",
-    categoriaArancelaria: "",
-    paisOrigen: "",
-  })
+  const router = useRouter()
 
   // Cargar categorías y marcas desde la API
   useEffect(() => {
@@ -165,139 +136,13 @@ export default function AdminProductsPage() {
       product.category.toLowerCase().includes(searchQuery.toLowerCase()),
   )
 
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault()
-
-    if (!formData.name || !formData.brand || !formData.description || !formData.price || !formData.category) {
-      toast({ 
-        title: "Error de validación", 
-        description: "Por favor completa todos los campos requeridos",
-        variant: "destructive" 
-      })
-      return
-    }
-
-    if (formData.images.length === 0) {
-      toast({ 
-        title: "Error de validación", 
-        description: "Por favor agrega al menos una imagen",
-        variant: "destructive" 
-      })
-      return
-    }
-
-    const productData = {
-      name: formData.name,
-      brand: formData.brand,
-      description: formData.description,
-      price: Number.parseFloat(formData.price),
-      categoryKey: formData.category,
-      subcategory: formData.subcategory || null,
-      image: formData.images[0] || '', // Usar la primera imagen como image principal
-      images: formData.images, // Guardar todas las imágenes por si las necesitamos después
-      videos: formData.videos,
-      inStock: true,
-      // Campos de AEX - Dimensiones
-      weight: formData.weight ? Number.parseFloat(formData.weight) : 0.5,
-      length: formData.length ? Number.parseFloat(formData.length) : 20,
-      width: formData.width ? Number.parseFloat(formData.width) : 15,
-      height: formData.height ? Number.parseFloat(formData.height) : 10,
-      // Campos de AEX - Tributos
-      valorDeclarado: formData.valorDeclarado ? Number.parseFloat(formData.valorDeclarado) : null,
-      descripcionAduana: formData.descripcionAduana || null,
-      categoriaArancelaria: formData.categoriaArancelaria || null,
-      paisOrigen: formData.paisOrigen || null,
-    }
-
-    try {
-      if (editingProduct) {
-        console.log('🔄 Updating product:', editingProduct.id, productData)
-        const res = await fetch(`/api/admin/products/update-simple`, {
-          method: "PUT",
-          headers: { "Content-Type": "application/json" },
-          credentials: "include",
-          body: JSON.stringify({ ...productData, id: editingProduct.id }),
-        })
-
-        if (!res.ok) {
-          const errorData = await res.json()
-          console.error('❌ API Error:', errorData)
-          throw new Error(errorData.error || 'Error al actualizar producto')
-        }
-
-        const updatedProduct = await res.json()
-        console.log('✅ Product updated:', updatedProduct)
-        setProducts(
-          products.map((p) =>
-            p.id === editingProduct.id
-              ? { ...p, ...productData, category: formData.category }
-              : p,
-          ),
-        )
-        toast({ title: "Producto actualizado", description: "Los cambios se han guardado correctamente" })
-      } else {
-        console.log('🚀 Creating new product:', productData)
-        const res = await fetch("/api/admin/products/create-simple", {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          credentials: "include",
-          body: JSON.stringify(productData),
-        })
-
-        console.log('📡 Response status:', res.status)
-        
-        if (!res.ok) {
-          const errorData = await res.json()
-          console.error('❌ API Error:', errorData)
-          throw new Error(errorData.error || 'Error al crear producto')
-        }
-
-        const createdProduct = await res.json()
-        console.log('✅ Product created:', createdProduct)
-        setProducts((current) => [createdProduct.product, ...current])
-        toast({ title: "Producto creado", description: "El nuevo producto se ha agregado al catálogo" })
-      }
-
-      setIsDialogOpen(false)
-      resetForm()
-    } catch (error) {
-      console.error('Error saving product:', error)
-      toast({ 
-        title: "Error", 
-        description: error instanceof Error ? error.message : 'No se pudo guardar el producto',
-        variant: "destructive" 
-      })
-    }
-  }
-
   const handlePreview = (product: any) => {
     // Abrir producto en nueva pestaña
     window.open(`/products/${product.id}`, '_blank')
   }
 
   const handleEdit = (product: any) => {
-    setEditingProduct(product)
-    setFormData({
-      name: product.name,
-      brand: product.brand,
-      description: product.description,
-      price: product.price.toString(),
-      category: product.category,
-      subcategory: product.subcategory || "",
-      images: product.images || [product.image] || [],
-      videos: product.videos || [],
-      // Campos de AEX - Dimensiones
-      weight: product.weight?.toString() || "",
-      length: product.length?.toString() || "",
-      width: product.width?.toString() || "",
-      height: product.height?.toString() || "",
-      // Campos de AEX - Tributos
-      valorDeclarado: product.valorDeclarado?.toString() || "",
-      descripcionAduana: product.descripcionAduana || "",
-      categoriaArancelaria: product.categoriaArancelaria || "",
-      paisOrigen: product.paisOrigen || "",
-    })
-    setIsDialogOpen(true)
+    router.push(`/panel/products/${product.id}/edit`)
   }
 
   const handleDelete = async (id: string) => {
@@ -335,33 +180,266 @@ export default function AdminProductsPage() {
     }
   }
 
-  const resetForm = () => {
-    setFormData({
-      name: "",
-      brand: "",
-      description: "",
-      price: "",
-      category: "",
-      subcategory: "",
-      images: [],
-      videos: [],
-      // Campos de AEX - Dimensiones
-      weight: "",
-      length: "",
-      width: "",
-      height: "",
-      // Campos de AEX - Tributos
-      valorDeclarado: "",
-      descripcionAduana: "",
-      categoriaArancelaria: "",
-      paisOrigen: "",
-    })
-    setEditingProduct(null)
+  const handleImportHTML = async (event: React.ChangeEvent<HTMLInputElement>) => {
+    const file = event.target.files?.[0]
+    if (!file) return
+
+    await processHTMLFile(file)
+  }
+
+  const processHTMLFile = async (file: File) => {
+    if (!file.name.toLowerCase().endsWith('.html')) {
+      toast({
+        title: "Error",
+        description: "Por favor selecciona un archivo HTML",
+        variant: "destructive"
+      })
+      return
+    }
+
+    setIsImporting(true)
+    
+    try {
+      const text = await file.text()
+      const parser = new DOMParser()
+      const doc = parser.parseFromString(text, 'text/html')
+      
+      // Extraer productos de la tabla HTML
+      const table = doc.querySelector('#customers')
+      if (!table) {
+        throw new Error("No se encontró la tabla de productos en el HTML")
+      }
+
+      const rows = table.querySelectorAll('tbody tr')
+      const extractedProducts: any[] = []
+
+      rows.forEach((row, index) => {
+        const cells = row.querySelectorAll('td')
+        if (cells.length >= 11) {
+          const codigo = cells[0]?.textContent?.trim() || ''
+          const foto = cells[1]?.textContent?.trim() || ''
+          const descripcion = cells[2]?.textContent?.trim() || ''
+          const referencia = cells[3]?.textContent?.trim() || ''
+          const referencia2 = cells[4]?.textContent?.trim() || ''
+          const localizacion = cells[5]?.textContent?.trim() || ''
+          const codigoBarra = cells[6]?.textContent?.trim() || ''
+          const codigoF = cells[7]?.textContent?.trim() || ''
+          const dep1 = cells[9]?.textContent?.trim() || ''
+          const stock = cells[10]?.textContent?.trim() || ''
+          const aRetirar = cells[11]?.textContent?.trim() || ''
+          
+          // Limpiar y convertir el precio (DEP 1)
+          const price = parseFloat(dep1.replace(/[^\d.,]/g, '').replace(',', '.')) || 0
+          
+          // Limpiar y convertir el stock
+          const stockQuantity = parseInt(stock.replace(/[^\d]/g, '')) || 0
+          
+          // Ignorar filas que no son productos (totales, encabezados, etc.)
+          if (codigo && descripcion && 
+              !codigo.includes('----') && 
+              !descripcion.includes('TOTAL') && 
+              !descripcion.includes('GRUPO') &&
+              !descripcion.includes('*** IMPLANTACAO ***') &&
+              codigo.match(/^\d+[\d-]*$/)) {
+            
+            // Extraer marca de la descripción si es posible
+            let brand = 'Importado'
+            const descriptionUpper = descripcion.toUpperCase()
+            if (descriptionUpper.includes('APPLE')) brand = 'Apple'
+            else if (descriptionUpper.includes('SAMSUNG')) brand = 'Samsung'
+            else if (descriptionUpper.includes('XIAOMI')) brand = 'Xiaomi'
+            else if (descriptionUpper.includes('INFINIX')) brand = 'Infinix'
+            else if (descriptionUpper.includes('HONOR')) brand = 'Honor'
+            else if (descriptionUpper.includes('ALEXA') || descriptionUpper.includes('AMAZON')) brand = 'Amazon'
+            
+            // Determinar categoría por palabras clave
+            let categoryKey = 'electronics' // Por defecto
+            if (descriptionUpper.includes('PERFUME') || descriptionUpper.includes('FRAGANCIA')) {
+              categoryKey = 'perfumes'
+            } else if (descriptionUpper.includes('CEL') || descriptionUpper.includes('PHONE') || descriptionUpper.includes('IPHONE') || descriptionUpper.includes('SAMSUNG') || descriptionUpper.includes('XIAOMI')) {
+              categoryKey = 'electronics' // smartphones está dentro de electronics
+            } else if (descriptionUpper.includes('TV') || descriptionUpper.includes('TELEVISOR') || descriptionUpper.includes('REFRIGERADOR') || descriptionUpper.includes('LAVADORA')) {
+              categoryKey = 'appliances'
+            } else if (descriptionUpper.includes('WATCH') || descriptionUpper.includes('RELOJ')) {
+              categoryKey = 'electronics' // smartwatches está dentro de electronics
+            } else if (descriptionUpper.includes('AIRPOD') || descriptionUpper.includes('AURICULAR') || descriptionUpper.includes('HEADPHONE')) {
+              categoryKey = 'electronics' // auriculares está dentro de electronics
+            } else if (descriptionUpper.includes('CAMERA') || descriptionUpper.includes('CÁMARA')) {
+              categoryKey = 'electronics' // cámaras está dentro de electronics
+            } else if (descriptionUpper.includes('TABLET')) {
+              categoryKey = 'electronics' // tablets está dentro de electronics
+            } else if (descriptionUpper.includes('SPEAKER') || descriptionUpper.includes('ALTAVOZ')) {
+              categoryKey = 'electronics' // audio está dentro de electronics
+            } else if (descriptionUpper.includes('CARGADOR') || descriptionUpper.includes('CABLE')) {
+              categoryKey = 'electronics' // accesorios está dentro de electronics
+            }
+            
+            extractedProducts.push({
+              codigo,
+              foto,
+              descripcion,
+              referencia,
+              referencia2,
+              localizacion,
+              codigoBarra,
+              codigoF,
+              activo: cells[8]?.textContent?.trim() || '',
+              stock: stockQuantity,
+              price: price, // Usar el precio de DEP 1
+              categoryKey,
+              brand,
+            })
+          }
+        }
+      })
+
+      if (extractedProducts.length === 0) {
+        throw new Error("No se encontraron productos válidos en el archivo")
+      }
+
+      console.log(`📦 Found ${extractedProducts.length} products to import`)
+      
+      // Mostrar previsualización antes de importar
+      setExtractedProducts(extractedProducts)
+      setShowPreviewDialog(true)
+      setIsImporting(false)
+      return
+
+    } catch (error) {
+      console.error('❌ Import error:', error)
+      toast({
+        title: "Error en la importación",
+        description: error instanceof Error ? error.message : 'No se pudieron importar los productos',
+        variant: "destructive"
+      })
+    } finally {
+      setIsImporting(false)
+    }
+  }
+
+  const handleDragOver = (e: React.DragEvent) => {
+    e.preventDefault()
+    e.stopPropagation()
+  }
+
+  const handleDrop = async (e: React.DragEvent) => {
+    e.preventDefault()
+    e.stopPropagation()
+    
+    const files = Array.from(e.dataTransfer.files)
+    const htmlFile = files.find(file => file.name.toLowerCase().endsWith('.html'))
+    
+    if (htmlFile) {
+      await processHTMLFile(htmlFile)
+    } else {
+      toast({
+        title: "Error",
+        description: "Por favor arrastra un archivo HTML",
+        variant: "destructive"
+      })
+    }
+  }
+
+  const handleConfirmPreviewImport = async () => {
+    setIsImporting(true)
+    
+    try {
+      // Enviar productos al backend
+      const res = await fetch('/api/admin/products/import-bulk', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        credentials: 'include',
+        body: JSON.stringify({ products: extractedProducts })
+      })
+
+      if (!res.ok) {
+        const errorData = await res.json()
+        throw new Error(errorData.error || 'Error al importar productos')
+      }
+
+      const result = await res.json()
+      
+      // Si necesita confirmación por duplicados
+      if (result.needsConfirmation) {
+        setPendingImport({ products: extractedProducts, result })
+        setShowPreviewDialog(false)
+        setShowConfirmDialog(true)
+        setIsImporting(false)
+        return
+      }
+      
+      toast({
+        title: "Importación exitosa",
+        description: `Se importaron ${result.imported} productos correctamente${result.updated > 0 ? ` y se actualizaron ${result.updated}` : ''}`,
+      })
+
+      setShowPreviewDialog(false)
+      setExtractedProducts([])
+      // Recargar la lista de productos
+      window.location.reload()
+
+    } catch (error) {
+      console.error('❌ Import error:', error)
+      toast({
+        title: "Error en la importación",
+        description: error instanceof Error ? error.message : 'No se pudieron importar los productos',
+        variant: "destructive"
+      })
+    } finally {
+      setIsImporting(false)
+    }
+  }
+
+  const handleConfirmImport = async () => {
+    if (!pendingImport) return
+
+    setIsImporting(true)
+    try {
+      const res = await fetch('/api/admin/products/import-bulk', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        credentials: 'include',
+        body: JSON.stringify({ 
+          products: pendingImport.products,
+          confirmUpdate: true // Flag para indicar que se confirmó la actualización
+        })
+      })
+
+      if (!res.ok) {
+        const errorData = await res.json()
+        throw new Error(errorData.error || 'Error al importar productos')
+      }
+
+      const result = await res.json()
+      
+      toast({
+        title: "Importación exitosa",
+        description: `Se importaron ${result.imported} productos y se actualizaron ${result.updated} productos existentes`,
+      })
+
+      setShowConfirmDialog(false)
+      setPendingImport(null)
+      window.location.reload()
+
+    } catch (error) {
+      console.error('❌ Confirm import error:', error)
+      toast({
+        title: "Error en la importación",
+        description: error instanceof Error ? error.message : 'No se pudieron importar los productos',
+        variant: "destructive"
+      })
+    } finally {
+      setIsImporting(false)
+    }
   }
 
   return (
     <PanelLayout>
-      <div className="p-8">
+      <div 
+        className="p-8"
+        onDragOver={handleDragOver}
+        onDrop={handleDrop}
+      >
         <div className="flex justify-between items-center mb-6">
           <div>
             <h1 className="text-3xl font-bold">Productos</h1>
@@ -372,265 +450,43 @@ export default function AdminProductsPage() {
               <Building className="mr-2 h-4 w-4" />
               Gestionar Marcas
             </Button>
-            <Dialog
-              open={isDialogOpen}
-              onOpenChange={(open) => {
-                setIsDialogOpen(open)
-                if (!open) resetForm()
-              }}
-            >
-              <DialogTrigger asChild>
-                <Button>
-                  <Plus className="mr-2 h-4 w-4" />
-                  Nuevo Producto
-                </Button>
-              </DialogTrigger>
-            <DialogContent className="max-w-5xl max-h-[95vh] overflow-y-auto">
-              <DialogHeader className="pb-6">
-                <DialogTitle className="text-2xl font-bold flex items-center gap-3">
-                  {editingProduct ? <><Pencil className="h-6 w-6" /> Editar Producto</> : <><Plus className="h-6 w-6" /> Nuevo Producto</>}
-                </DialogTitle>
-                <DialogDescription className="text-base">
-                  {editingProduct ? "Actualiza la información del producto existente" : "Agrega un nuevo producto al catálogo con múltiples imágenes y videos"}
-                </DialogDescription>
-              </DialogHeader>
-              <form onSubmit={handleSubmit}>
-                <div className="grid gap-6 py-6">
-                  <div className="grid gap-3">
-                    <Label htmlFor="name" className="text-base font-medium">Nombre del Producto</Label>
-                    <Input
-                      id="name"
-                      value={formData.name}
-                      onChange={(e) => setFormData({ ...formData, name: e.target.value })}
-                      placeholder="Ej: iPhone 15 Pro, MacBook Air M2"
-                      required
-                      className="h-11"
-                    />
-                  </div>
-                  <div className="grid gap-2">
-                    <Label htmlFor="brand">Marca</Label>
-                    <Select
-                      value={formData.brand}
-                      onValueChange={(value) => setFormData({ ...formData, brand: value })}
-                    >
-                      <SelectTrigger>
-                        <SelectValue placeholder="Seleccionar marca" />
-                      </SelectTrigger>
-                      <SelectContent>
-                        {brands.map((brand) => (
-                          <SelectItem key={brand.id} value={brand.name}>
-                            {brand.name}
-                          </SelectItem>
-                        ))}
-                      </SelectContent>
-                    </Select>
-                  </div>
-                  <div className="grid gap-2">
-                    <Label htmlFor="description">Descripción</Label>
-                    <Textarea
-                      id="description"
-                      value={formData.description}
-                      onChange={(e) => setFormData({ ...formData, description: e.target.value })}
-                      required
-                      rows={3}
-                    />
-                  </div>
-                  <div className="grid grid-cols-2 gap-4">
-                    <div className="grid gap-2">
-                      <Label htmlFor="price">Precio</Label>
-                      <Input
-                        id="price"
-                        type="number"
-                        step="0.01"
-                        value={formData.price}
-                        onChange={(e) => setFormData({ ...formData, price: e.target.value })}
-                        required
-                      />
-                    </div>
-                    <div className="grid gap-2">
-                      <Label htmlFor="category">Categoría</Label>
-                      <Select
-                        value={formData.category}
-                        onValueChange={(value) => setFormData({ ...formData, category: value, subcategory: "" })}
-                      >
-                        <SelectTrigger>
-                          <SelectValue placeholder="Seleccionar" />
-                        </SelectTrigger>
-                        <SelectContent>
-                          {categories.map((cat) => (
-                            <SelectItem key={cat.key} value={cat.key}>
-                              {cat.name}
-                            </SelectItem>
-                          ))}
-                        </SelectContent>
-                      </Select>
-                    </div>
-                    {formData.category && (
-                      <div className="grid gap-2">
-                        <Label htmlFor="subcategory">Subcategoría</Label>
-                        <Select
-                          value={formData.subcategory}
-                          onValueChange={(value) => setFormData({ ...formData, subcategory: value })}
-                        >
-                          <SelectTrigger>
-                            <SelectValue placeholder="Seleccionar subcategoría" />
-                          </SelectTrigger>
-                          <SelectContent>
-                            {categories
-                              .find((cat) => cat.key === formData.category)
-                              ?.subcategories.map((sub: any) => (
-                                <SelectItem key={sub.id} value={sub.slug}>
-                                  {sub.name}
-                                </SelectItem>
-                              ))}
-                          </SelectContent>
-                        </Select>
-                      </div>
-                    )}
-                  </div>
-                  
-                  {/* Campos de AEX - Dimensiones */}
-                  <div className="border-t pt-6">
-                    <h3 className="text-lg font-semibold mb-4 flex items-center gap-2">
-                      <Package className="h-5 w-5" />
-                      Dimensiones para Envío (AEX)
-                    </h3>
-                    <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-                      <div className="grid gap-2">
-                        <Label htmlFor="weight">Peso (kg)</Label>
-                        <Input
-                          id="weight"
-                          type="number"
-                          step="0.01"
-                          value={formData.weight}
-                          onChange={(e) => setFormData({ ...formData, weight: e.target.value })}
-                          placeholder="0.5"
-                        />
-                      </div>
-                      <div className="grid gap-2">
-                        <Label htmlFor="length">Largo (cm)</Label>
-                        <Input
-                          id="length"
-                          type="number"
-                          step="0.1"
-                          value={formData.length}
-                          onChange={(e) => setFormData({ ...formData, length: e.target.value })}
-                          placeholder="20"
-                        />
-                      </div>
-                      <div className="grid gap-2">
-                        <Label htmlFor="width">Ancho (cm)</Label>
-                        <Input
-                          id="width"
-                          type="number"
-                          step="0.1"
-                          value={formData.width}
-                          onChange={(e) => setFormData({ ...formData, width: e.target.value })}
-                          placeholder="15"
-                        />
-                      </div>
-                      <div className="grid gap-2">
-                        <Label htmlFor="height">Alto (cm)</Label>
-                        <Input
-                          id="height"
-                          type="number"
-                          step="0.1"
-                          value={formData.height}
-                          onChange={(e) => setFormData({ ...formData, height: e.target.value })}
-                          placeholder="10"
-                        />
-                      </div>
-                    </div>
-                  </div>
-
-                  {/* Campos de AEX - Tributos */}
-                  <div className="border-t pt-6">
-                    <h3 className="text-lg font-semibold mb-4 flex items-center gap-2">
-                      <FileText className="h-5 w-5" />
-                      Tributos y Aduanas (AEX)
-                    </h3>
-                    <div className="grid gap-4">
-                      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                        <div className="grid gap-2">
-                          <Label htmlFor="valorDeclarado">Valor Declarado (USD)</Label>
-                          <Input
-                            id="valorDeclarado"
-                            type="number"
-                            step="0.01"
-                            value={formData.valorDeclarado}
-                            onChange={(e) => setFormData({ ...formData, valorDeclarado: e.target.value })}
-                            placeholder="189.00"
-                          />
-                        </div>
-                        <div className="grid gap-2">
-                          <Label htmlFor="paisOrigen">País de Origen</Label>
-                          <Select
-                            value={formData.paisOrigen}
-                            onValueChange={(value) => setFormData({ ...formData, paisOrigen: value })}
-                          >
-                            <SelectTrigger>
-                              <SelectValue placeholder="Seleccionar país" />
-                            </SelectTrigger>
-                            <SelectContent>
-                              <SelectItem value="China">China</SelectItem>
-                              <SelectItem value="Estados Unidos">Estados Unidos</SelectItem>
-                              <SelectItem value="Japón">Japón</SelectItem>
-                              <SelectItem value="Corea del Sur">Corea del Sur</SelectItem>
-                              <SelectItem value="Alemania">Alemania</SelectItem>
-                              <SelectItem value="Brasil">Brasil</SelectItem>
-                              <SelectItem value="Argentina">Argentina</SelectItem>
-                              <SelectItem value="Importado">Importado</SelectItem>
-                            </SelectContent>
-                          </Select>
-                        </div>
-                      </div>
-                      <div className="grid gap-2">
-                        <Label htmlFor="categoriaArancelaria">Categoría Arancelaria (HS Code)</Label>
-                        <Input
-                          id="categoriaArancelaria"
-                          value={formData.categoriaArancelaria}
-                          onChange={(e) => setFormData({ ...formData, categoriaArancelaria: e.target.value })}
-                          placeholder="3303.00.00"
-                        />
-                        <p className="text-xs text-muted-foreground">
-                          Ej: 3303.00.00 (Perfumería), 8517.12.00 (Smartphones), 8471.30.00 (Laptops)
-                        </p>
-                      </div>
-                      <div className="grid gap-2">
-                        <Label htmlFor="descripcionAduana">Descripción para Aduana</Label>
-                        <Textarea
-                          id="descripcionAduana"
-                          value={formData.descripcionAduana}
-                          onChange={(e) => setFormData({ ...formData, descripcionAduana: e.target.value })}
-                          placeholder="Descripción detallada para documentos de aduana"
-                          rows={2}
-                        />
-                      </div>
-                    </div>
-                  </div>
-
-                  <div className="space-y-4">
-                    <MediaGallery
-                      images={formData.images}
-                      videos={formData.videos}
-                      onImagesChange={(images) => setFormData({ ...formData, images })}
-                      onVideosChange={(videos) => setFormData({ ...formData, videos })}
-                    />
-                  </div>
-                </div>
-                <DialogFooter className="flex justify-end gap-3 pt-6 border-t">
-                  <Button type="button" variant="outline" onClick={() => setIsDialogOpen(false)} className="h-11 px-6">
-                    Cancelar
-                  </Button>
-                  <Button type="submit" className="h-11 px-6">
-                    {editingProduct ? "Actualizar Producto" : "Crear Producto"}
-                  </Button>
-                </DialogFooter>
-              </form>
-            </DialogContent>
-          </Dialog>
+            <Button variant="outline" asChild>
+              <label className="cursor-pointer">
+                <Upload className="mr-2 h-4 w-4" />
+                {isImporting ? 'Importando...' : 'Importar HTML'}
+                <input
+                  type="file"
+                  accept=".html"
+                  onChange={handleImportHTML}
+                  disabled={isImporting}
+                  className="hidden"
+                />
+              </label>
+            </Button>
+            <Link href="/panel/products/new">
+              <Button>
+                <Plus className="mr-2 h-4 w-4" />
+                Nuevo Producto
+              </Button>
+            </Link>
+          </div>
         </div>
-      </div>
+
+        {/* Zona de drag and drop */}
+        <div className="mb-6 border-2 border-dashed border-muted-foreground/25 rounded-lg p-8 text-center bg-muted/5 cursor-pointer hover:bg-muted/10 transition-colors">
+          <input
+            type="file"
+            accept=".html"
+            onChange={handleImportHTML}
+            disabled={isImporting}
+            className="hidden"
+            id="html-file-input"
+          />
+          <label htmlFor="html-file-input" className="cursor-pointer">
+            <Upload className="mx-auto h-12 w-12 text-muted-foreground/50 mb-4" />
+            <h3 className="text-lg font-semibold mb-2">Importar productos desde ERP</h3>
+          </label>
+        </div>
 
       <div className="mb-4">
         <div className="relative max-w-md">
@@ -691,6 +547,124 @@ export default function AdminProductsPage() {
         open={isBrandsModalOpen} 
         onOpenChange={setIsBrandsModalOpen} 
       />
+
+      {/* Diálogo de previsualización de productos */}
+      {showPreviewDialog && extractedProducts.length > 0 && (
+        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
+          <div className="bg-white rounded-lg p-6 max-w-4xl w-full mx-4 max-h-[80vh] overflow-y-auto">
+            <h2 className="text-xl font-bold mb-4">Previsualización de Productos ({extractedProducts.length})</h2>
+            <p className="text-muted-foreground mb-4">
+              Revisa los productos que se importarán desde el archivo HTML del ERP
+            </p>
+            
+            <div className="mb-4 max-h-96 overflow-y-auto">
+              <table className="w-full text-sm">
+                <thead className="sticky top-0 bg-white border-b">
+                  <tr>
+                    <th className="text-left p-2">Código</th>
+                    <th className="text-left p-2">Descripción</th>
+                    <th className="text-left p-2">Precio</th>
+                    <th className="text-left p-2">Stock</th>
+                    <th className="text-left p-2">Marca</th>
+                    <th className="text-left p-2">Categoría</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {extractedProducts.map((product, index) => (
+                    <tr key={index} className="border-b hover:bg-gray-50">
+                      <td className="p-2 font-mono text-xs">{product.codigo}</td>
+                      <td className="p-2 max-w-xs truncate" title={product.descripcion}>
+                        {product.descripcion}
+                      </td>
+                      <td className="p-2 text-right font-mono">
+                        ${product.price?.toFixed(2) || '0.00'}
+                      </td>
+                      <td className="p-2 text-center">{product.stock}</td>
+                      <td className="p-2">{product.brand}</td>
+                      <td className="p-2">{product.categoryKey}</td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+
+            <div className="flex justify-end gap-3">
+              <Button 
+                variant="outline" 
+                onClick={() => {
+                  setShowPreviewDialog(false)
+                  setExtractedProducts([])
+                }}
+                disabled={isImporting}
+              >
+                Cancelar
+              </Button>
+              <Button 
+                onClick={handleConfirmPreviewImport}
+                disabled={isImporting}
+              >
+                {isImporting ? 'Importando...' : `Importar ${extractedProducts.length} productos`}
+              </Button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Diálogo de confirmación de duplicados */}
+      {showConfirmDialog && pendingImport && (
+        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
+          <div className="bg-white rounded-lg p-6 max-w-2xl w-full mx-4 max-h-[80vh] overflow-y-auto">
+            <h2 className="text-xl font-bold mb-4">Confirmar Actualización de Productos</h2>
+            <p className="text-muted-foreground mb-4">
+              Se encontraron {pendingImport.result.duplicates.length} productos con códigos duplicados. 
+              ¿Desea actualizar los productos existentes con los nuevos datos?
+            </p>
+            
+            <div className="space-y-3 mb-6">
+              {pendingImport.result.duplicates.map((dup: any, index: number) => (
+                <div key={index} className="border rounded-lg p-3">
+                  <div className="flex justify-between items-start">
+                    <div className="flex-1">
+                      <p className="font-medium">Código: {dup.codigo}</p>
+                      <div className="grid grid-cols-2 gap-4 mt-2 text-sm">
+                        <div>
+                          <p className="text-muted-foreground">Actual:</p>
+                          <p className="font-medium">{dup.existing.name}</p>
+                          <p>Stock: {dup.existing.stock} | Marca: {dup.existing.brand}</p>
+                        </div>
+                        <div>
+                          <p className="text-muted-foreground">Nuevo:</p>
+                          <p className="font-medium">{dup.new.name}</p>
+                          <p>Stock: {dup.new.stock} | Marca: {dup.new.brand}</p>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              ))}
+            </div>
+
+            <div className="flex justify-end gap-3">
+              <Button 
+                variant="outline" 
+                onClick={() => {
+                  setShowConfirmDialog(false)
+                  setPendingImport(null)
+                }}
+                disabled={isImporting}
+              >
+                Cancelar
+              </Button>
+              <Button 
+                onClick={handleConfirmImport}
+                disabled={isImporting}
+              >
+                {isImporting ? 'Actualizando...' : 'Confirmar Actualización'}
+              </Button>
+            </div>
+          </div>
+        </div>
+      )}
     </PanelLayout>
   )
 }

@@ -26,7 +26,7 @@ export default function HomepageProducts({
       try {
         const params = new URLSearchParams({
           limit: limit.toString(),
-          ...(featured && { sort: "featured" }),
+          sort: featured ? "featured" : "latest",
           ...(category && category !== "all" && { category }),
         })
         

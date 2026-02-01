@@ -92,7 +92,7 @@ export function AdminSidebar() {
   }
 
   return (
-    <aside className="w-64 border-r bg-gradient-to-b from-background to-muted/20 flex flex-col h-screen sticky top-0 shadow-sm">
+    <aside className="w-64 border-r bg-gradient-to-b from-background to-muted/20 flex flex-col h-screen fixed top-0 left-0 shadow-sm z-50">
       <div className="p-6 border-b bg-gradient-to-r from-primary/10 to-primary/5">
         <BrandingLogo href="/panel" variant="sidebar" />
       </div>

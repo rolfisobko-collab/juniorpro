@@ -14,10 +14,12 @@ datasource db {
 
 model Product {
   id          String   @id
+  codigo      String?  // Código del ERP
   name        String
   categoryKey String
   price       Float
   image       String
+  images      String[] @default([])
   description String
   brand       String
   rating      Float
@@ -25,6 +27,15 @@ model Product {
   inStock     Boolean
   stockQuantity Int     @default(0)
   featured    Boolean  @default(false)
+  
+  // Campos adicionales del ERP
+  referencia  String?  // Referencia 1
+  referencia2 String? // Referencia 2
+  localizacion String? // Localización
+  codigoBarra String?  // Código de barras
+  codigoF     String?  // Código F
+  activo      String?  // Activo (S/N)
+  dep1        String?  // Depósito 1
   
   // Campos para AEX - Envíos
   weight      Float    @default(0.5)  // Peso en kg

@@ -161,6 +161,27 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       
       setUser(user)
       localStorage.setItem(DEMO_USER_STORAGE_KEY, JSON.stringify(user))
+      
+      // Crear cookies para el backend
+      const response = await fetch('/api/auth/login', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          email: user.email,
+          name: user.name,
+          avatar: user.avatar,
+          provider: 'google',
+          providerId: firebaseUser.uid
+        }),
+      })
+
+      if (response.ok) {
+        const data = await response.json()
+        // Las cookies se establecen automáticamente desde el backend
+        console.log('Login successful, cookies set')
+      }
     } catch (error) {
       console.error("Google login error:", error)
       throw error

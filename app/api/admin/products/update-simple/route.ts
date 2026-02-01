@@ -20,6 +20,7 @@ export async function PUT(req: Request) {
         price = ${body.price},
         "categoryKey" = ${body.categoryKey},
         image = ${body.image},
+        images = ${body.images || []},
         "inStock" = ${body.inStock ?? true},
         weight = ${body.weight ?? 0.5},
         length = ${body.length ?? 20},
@@ -35,7 +36,7 @@ export async function PUT(req: Request) {
 
     // Obtener el producto actualizado
     const updatedProduct = await prisma.$queryRaw`
-      SELECT id, name, brand, price, "categoryKey", image, description, rating, reviews, "inStock"
+      SELECT id, name, brand, price, "categoryKey", image, images, description, rating, reviews, "inStock"
       FROM "Product" 
       WHERE id = ${id}
     ` as any[]
