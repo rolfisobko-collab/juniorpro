@@ -161,6 +161,7 @@ export default function CheckoutPage() {
     }
 
     try {
+      // Build fix: Corregido tipo AEXShippingRequest
       const shippingRequest = {
         products: items.map(item => ({
           id: item.product.id,
