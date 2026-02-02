@@ -1,7 +1,7 @@
 "use client"
 
 import Link from "next/link"
-import { Facebook, Instagram, Twitter, Linkedin, Youtube, Mail, Phone, MapPin } from "lucide-react"
+import { Facebook, Instagram, Twitter, Linkedin, Youtube, Mail, Phone, MapPin, MessageCircle, Smartphone, MessageSquare } from "lucide-react"
 import { useEffect, useState } from "react"
 import { getContactConfig, type ContactConfig } from "@/lib/contact-data"
 import { BrandingLogo } from "@/components/branding-logo"
@@ -51,40 +51,137 @@ export default function Footer() {
             <BrandingLogo href="/" variant="footer" />
             <p className="text-sm text-muted-foreground text-pretty">{t('Your premium destination for cutting-edge technology, smart appliances and exclusive fragrances from the most prestigious brands in the world')}</p>
             {/* Social Media */}
-            <div className="flex gap-3 pt-2">
+            <div className="flex flex-col gap-3 pt-2">
               {contact.socialLinks
-                .filter((social) => social.enabled)
+                .filter((social) => social.enabled && social.platform.toLowerCase() === 'instagram')
                 .map((social) => {
                   const Icon = getSocialIcon(social.platform)
-                  const getSocialClasses = (platform: string) => {
-                    switch (platform.toLowerCase()) {
-                      case "facebook":
-                        return "bg-gradient-to-br from-blue-500 to-blue-600 hover:from-blue-600 hover:to-blue-700 text-white"
-                      case "instagram":
-                        return "bg-gradient-to-br from-purple-500 via-pink-500 to-orange-500 hover:from-purple-600 hover:via-pink-600 hover:to-orange-600 text-white"
-                      case "twitter":
-                        return "bg-gradient-to-br from-sky-400 to-sky-500 hover:from-sky-500 hover:to-sky-600 text-white"
-                      case "linkedin":
-                        return "bg-gradient-to-br from-blue-600 to-blue-700 hover:from-blue-700 hover:to-blue-800 text-white"
-                      case "youtube":
-                        return "bg-gradient-to-br from-red-500 to-red-600 hover:from-red-600 hover:to-red-700 text-white"
-                      default:
-                        return "bg-gradient-to-br from-gray-500 to-gray-600 hover:from-gray-600 hover:to-gray-700 text-white"
-                    }
-                  }
                   return (
                     <Link
                       key={social.platform}
                       href={social.url}
                       target="_blank"
                       rel="noopener noreferrer"
-                      className={`h-10 w-10 rounded-full flex items-center justify-center transition-all duration-300 shadow-lg hover:shadow-xl hover:scale-110 ${getSocialClasses(social.platform)}`}
-                      aria-label={social.platform}
+                      className="group relative overflow-hidden rounded-xl bg-gradient-to-r from-purple-600 via-pink-600 to-orange-600 p-0.5 transition-all duration-300 hover:scale-105 hover:shadow-xl"
                     >
-                      <Icon className="h-5 w-5" />
+                      <div className="relative flex items-center gap-3 rounded-xl bg-white px-4 py-3 transition-all duration-300 group-hover:bg-gradient-to-r group-hover:from-purple-50 group-hover:to-pink-50">
+                        <div className="relative">
+                          <div className="absolute inset-0 rounded-full bg-gradient-to-br from-purple-600 via-pink-600 to-orange-600 opacity-0 transition-opacity duration-300 group-hover:opacity-100"></div>
+                          <div className="relative rounded-full bg-gradient-to-br from-purple-600 via-pink-600 to-orange-600 p-2 transition-all duration-300 group-hover:scale-110">
+                            <Icon className="h-5 w-5 text-white" />
+                          </div>
+                        </div>
+                        <div className="flex-1">
+                          <p className="text-sm font-bold text-gray-900 transition-colors duration-300 group-hover:text-purple-900">Instagram</p>
+                          <p className="text-xs text-gray-600 transition-colors duration-300 group-hover:text-purple-700">@techzone_store.cde</p>
+                        </div>
+                        <div className="text-purple-600 opacity-0 transition-all duration-300 group-hover:opacity-100">
+                          <svg className="h-4 w-4" fill="currentColor" viewBox="0 0 20 20">
+                            <path fillRule="evenodd" d="M10.293 3.293a1 1 0 011.414 0l6 6a1 1 0 010 1.414l-6 6a1 1 0 01-1.414-1.414L14.586 11H3a1 1 0 110-2h11.586l-4.293-4.293a1 1 0 010-1.414z" clipRule="evenodd" />
+                          </svg>
+                        </div>
+                      </div>
                     </Link>
                   )
                 })}
+              
+              {/* WhatsApp Contact Buttons */}
+              <a
+                href="https://wa.me/595982245365"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="group relative overflow-hidden rounded-xl bg-gradient-to-r from-green-500 via-green-600 to-emerald-600 p-0.5 transition-all duration-300 hover:scale-105 hover:shadow-xl"
+              >
+                <div className="relative flex items-center gap-3 rounded-xl bg-white px-4 py-3 transition-all duration-300 group-hover:bg-gradient-to-r group-hover:from-green-50 group-hover:to-emerald-50">
+                  <div className="relative">
+                    <div className="absolute inset-0 rounded-full bg-gradient-to-br from-green-500 via-green-600 to-emerald-600 opacity-0 transition-opacity duration-300 group-hover:opacity-100"></div>
+                    <div className="relative rounded-full bg-gradient-to-br from-green-500 via-green-600 to-emerald-600 p-2 transition-all duration-300 group-hover:scale-110">
+                      <MessageSquare className="h-5 w-5 text-white" />
+                    </div>
+                  </div>
+                  <div className="flex-1">
+                    <p className="text-sm font-bold text-gray-900 transition-colors duration-300 group-hover:text-green-900">+595 982 245 365</p>
+                    <p className="text-xs text-gray-600 transition-colors duration-300 group-hover:text-green-700">Diego Villalba - Vendedor</p>
+                  </div>
+                  <div className="text-green-600 opacity-0 transition-all duration-300 group-hover:opacity-100">
+                    <svg className="h-4 w-4" fill="currentColor" viewBox="0 0 20 20">
+                      <path fillRule="evenodd" d="M10.293 3.293a1 1 0 011.414 0l6 6a1 1 0 010 1.414l-6 6a1 1 0 01-1.414-1.414L14.586 11H3a1 1 0 110-2h11.586l-4.293-4.293a1 1 0 010-1.414z" clipRule="evenodd" />
+                    </svg>
+                  </div>
+                </div>
+              </a>
+              <a
+                href="https://wa.me/595985654487"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="group relative overflow-hidden rounded-xl bg-gradient-to-r from-green-500 via-green-600 to-emerald-600 p-0.5 transition-all duration-300 hover:scale-105 hover:shadow-xl"
+              >
+                <div className="relative flex items-center gap-3 rounded-xl bg-white px-4 py-3 transition-all duration-300 group-hover:bg-gradient-to-r group-hover:from-green-50 group-hover:to-emerald-50">
+                  <div className="relative">
+                    <div className="absolute inset-0 rounded-full bg-gradient-to-br from-green-500 via-green-600 to-emerald-600 opacity-0 transition-opacity duration-300 group-hover:opacity-100"></div>
+                    <div className="relative rounded-full bg-gradient-to-br from-green-500 via-green-600 to-emerald-600 p-2 transition-all duration-300 group-hover:scale-110">
+                      <MessageSquare className="h-5 w-5 text-white" />
+                    </div>
+                  </div>
+                  <div className="flex-1">
+                    <p className="text-sm font-bold text-gray-900 transition-colors duration-300 group-hover:text-green-900">+595 985 654 487</p>
+                    <p className="text-xs text-gray-600 transition-colors duration-300 group-hover:text-green-700">Johny Ortigoza - Vendedor</p>
+                  </div>
+                  <div className="text-green-600 opacity-0 transition-all duration-300 group-hover:opacity-100">
+                    <svg className="h-4 w-4" fill="currentColor" viewBox="0 0 20 20">
+                      <path fillRule="evenodd" d="M10.293 3.293a1 1 0 011.414 0l6 6a1 1 0 010 1.414l-6 6a1 1 0 01-1.414-1.414L14.586 11H3a1 1 0 110-2h11.586l-4.293-4.293a1 1 0 010-1.414z" clipRule="evenodd" />
+                    </svg>
+                  </div>
+                </div>
+              </a>
+              <a
+                href="https://wa.me/595982639445"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="group relative overflow-hidden rounded-xl bg-gradient-to-r from-green-500 via-green-600 to-emerald-600 p-0.5 transition-all duration-300 hover:scale-105 hover:shadow-xl"
+              >
+                <div className="relative flex items-center gap-3 rounded-xl bg-white px-4 py-3 transition-all duration-300 group-hover:bg-gradient-to-r group-hover:from-green-50 group-hover:to-emerald-50">
+                  <div className="relative">
+                    <div className="absolute inset-0 rounded-full bg-gradient-to-br from-green-500 via-green-600 to-emerald-600 opacity-0 transition-opacity duration-300 group-hover:opacity-100"></div>
+                    <div className="relative rounded-full bg-gradient-to-br from-green-500 via-green-600 to-emerald-600 p-2 transition-all duration-300 group-hover:scale-110">
+                      <MessageSquare className="h-5 w-5 text-white" />
+                    </div>
+                  </div>
+                  <div className="flex-1">
+                    <p className="text-sm font-bold text-gray-900 transition-colors duration-300 group-hover:text-green-900">+595 982 639 445</p>
+                    <p className="text-xs text-gray-600 transition-colors duration-300 group-hover:text-green-700">Diego Maidana - Vendedor</p>
+                  </div>
+                  <div className="text-green-600 opacity-0 transition-all duration-300 group-hover:opacity-100">
+                    <svg className="h-4 w-4" fill="currentColor" viewBox="0 0 20 20">
+                      <path fillRule="evenodd" d="M10.293 3.293a1 1 0 011.414 0l6 6a1 1 0 010 1.414l-6 6a1 1 0 01-1.414-1.414L14.586 11H3a1 1 0 110-2h11.586l-4.293-4.293a1 1 0 010-1.414z" clipRule="evenodd" />
+                    </svg>
+                  </div>
+                </div>
+              </a>
+              <a
+                href="https://wa.me/595986664625"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="group relative overflow-hidden rounded-xl bg-gradient-to-r from-green-500 via-green-600 to-emerald-600 p-0.5 transition-all duration-300 hover:scale-105 hover:shadow-xl"
+              >
+                <div className="relative flex items-center gap-3 rounded-xl bg-white px-4 py-3 transition-all duration-300 group-hover:bg-gradient-to-r group-hover:from-green-50 group-hover:to-emerald-50">
+                  <div className="relative">
+                    <div className="absolute inset-0 rounded-full bg-gradient-to-br from-green-500 via-green-600 to-emerald-600 opacity-0 transition-opacity duration-300 group-hover:opacity-100"></div>
+                    <div className="relative rounded-full bg-gradient-to-br from-green-500 via-green-600 to-emerald-600 p-2 transition-all duration-300 group-hover:scale-110">
+                      <MessageSquare className="h-5 w-5 text-white" />
+                    </div>
+                  </div>
+                  <div className="flex-1">
+                    <p className="text-sm font-bold text-gray-900 transition-colors duration-300 group-hover:text-green-900">+595 986 664 625</p>
+                    <p className="text-xs text-gray-600 transition-colors duration-300 group-hover:text-green-700">Karen Mendoza - Vendedora</p>
+                  </div>
+                  <div className="text-green-600 opacity-0 transition-all duration-300 group-hover:opacity-100">
+                    <svg className="h-4 w-4" fill="currentColor" viewBox="0 0 20 20">
+                      <path fillRule="evenodd" d="M10.293 3.293a1 1 0 011.414 0l6 6a1 1 0 010 1.414l-6 6a1 1 0 01-1.414-1.414L14.586 11H3a1 1 0 110-2h11.586l-4.293-4.293a1 1 0 010-1.414z" clipRule="evenodd" />
+                    </svg>
+                  </div>
+                </div>
+              </a>
             </div>
           </div>
 
