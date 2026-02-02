@@ -1,9 +1,14 @@
 "use client"
 
+import { useState } from "react"
 import Link from "next/link"
 import { usePathname } from "next/navigation"
+import { useAdmin } from "@/lib/admin-context"
+import { useOrderStats } from "@/hooks/use-order-stats"
 import { Button } from "@/components/ui/button"
 import { cn } from "@/lib/utils"
+import type { Permission } from "@/lib/admin-users-data"
+import { BrandingLogo } from "./branding-logo"
 import {
   LayoutDashboard,
   Package,
@@ -24,10 +29,6 @@ import {
   TrendingUp,
   Truck,
 } from "lucide-react"
-import { useAdmin } from "@/lib/admin-context"
-import type { Permission } from "@/lib/admin-users-data"
-import { useState } from "react"
-import { BrandingLogo } from "./branding-logo"
 
 const menuGroups = [
   {
@@ -85,6 +86,7 @@ const menuGroups = [
 export function AdminSidebar() {
   const pathname = usePathname()
   const { admin, logout, hasPermission } = useAdmin()
+  const { stats } = useOrderStats()
   const [expandedGroups, setExpandedGroups] = useState<string[]>([])
 
   const toggleGroup = (label: string) => {
@@ -111,7 +113,14 @@ export function AdminSidebar() {
                 onClick={() => toggleGroup(group.label)}
                 className="w-full flex items-center justify-between px-3 py-2.5 text-xs font-semibold text-muted-foreground uppercase tracking-wider hover:text-foreground hover:bg-muted/50 rounded-lg transition-all duration-200 group"
               >
-                <span className="group-hover:translate-x-1 transition-transform duration-200">{group.label}</span>
+                <div className="flex items-center gap-2">
+                  <span className="group-hover:translate-x-1 transition-transform duration-200">{group.label}</span>
+                  {group.label === "Ventas" && stats.pending > 0 && (
+                    <span className="bg-red-500 text-white text-xs px-1.5 py-0.5 rounded-full font-bold animate-pulse">
+                      {stats.pending}
+                    </span>
+                  )}
+                </div>
                 <div className="h-5 w-5 rounded-md bg-muted flex items-center justify-center group-hover:bg-primary/10 transition-colors">
                   {isExpanded ? (
                     <ChevronDown className="h-3 w-3 group-hover:text-primary transition-colors" />

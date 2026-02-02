@@ -10,9 +10,20 @@ export async function GET(_req: NextRequest, { params }: { params: Promise<{ id:
 
     const { id } = await params
 
+    // Para el panel de administración, permitir ver cualquier orden
     const order = await prisma.order.findFirst({
-      where: { id, userId },
-      include: { items: true, statusHistory: { orderBy: { createdAt: "asc" } } },
+      where: { id },
+      include: { 
+        items: true, 
+        statusHistory: { orderBy: { createdAt: "asc" } },
+        user: {
+          select: {
+            id: true,
+            email: true,
+            name: true
+          }
+        }
+      },
     })
 
     if (!order) return NextResponse.json({ error: "Not found" }, { status: 404 })

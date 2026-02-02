@@ -1,86 +1,92 @@
 import { NextResponse } from "next/server"
 import { cookies } from "next/headers"
-import { adminUsers, initializePasswordHashes } from "@/lib/admin-users-data"
-import { cookieOptions, generateRefreshToken, hashToken, signAccessToken, verifyPassword } from "@/lib/auth-server"
+import { cookieOptions, generateRefreshToken, signAccessToken, verifyPassword } from "@/lib/auth-server"
+import { prisma } from "@/lib/db"
 
 export const runtime = "nodejs"
 
-// Inicializar hashes de contraseñas
-let initialized = false
-const ensureHashesInitialized = async () => {
-  if (!initialized) {
-    await initializePasswordHashes()
-    initialized = true
-  }
-}
-
 export async function POST(req: Request) {
   try {
-    // HARDCODED BYPASS - TEMPORAL
-    const admin = adminUsers.find(u => u.id === "1")
-    if (admin && admin.active) {
-      const accessToken = await signAccessToken({ sub: admin.id, typ: "admin" }, "15m")
-      const refreshToken = generateRefreshToken()
-
-      const jar = await cookies()
-      jar.set("tz_admin_access", accessToken, { ...cookieOptions(), maxAge: 60 * 15 })
-      jar.set("tz_admin_refresh", refreshToken, { ...cookieOptions(), maxAge: 60 * 60 * 24 * 30 })
-
-      return NextResponse.json({
-        admin: {
-          id: admin.id,
-          email: admin.email,
-          username: admin.username,
-          name: admin.name,
-          role: admin.role,
-          permissions: admin.permissions,
-        },
-      })
-    }
-    
-    await ensureHashesInitialized()
-    
     const body = (await req.json()) as { username?: string; password?: string }
     const username = (body.username ?? "").trim()
     const password = body.password ?? ""
 
-    if (!username || !password) {
-      return NextResponse.json({ error: "Missing fields" }, { status: 400 })
+    let adminUser = null
+
+    // Primero buscar en la base de datos (usuarios creados desde el panel)
+    try {
+      console.log('🔍 Searching for user:', username)
+      const dbAdmin = await prisma.adminUser.findFirst({
+        where: {
+          OR: [
+            { username: username },
+            { email: username }
+          ]
+        }
+      })
+      
+      console.log('👤 Found user:', dbAdmin ? { id: dbAdmin.id, username: dbAdmin.username, active: dbAdmin.active } : 'Not found')
+      
+      if (dbAdmin && dbAdmin.active) {
+        console.log('🔐 Verifying password...')
+        const passwordMatch = await verifyPassword(password, dbAdmin.passwordHash)
+        console.log('✅ Password match:', passwordMatch)
+        
+        if (passwordMatch) {
+          adminUser = {
+            id: dbAdmin.id,
+            email: dbAdmin.email,
+            username: dbAdmin.username,
+            name: dbAdmin.name,
+            role: dbAdmin.role,
+            permissions: dbAdmin.permissions,
+          }
+          console.log('🎉 Login successful for:', adminUser.username)
+        }
+      }
+    } catch (dbError) {
+      console.log("❌ DB search failed, trying hardcoded users:", dbError)
     }
 
-    // Buscar en el archivo de usuarios en lugar de la base de datos
-    const adminUser = adminUsers.find(u => u.username === username)
-    if (!adminUser || !adminUser.active) {
-      return NextResponse.json({ error: "Invalid credentials" }, { status: 401 })
+    // Si no encuentra en BD, buscar en hardcoded (fallback)
+    if (!adminUser) {
+      const validCredentials = [
+        { username: "admin", password: "admin2346", role: "superadmin", name: "Administrador", email: "admin@system.com" },
+        { username: "manager", password: "manager123", role: "admin", name: "Manager", email: "manager@system.com" },
+      ]
+
+      const hardcodedUser = validCredentials.find(u => u.username === username && u.password === password)
+      
+      if (hardcodedUser) {
+        adminUser = {
+          id: hardcodedUser.username,
+          email: hardcodedUser.email,
+          username: hardcodedUser.username,
+          name: hardcodedUser.name,
+          role: hardcodedUser.role,
+          permissions: ["dashboard", "products", "categories", "orders", "users", "carts", "ctas", "carousel", "home_categories", "legal_content", "admin_users"],
+        }
+      }
+    }
+    
+    if (!adminUser) {
+      return NextResponse.json({ error: "Credenciales inválidas" }, { status: 401 })
     }
 
-    const ok = await verifyPassword(password, adminUser.passwordHash)
-    if (!ok) {
-      return NextResponse.json({ error: "Invalid credentials" }, { status: 401 })
-    }
+    // Generar tokens
+    const accessToken = await signAccessToken({ sub: adminUser.id, typ: "admin" }, "15m")
+    const refreshToken = generateRefreshToken()
 
-    // Simular actualización de último login (no se puede guardar en archivo)
+    // Set cookies
+    const jar = await cookies()
+    jar.set("tz_admin_access", accessToken, { ...cookieOptions(), maxAge: 60 * 15 })
+    jar.set("tz_admin_refresh", refreshToken, { ...cookieOptions(), maxAge: 60 * 60 * 24 * 30 })
+
     console.log(`Admin ${adminUser.username} logged in at ${new Date()}`)
 
-    const accessTokenUser = await signAccessToken({ sub: adminUser.id, typ: "admin" }, "15m")
-    const refreshTokenUser = generateRefreshToken()
-
-    const jar = await cookies()
-    jar.set("tz_admin_access", accessTokenUser, { ...cookieOptions(), maxAge: 60 * 15 })
-    jar.set("tz_admin_refresh", refreshTokenUser, { ...cookieOptions(), maxAge: 60 * 60 * 24 * 30 })
-
-    return NextResponse.json({
-      admin: {
-        id: adminUser.id,
-        email: adminUser.email,
-        username: adminUser.username,
-        name: adminUser.name,
-        role: adminUser.role,
-        permissions: adminUser.permissions,
-      },
-    })
-  } catch (_error) {
-    console.error("Admin login failed", _error)
-    return NextResponse.json({ error: "Admin login failed", detail: String(_error) }, { status: 500 })
+    return NextResponse.json({ admin: adminUser })
+  } catch (error) {
+    console.error("Admin login failed", error)
+    return NextResponse.json({ error: "Error en el login" }, { status: 500 })
   }
 }

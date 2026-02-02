@@ -12,6 +12,7 @@ import ParaguayLocationSelect from "@/components/paraguay-location-select"
 import { useAEXShipping } from "@/hooks/use-aex-shipping"
 import { useToast } from "@/hooks/use-toast"
 import { useCart } from "@/lib/cart-context"
+import { useCurrency } from "@/lib/currency-context"
 import BancardCheckout from "@/components/bancard-checkout"
 import Image from "next/image"
 import Link from "next/link"
@@ -20,6 +21,7 @@ export default function CheckoutPage() {
   const router = useRouter()
   const { toast } = useToast()
   const { items, total, itemCount, clearCart } = useCart()
+  const { formatPrice } = useCurrency()
   
   // Redirigir si el carrito esta vacio o si no esta logueado
   useEffect(() => {
@@ -337,7 +339,8 @@ export default function CheckoutPage() {
     setShippingData(prev => ({
       ...prev,
       city: location.city,
-      department: location.department
+      department: location.department,
+      address: location.address
     }))
     
     // Si el metodo seleccionado es AEX, calcular el envio automaticamente
@@ -456,7 +459,7 @@ export default function CheckoutPage() {
                       </div>
                       {option.cost !== null && (
                         <span className="font-bold text-lg">
-                          ${option.cost.toFixed(2)}
+                          {formatPrice(option.cost)}
                         </span>
                       )}
                     </div>
@@ -509,7 +512,7 @@ export default function CheckoutPage() {
                   <div>
                     <Label className="text-sm font-medium text-gray-700">Costo de Envio</Label>
                     <p className="font-semibold text-gray-900">
-                      {shippingData.cost > 0 ? `$${shippingData.cost.toFixed(2)}` : "Por calcular"}
+                      {shippingData.cost > 0 ? formatPrice(shippingData.cost) : "Por calcular"}
                     </p>
                   </div>
                   {(shippingData.city || shippingData.department) && (
@@ -593,7 +596,7 @@ export default function CheckoutPage() {
                       <div className="flex justify-between items-center py-3 border-b border-gray-200">
                         <span className="text-gray-600 font-medium">Total Pagado</span>
                         <span className="font-bold text-xl text-gray-900">
-                          ${(total + (shippingData.cost || 0) + total * 0.1).toFixed(2)}
+                          {formatPrice(total + (shippingData.cost || 0) + total * 0.1)}
                         </span>
                       </div>
                       <div className="flex justify-between items-center py-3 border-b border-gray-200">
@@ -667,7 +670,7 @@ export default function CheckoutPage() {
                         </div>
                       </div>
                       <span className="font-medium">
-                        ${(item.product.price * item.quantity).toFixed(2)}
+                        {formatPrice(item.product.price * item.quantity)}
                       </span>
                     </div>
                   ))}

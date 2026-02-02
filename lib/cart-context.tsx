@@ -38,7 +38,13 @@ export function CartProvider({ children }: { children: ReactNode }) {
 
         if (res.ok) {
           const data = (await res.json()) as { items?: CartItem[] }
-          if (!cancelled) setItems(data.items ?? [])
+          if (!cancelled) {
+            // Filtrar items inválidos que no tengan product completo
+            const validItems = (data.items ?? []).filter(item => 
+              item && item.product && item.product.id && item.product.price
+            )
+            setItems(validItems)
+          }
           return
         }
       } catch {
@@ -47,7 +53,17 @@ export function CartProvider({ children }: { children: ReactNode }) {
 
       const storedCart = localStorage.getItem("cart")
       if (storedCart && !cancelled) {
-        setItems(JSON.parse(storedCart))
+        try {
+          const parsedCart = JSON.parse(storedCart)
+          // Filtrar items inválidos que no tengan product completo
+          const validItems = parsedCart.filter((item: CartItem) => 
+            item && item.product && item.product.id && item.product.price
+          )
+          setItems(validItems)
+        } catch {
+          // Si hay error al parsear, limpiar el carrito
+          setItems([])
+        }
       }
     }
 
@@ -119,7 +135,10 @@ export function CartProvider({ children }: { children: ReactNode }) {
     setItems([])
   }
 
-  const total = items.reduce((sum, item) => sum + item.product.price * item.quantity, 0)
+  const total = items.reduce((sum, item) => {
+    if (!item.product || !item.product.price) return sum
+    return sum + item.product.price * item.quantity
+  }, 0)
   const totalInUSD = total // Keep USD total for backend calculations
   const itemCount = items.reduce((sum, item) => sum + item.quantity, 0)
 

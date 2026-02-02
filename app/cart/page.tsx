@@ -4,6 +4,7 @@ import Image from "next/image"
 import Link from "next/link"
 import { Button } from "@/components/ui/button"
 import { useCart } from "@/lib/cart-context"
+import { useCurrency } from "@/lib/currency-context"
 import { Minus, Plus, Trash2, ArrowLeft, ShoppingBag, Package, Truck, Shield, Image as ImageIcon } from "lucide-react"
 import { Card, CardContent } from "@/components/ui/card"
 
@@ -21,6 +22,7 @@ const ProductImagePlaceholder = ({ productName }: { productName: string }) => (
 
 export default function CartPage() {
   const { items, updateQuantity, removeItem, total, itemCount } = useCart()
+  const { formatPrice } = useCurrency()
 
   if (items.length === 0) {
     return (
@@ -177,10 +179,10 @@ export default function CartPage() {
                             {/* Precio */}
                             <div className="text-right">
                               <p className="font-bold text-xl text-gray-900">
-                                ${(item.product.price * item.quantity).toFixed(2)}
+                                {formatPrice(item.product.price * item.quantity)}
                               </p>
                               <p className="text-sm text-gray-600">
-                                ${item.product.price} c/u
+                                {formatPrice(item.product.price)} c/u
                               </p>
                             </div>
                           </div>
@@ -210,7 +212,7 @@ export default function CartPage() {
                 <div className="bg-gradient-to-r from-gray-50 to-gray-100 rounded-xl p-4">
                   <div className="flex justify-between items-center">
                     <span className="text-gray-600 font-medium">Subtotal</span>
-                    <span className="font-bold text-gray-900">${total.toFixed(2)}</span>
+                    <span className="font-bold text-gray-900">{formatPrice(total)}</span>
                   </div>
                 </div>
 
@@ -221,7 +223,7 @@ export default function CartPage() {
                       <p className="text-sm text-gray-600 font-medium">Total</p>
                     </div>
                     <p className="text-2xl md:text-3xl font-bold text-gray-900">
-                      ${total.toFixed(2)}
+                      {formatPrice(total)}
                     </p>
                   </div>
                 </div>

@@ -10,11 +10,11 @@ const nextConfig = {
     remotePatterns: [
       {
         protocol: 'https',
-        hostname: 'i.ebayimg.com',
+        hostname: '**',
       },
       {
-        protocol: 'https',
-        hostname: 'i.ibb.co',
+        protocol: 'http',
+        hostname: '**',
       },
     ],
     formats: ['image/webp', 'image/avif'],

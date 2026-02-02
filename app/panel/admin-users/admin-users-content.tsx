@@ -267,7 +267,7 @@ export default function AdminUsersContent() {
   }
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-6 px-8 py-6">
       {loading && (
         <div className="flex items-center justify-center py-8">
           <Loader2 className="h-8 w-8 animate-spin mr-2" />

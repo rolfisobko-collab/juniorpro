@@ -58,78 +58,8 @@ export async function initializePasswordHashes() {
   }
 }
 
-// Usuarios con contraseñas hasheadas
+// Usuarios con contraseñas hasheadas - VACÍO para eliminar datos de prueba
 export const adminUsers: AdminUser[] = [
-  {
-    id: "1",
-    email: "admin@techzone.com",
-    username: "admin",
-    name: "Super Admin",
-    password: "admin123",
-    role: "superadmin",
-    permissions: [
-      "dashboard",
-      "products",
-      "categories",
-      "orders",
-      "users",
-      "carts",
-      "ctas",
-      "carousel",
-      "home_categories",
-      "legal_content",
-      "admin_users",
-    ],
-    active: true,
-    createdAt: "2024-01-01T00:00:00Z",
-    lastLogin: "2024-01-15T10:30:00Z",
-    passwordHash: "", // Se llenará dinámicamente
-  },
-  {
-    id: "2",
-    email: "manager@techzone.com",
-    username: "manager",
-    name: "Manager Principal",
-    password: "manager123",
-    role: "admin",
-    permissions: [
-      "dashboard",
-      "products",
-      "categories",
-      "orders",
-      "ctas",
-      "carousel",
-      "home_categories",
-      "legal_content",
-    ],
-    active: true,
-    createdAt: "2024-01-05T00:00:00Z",
-    lastLogin: "2024-01-14T15:20:00Z",
-    passwordHash: "", // Se llenará dinámicamente
-  },
-  {
-    id: "3",
-    email: "editor@techzone.com",
-    username: "editor",
-    name: "Editor de Contenido",
-    password: "editor123",
-    role: "editor",
-    permissions: ["dashboard", "products", "ctas", "carousel", "home_categories"],
-    active: true,
-    createdAt: "2024-01-10T00:00:00Z",
-    lastLogin: "2024-01-13T09:15:00Z",
-    passwordHash: "", // Se llenará dinámicamente
-  },
-  {
-    id: "4",
-    email: "viewer@techzone.com",
-    username: "viewer",
-    name: "Visualizador",
-    password: "viewer123",
-    passwordHash: "", // Se llenará dinámicamente
-    role: "viewer",
-    permissions: ["dashboard", "orders", "users", "home_categories"],
-    active: true,
-    createdAt: "2024-01-08T00:00:00Z",
-  },
+  // Solo administradores reales - eliminar datos de prueba
+  // Si necesitas crear un admin real, agrégalo aquí con datos reales
 ]

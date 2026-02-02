@@ -1,18 +1,11 @@
 "use client"
 
 import { Suspense, useEffect, useState } from "react"
+import Link from "next/link"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Badge } from "@/components/ui/badge"
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table"
-import {
-  Dialog,
-  DialogContent,
-  DialogDescription,
-  DialogHeader,
-  DialogTitle,
-  DialogTrigger,
-} from "@/components/ui/dialog"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { Search, Eye, Package } from "lucide-react"
 import PanelLayout from "@/components/panel-layout"
@@ -233,102 +226,11 @@ function OrdersContent() {
                         }}
                         />
                     )}
-                    <Dialog>
-                      <DialogTrigger asChild>
-                        <Button variant="ghost" size="sm" onClick={() => setSelectedOrder(order)}>
-                          <Eye className="h-4 w-4" />
-                        </Button>
-                      </DialogTrigger>
-                      <DialogContent className="max-w-2xl">
-                        <DialogHeader>
-                          <DialogTitle>Detalles del Pedido</DialogTitle>
-                          <DialogDescription>ID: {order.id}</DialogDescription>
-                        </DialogHeader>
-                        <div className="space-y-6">
-                          <div className="grid grid-cols-2 gap-4">
-                            <div>
-                              <p className="text-sm text-muted-foreground">Fecha</p>
-                              <p className="font-medium">{new Date(order.createdAt).toLocaleDateString("es-ES")}</p>
-                            </div>
-                            <div>
-                              <p className="text-sm text-muted-foreground">Estado</p>
-                              <Badge className={getStatusColor(order.status)}>{getStatusLabel(order.status)}</Badge>
-                            </div>
-                          </div>
-
-                          {/* Información de Envío */}
-                          <div>
-                            <h4 className="font-semibold mb-3">Información de Envío</h4>
-                            <div className="grid grid-cols-2 gap-4 p-3 bg-gray-50 rounded-lg">
-                              <div>
-                                <p className="text-sm text-muted-foreground">Método</p>
-                                <p className="font-medium">
-                                  {order.shippingMethod === "aex" && "🚚 AEX"}
-                                  {order.shippingMethod === "convenir" && "🏪 Convenir"}
-                                  {order.shippingMethod === "local" && "🏠 Retiro Local"}
-                                  {!order.shippingMethod && "No especificado"}
-                                </p>
-                              </div>
-                              <div>
-                                <p className="text-sm text-muted-foreground">Ubicación</p>
-                                <p className="font-medium">
-                                  {order.shippingCity && order.shippingState 
-                                    ? `${order.shippingCity}, ${order.shippingState}`
-                                    : "No especificado"
-                                  }
-                                </p>
-                              </div>
-                              {order.shippingAddress && (
-                                <div className="col-span-2">
-                                  <p className="text-sm text-muted-foreground">Dirección</p>
-                                  <p className="font-medium">{order.shippingAddress}</p>
-                                </div>
-                              )}
-                            </div>
-                          </div>
-
-                          {/* Información de Contacto */}
-                          <div>
-                            <h4 className="font-semibold mb-3">Información de Contacto</h4>
-                            <div className="grid grid-cols-2 gap-4 p-3 bg-gray-50 rounded-lg">
-                              <div>
-                                <p className="text-sm text-muted-foreground">Email</p>
-                                <p className="font-medium">{order.contactEmail || "No especificado"}</p>
-                              </div>
-                              <div>
-                                <p className="text-sm text-muted-foreground">Teléfono</p>
-                                <p className="font-medium">{order.contactPhone || "No especificado"}</p>
-                              </div>
-                            </div>
-                          </div>
-
-                          <div>
-                            <h4 className="font-semibold mb-3">Productos</h4>
-                            <div className="space-y-3">
-                              {order.items.map((item, index) => (
-                                <div key={index} className="flex items-center gap-4 p-3 border rounded-lg">
-                                  <Package className="h-8 w-8 text-muted-foreground" />
-                                  <div className="flex-1">
-                                    <p className="font-medium">{item.name}</p>
-                                    <p className="text-sm text-muted-foreground">
-                                      Cantidad: {item.quantity} × ${item.price.toLocaleString()}
-                                    </p>
-                                  </div>
-                                  <p className="font-semibold">${(item.quantity * item.price).toLocaleString()}</p>
-                                </div>
-                              ))}
-                            </div>
-                          </div>
-
-                          <div className="border-t pt-4">
-                            <div className="flex justify-between text-lg font-semibold">
-                              <span>Total</span>
-                              <span>${order.total.toLocaleString()}</span>
-                            </div>
-                          </div>
-                        </div>
-                      </DialogContent>
-                    </Dialog>
+                    <Link href={`/panel/orders/${order.id}`}>
+                      <Button variant="ghost" size="sm">
+                        <Eye className="h-4 w-4" />
+                      </Button>
+                    </Link>
                   </div>
                 </TableCell>
               </TableRow>

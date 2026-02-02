@@ -62,45 +62,32 @@ export default function LoginPage() {
   }
 
   return (
-    <div className="min-h-screen grid md:grid-cols-2">
-      {/* Left Side - Visual (sin textos) */}
-      <div className="hidden md:flex flex-col justify-center items-center bg-gradient-to-br from-blue-900 via-blue-800 to-blue-950 p-12 text-white relative overflow-hidden">
+    <div className="min-h-screen relative overflow-hidden">
+      {/* Background para toda la página */}
+      <div className="fixed inset-0 bg-gradient-to-br from-blue-900 via-blue-800 to-blue-950">
         <div className="absolute inset-0 bg-[url('/grid.svg')] opacity-10"></div>
         <div className="absolute inset-0 bg-gradient-to-t from-blue-950/50 via-transparent to-blue-900/30"></div>
-        <div className="relative z-10 max-w-md flex flex-col items-center">
-          <Link href="/" className="mb-8">
-            <img 
-              src="/logo-optimized.png" 
-              alt="TechZone" 
-              className="h-32 w-auto object-contain drop-shadow-2xl"
-              loading="eager"
-              fetchPriority="high"
-              width="400"
-              height="136"
-            />
-          </Link>
-        </div>
       </div>
 
-      {/* Right Side - Login Form */}
-      <div className="flex items-center justify-center p-8 bg-gray-50">
-        <div className="w-full max-w-md">
-          {/* Mobile Logo */}
-          <Link href="/" className="md:hidden flex items-center justify-center mb-8">
+      {/* Contenido principal */}
+      <div className="relative z-10 min-h-screen flex items-center justify-center p-8">
+        <div className="w-full max-w-md bg-white/10 backdrop-blur-md rounded-2xl p-8 shadow-2xl border border-white/20">
+          {/* Logo */}
+          <Link href="/" className="flex items-center justify-center mb-8">
             <img 
               src="/logo-optimized.png" 
               alt="TechZone" 
-              className="h-12 w-auto object-contain"
+              className="h-16 w-auto object-contain drop-shadow-2xl"
               loading="eager"
               fetchPriority="high"
-              width="150"
-              height="51"
+              width="200"
+              height="68"
             />
           </Link>
 
           <div className="text-center mb-8">
-            <h1 className="text-3xl font-bold text-gray-900 mb-2">Iniciar Sesión</h1>
-            <p className="text-gray-600">Ingresa tus credenciales para continuar</p>
+            <h1 className="text-3xl font-bold text-white mb-2">Iniciar Sesión</h1>
+            <p className="text-blue-100">Ingresa tus credenciales para continuar</p>
           </div>
 
           {error && (
@@ -111,36 +98,36 @@ export default function LoginPage() {
 
           <form onSubmit={handleSubmit} className="space-y-4">
             <div className="space-y-2">
-              <Label htmlFor="email" className="text-sm font-medium text-gray-700">
+              <Label htmlFor="email" className="text-sm font-medium text-white/90">
                 Correo Electrónico
               </Label>
               <div className="relative">
-                <Mail className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-gray-400" />
+                <Mail className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-white/60" />
                 <Input
                   id="email"
                   type="email"
                   placeholder="tu@email.com"
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
-                  className="pl-10 h-11 border-gray-300 focus:border-blue-500"
+                  className="pl-10 h-11 bg-white/20 border-white/30 text-white placeholder-white/60 focus:border-white/50 focus:bg-white/30"
                   required
                 />
               </div>
             </div>
 
             <div className="space-y-2">
-              <Label htmlFor="password" className="text-sm font-medium text-gray-700">
+              <Label htmlFor="password" className="text-sm font-medium text-white/90">
                 Contraseña
               </Label>
               <div className="relative">
-                <Lock className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-gray-400" />
+                <Lock className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-white/60" />
                 <Input
                   id="password"
                   type="password"
-                  placeholder="•••••••••"
+                  placeholder="••••••••••"
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
-                  className="pl-10 h-11 border-gray-300 focus:border-blue-500"
+                  className="pl-10 h-11 bg-white/20 border-white/30 text-white placeholder-white/60 focus:border-white/50 focus:bg-white/30"
                   required
                 />
               </div>

@@ -11,10 +11,12 @@ import { useFavorites } from "@/lib/favorites-context"
 import { useToast } from "@/hooks/use-toast"
 import { ProductCard } from "@/components/product-card"
 import { useTranslation } from "@/lib/i18n/translation-provider"
+import { useCurrency } from "@/lib/currency-context"
 import { CartAnimation } from "@/components/cart-animation"
 
 export default function ProductDetailPage({ params }: { params: Promise<{ id: string }> }) {
   const { t } = useTranslation()
+  const { formatPrice } = useCurrency()
   const { id } = use(params)
   const router = useRouter()
   const [product, setProduct] = useState<UnifiedProduct | null>(null)
@@ -281,7 +283,7 @@ export default function ProductDetailPage({ params }: { params: Promise<{ id: st
             <div className="bg-gradient-to-r from-blue-50 to-purple-50 rounded-2xl p-6 border border-blue-100">
               <div className="flex items-baseline gap-3">
                 <span className="text-4xl lg:text-5xl font-bold text-gray-900">
-                  ${product.price}
+                  {formatPrice(product.price)}
                 </span>
               </div>
             </div>
@@ -316,7 +318,7 @@ export default function ProductDetailPage({ params }: { params: Promise<{ id: st
                 {/* Precio total */}
                 <div className="text-right">
                   <p className="text-sm text-gray-500">{t('Product Total:')}</p>
-                  <p className="text-xl font-bold text-gray-900">${(product.price * quantity).toFixed(2)}</p>
+                  <p className="text-xl font-bold text-gray-900">{formatPrice(product.price * quantity)}</p>
                 </div>
               </div>
 
