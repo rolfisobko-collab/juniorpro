@@ -6,6 +6,7 @@ import { useEffect, useState } from "react"
 import { getContactConfig, type ContactConfig } from "@/lib/contact-data"
 import { BrandingLogo } from "@/components/branding-logo"
 import { useTranslation } from "@/lib/i18n/translation-provider"
+import { WhatsAppIcon } from "@/components/ui/whatsapp-icon"
 
 export default function Footer() {
   const { t } = useTranslation()
@@ -96,7 +97,7 @@ export default function Footer() {
                   <div className="relative">
                     <div className="absolute inset-0 rounded-full bg-gradient-to-br from-green-500 via-green-600 to-emerald-600 opacity-0 transition-opacity duration-300 group-hover:opacity-100"></div>
                     <div className="relative rounded-full bg-gradient-to-br from-green-500 via-green-600 to-emerald-600 p-2 transition-all duration-300 group-hover:scale-110">
-                      <MessageSquare className="h-5 w-5 text-white" />
+                      <WhatsAppIcon className="h-5 w-5 text-white" />
                     </div>
                   </div>
                   <div className="flex-1">
@@ -120,7 +121,7 @@ export default function Footer() {
                   <div className="relative">
                     <div className="absolute inset-0 rounded-full bg-gradient-to-br from-green-500 via-green-600 to-emerald-600 opacity-0 transition-opacity duration-300 group-hover:opacity-100"></div>
                     <div className="relative rounded-full bg-gradient-to-br from-green-500 via-green-600 to-emerald-600 p-2 transition-all duration-300 group-hover:scale-110">
-                      <MessageSquare className="h-5 w-5 text-white" />
+                      <WhatsAppIcon className="h-5 w-5 text-white" />
                     </div>
                   </div>
                   <div className="flex-1">
@@ -144,7 +145,7 @@ export default function Footer() {
                   <div className="relative">
                     <div className="absolute inset-0 rounded-full bg-gradient-to-br from-green-500 via-green-600 to-emerald-600 opacity-0 transition-opacity duration-300 group-hover:opacity-100"></div>
                     <div className="relative rounded-full bg-gradient-to-br from-green-500 via-green-600 to-emerald-600 p-2 transition-all duration-300 group-hover:scale-110">
-                      <MessageSquare className="h-5 w-5 text-white" />
+                      <WhatsAppIcon className="h-5 w-5 text-white" />
                     </div>
                   </div>
                   <div className="flex-1">
@@ -168,7 +169,7 @@ export default function Footer() {
                   <div className="relative">
                     <div className="absolute inset-0 rounded-full bg-gradient-to-br from-green-500 via-green-600 to-emerald-600 opacity-0 transition-opacity duration-300 group-hover:opacity-100"></div>
                     <div className="relative rounded-full bg-gradient-to-br from-green-500 via-green-600 to-emerald-600 p-2 transition-all duration-300 group-hover:scale-110">
-                      <MessageSquare className="h-5 w-5 text-white" />
+                      <WhatsAppIcon className="h-5 w-5 text-white" />
                     </div>
                   </div>
                   <div className="flex-1">
