@@ -34,9 +34,9 @@ export let homeCategories: HomeCategory[] = [
   },
   {
     id: "4",
-    name: "Refrigeración",
-    image: "/modern-refrigerator-kitchen.jpg",
-    link: "/products?category=Electrodomésticos&subcategory=Refrigeración",
+    name: "Videojuegos",
+    image: "/premium-smartphones-display.jpg",
+    link: "/products?category=Electrónica&subcategory=Videojuegos",
     order: 4,
     active: true,
   },

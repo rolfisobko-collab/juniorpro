@@ -79,8 +79,13 @@ export default function CheckoutPage() {
         shippingData.address && 
         !aexLoading &&
         shippingData.cost === 0) {
-      console.log('Datos completos, calculando envio AEX automaticamente')
-      calculateAEXShipping()
+      console.log('📍 Datos completos, calculando envío AEX automáticamente...')
+      // Pequeño delay para asegurar que el usuario terminó de escribir
+      const timeoutId = setTimeout(() => {
+        calculateAEXShipping()
+      }, 1500)
+      
+      return () => clearTimeout(timeoutId)
     }
   }, [shippingData.city, shippingData.department, shippingData.address, shippingData.method])
 
@@ -149,56 +154,96 @@ export default function CheckoutPage() {
 
   // Funcion para calcular envio AEX
   const calculateAEXShipping = async () => {
-    console.log('Iniciando calculo AEX...')
-    console.log('Estado actual shippingData:', shippingData)
-    
-    // Obtener los valores mas recientes del estado
-    const currentCity = shippingData.city
-    const currentDepartment = shippingData.department  
-    const currentAddress = shippingData.address
-
-    if (!currentCity || !currentDepartment || !currentAddress) {
-      console.log('Faltan datos para el calculo AEX')
+    if (!shippingData.city || !shippingData.department || !shippingData.address) {
+      console.log('❌ Faltan datos de envío para calcular AEX')
       return
     }
 
     try {
-      // Build fix: Corregido tipo AEXShippingRequest
-      const shippingRequest = {
-        products: items.map(item => ({
+      console.log('🚚 Calculando envío AEX con datos reales...')
+      console.log('📦 Items en carrito:', items)
+      console.log('📍 Destino:', `${shippingData.city}, ${shippingData.department}`)
+      console.log('📧 Dirección:', shippingData.address)
+
+      // Preparar productos para AEX con datos reales
+      const aexProducts = items.map(item => {
+        // Dimensiones estimadas según tipo de producto
+        const getDimensions = (productName: string) => {
+          const name = productName.toLowerCase()
+          if (name.includes('laptop') || name.includes('notebook')) {
+            return { weight: 2.5, length: 35, width: 25, height: 3 }
+          } else if (name.includes('celular') || name.includes('smartphone')) {
+            return { weight: 0.2, length: 15, width: 7, height: 1 }
+          } else if (name.includes('tablet') || name.includes('ipad')) {
+            return { weight: 0.5, length: 25, width: 18, height: 1 }
+          } else if (name.includes('monitor') || name.includes('pantalla')) {
+            return { weight: 3.0, length: 60, width: 40, height: 8 }
+          } else if (name.includes('teclado')) {
+            return { weight: 0.8, length: 45, width: 15, height: 4 }
+          } else if (name.includes('mouse')) {
+            return { weight: 0.15, length: 12, width: 6, height: 4 }
+          } else if (name.includes('auricular') || name.includes('headset')) {
+            return { weight: 0.3, length: 18, width: 16, height: 8 }
+          } else if (name.includes('cargador') || name.includes('cable')) {
+            return { weight: 0.1, length: 10, width: 5, height: 3 }
+          } else {
+            // Dimensiones genéricas para otros productos
+            return { weight: 1.0, length: 20, width: 15, height: 10 }
+          }
+        }
+
+        const dimensions = getDimensions(item.product.name)
+        const valorTotal = item.product.price * item.quantity
+
+        return {
           id: item.product.id,
           name: item.product.name,
           quantity: item.quantity,
-          weight: (item.product as any).weight || 0.5,
-          length: (item.product as any).length || 20,
-          width: (item.product as any).width || 15,
-          height: (item.product as any).height || 10,
-          valorDeclarado: item.product.price,
-          paisOrigen: (item.product as any).paisOrigen || "China"
-        })),
+          ...dimensions,
+          valorDeclarado: valorTotal,
+          descripcionAduana: `${item.quantity}x ${item.product.name}`,
+          paisOrigen: "Paraguay"
+        }
+      })
+
+      console.log('📦 Productos preparados para AEX:', aexProducts)
+
+      const aexRequest = {
+        products: aexProducts,
         destination: {
-          city: currentCity,
-          department: currentDepartment,
-          address: currentAddress
+          city: shippingData.city,
+          department: shippingData.department,
+          address: shippingData.address
+        },
+        origin: {
+          city: "Ciudad del Este",
+          department: "Alto Paraná", 
+          address: "Av. General Caballero 1234"
         }
       }
 
-      console.log('Enviando solicitud AEX:', shippingRequest)
-
-      const result = await calculateShipping(shippingRequest)
-      
-      console.log('Resultado AEX:', result)
+      const result = await calculateShipping(aexRequest)
       
       if (result.success && result.shipping_cost) {
+        console.log('✅ Costo de envío AEX calculado:', result.shipping_cost)
         setShippingData(prev => ({
           ...prev,
           cost: result.shipping_cost || 0
         }))
-      } else {
-        console.error('Error en calculo AEX:', result.error)
+        
+        toast({
+          title: "Envío AEX calculado",
+          description: `Costo: ${formatPrice(result.shipping_cost)} - Tiempo: 2-3 días hábiles`,
+        })
       }
+
     } catch (error) {
-      console.error('Error calculando envio AEX:', error)
+      console.error('❌ Error calculando envío AEX:', error)
+      toast({
+        title: "Error en cálculo de envío",
+        description: "No se pudo calcular el costo de envío AEX",
+        variant: "destructive"
+      })
     }
   }
 
@@ -218,9 +263,9 @@ export default function CheckoutPage() {
       description: "Envio por Agencia de Envios Express",
       cost: null,
       icon: Truck,
-      time: "Proximamente",
+      time: "2-3 días hábiles",
       requiresAddress: true,
-      disabled: true
+      disabled: false
     },
     {
       id: "convenir",
@@ -309,6 +354,7 @@ export default function CheckoutPage() {
   const handleViewOrders = () => {
     // Limpiar el carrito después de que el usuario vea la confirmación
     clearCart()
+    // Redirigir a la página de órdenes
     router.push('/orders')
   }
 
@@ -319,15 +365,12 @@ export default function CheckoutPage() {
       cost: option.cost || 0
     }))
     
-    // Si es AEX y ya hay direccion, calcular automaticamente
+    // Si es AEX, abrir modal de ubicación para que ingrese los datos
     if (option.id === "aex") {
-      if (shippingData.city && shippingData.department && shippingData.address) {
-        setTimeout(() => calculateAEXShipping(), 100)
-      } else {
-        setIsLocationModalOpen(true)
-      }
+      console.log('🚚 Seleccionó AEX, abriendo modal de ubicación...')
+      setIsLocationModalOpen(true)
     }
-    // Si requiere direccion, abrir modal de ubicacion correspondiente
+    // Si requiere dirección, abrir modal de ubicación correspondiente
     else if (option.requiresAddress) {
       if (option.id === "convenir") {
         setIsConvenirModalOpen(true)
@@ -336,6 +379,7 @@ export default function CheckoutPage() {
   }
 
   const handleLocationSelect = (location: any) => {
+    console.log('📍 Ubicación seleccionada:', location)
     setShippingData(prev => ({
       ...prev,
       city: location.city,
@@ -343,17 +387,13 @@ export default function CheckoutPage() {
       address: location.address
     }))
     
-    // Si el metodo seleccionado es AEX, calcular el envio automaticamente
-    setTimeout(() => {
-      setShippingData(currentData => {
-        console.log('Estado actualizado:', currentData)
-        if (currentData.method === "aex" && location.city && location.department && currentData.address) {
-          console.log('Disparando calculo automatico de AEX')
-          calculateAEXShipping()
-        }
-        return currentData
-      })
-    }, 100)
+    // Si el método seleccionado es AEX, calcular el envío automáticamente después de un pequeño delay
+    if (shippingData.method === "aex") {
+      console.log('🚚 AEX seleccionado, calculando envío...')
+      setTimeout(() => {
+        calculateAEXShipping()
+      }, 1000) // 1 segundo de delay para asegurar que el estado se actualizó
+    }
   }
 
   return (
@@ -366,39 +406,41 @@ export default function CheckoutPage() {
       </div>
 
       {/* Progress Bar - Responsive */}
-      <div className="flex items-center justify-between mb-6 md:mb-8 overflow-x-auto">
-        <div className="flex items-center space-x-2 md:space-x-4 min-w-max">
-          {[1, 2, 3].map((step) => (
-            <div key={step} className="flex items-center">
-              <div
-                className={`w-8 h-8 md:w-10 md:h-10 rounded-full flex items-center justify-center text-xs md:text-sm font-medium ${
-                  currentStep >= step
-                    ? "bg-primary text-primary-foreground"
-                    : "bg-muted text-muted-foreground"
-                }`}
-              >
-                {currentStep > step ? (
-                  <Check className="w-3 h-3 md:w-5 md:h-5" />
-                ) : (
-                  step
+      <div className="mb-6 md:mb-8">
+        <div className="flex items-center justify-between overflow-x-auto pb-2">
+          <div className="flex items-center space-x-2 md:space-x-4 min-w-max w-full justify-between">
+            {[1, 2, 3].map((step) => (
+              <div key={step} className="flex items-center flex-1">
+                <div className="flex flex-col items-center text-center">
+                  <div
+                    className={`w-10 h-10 md:w-12 md:h-12 rounded-full flex items-center justify-center text-sm md:text-base font-medium transition-all duration-300 ${
+                      currentStep >= step
+                        ? "bg-gradient-to-r from-blue-600 to-blue-700 text-white shadow-md"
+                        : "bg-gray-100 text-gray-500 border-2 border-gray-300"
+                    }`}
+                  >
+                    {currentStep > step ? (
+                      <Check className="w-4 h-4 md:w-5 md:h-5" />
+                    ) : (
+                      step
+                    )}
+                  </div>
+                  <p className={`text-xs md:text-sm font-medium mt-2 ${
+                    currentStep >= step ? "text-blue-700 font-semibold" : "text-gray-500"
+                  }`}>
+                    {step === 1 && "Envío"}
+                    {step === 2 && "Pago"}
+                    {step === 3 && "Confirmación"}
+                  </p>
+                </div>
+                {step < 3 && (
+                  <div className={`flex-1 h-0.5 mx-2 md:mx-4 transition-all duration-300 ${
+                    currentStep > step ? "bg-gradient-to-r from-blue-600 to-blue-700" : "bg-gray-300"
+                  }`} />
                 )}
               </div>
-              <div className="ml-2 md:ml-3">
-                <p className={`text-xs md:text-sm font-medium ${
-                  currentStep >= step ? "text-foreground" : "text-muted-foreground"
-                }`}>
-                  {step === 1 && "Envio"}
-                  {step === 2 && "Pago"}
-                  {step === 3 && "Confirmacion"}
-                </p>
-              </div>
-              {step < 3 && (
-                <div className={`w-2 md:w-4 h-0.5 ml-2 md:ml-4 ${
-                  currentStep > step ? "bg-primary" : "bg-muted"
-                }`} />
-              )}
-            </div>
-          ))}
+            ))}
+          </div>
         </div>
       </div>
 
@@ -501,6 +543,9 @@ export default function CheckoutPage() {
                 <h3 className="font-bold text-lg mb-4 flex items-center gap-2">
                   <MapPin className="w-5 w-5 text-blue-600" />
                   Detalles del Envio
+                  {aexLoading && (
+                    <Loader2 className="w-4 h-4 text-blue-600 animate-spin" />
+                  )}
                 </h3>
                 <div className="grid md:grid-cols-2 gap-4">
                   <div>
@@ -512,7 +557,13 @@ export default function CheckoutPage() {
                   <div>
                     <Label className="text-sm font-medium text-gray-700">Costo de Envio</Label>
                     <p className="font-semibold text-gray-900">
-                      {shippingData.cost > 0 ? formatPrice(shippingData.cost) : "Por calcular"}
+                      {aexLoading ? (
+                        <span className="text-blue-600">Calculando...</span>
+                      ) : shippingData.cost > 0 ? (
+                        formatPrice(shippingData.cost)
+                      ) : (
+                        "Por calcular"
+                      )}
                     </p>
                   </div>
                   {(shippingData.city || shippingData.department) && (
@@ -534,29 +585,45 @@ export default function CheckoutPage() {
                     </div>
                   )}
                 </div>
+                
+                {aexError && (
+                  <div className="mt-4 p-3 bg-red-50 border border-red-200 rounded-lg">
+                    <p className="text-sm text-red-600">{aexError}</p>
+                  </div>
+                )}
               </div>
             )}
 
             {/* Navigation Buttons */}
-            <div className="flex justify-between pt-6 border-t border-gray-200">
+            <div className="flex flex-col sm:flex-row gap-4 justify-between pt-6 border-t border-gray-200">
               <Button 
                 variant="outline" 
                 onClick={() => router.back()}
-                className="h-11 px-6 border-2 hover:bg-gray-50 transition-all duration-300 flex items-center gap-2"
+                className="h-12 px-4 sm:px-6 border-2 hover:bg-gray-50 transition-all duration-300 flex items-center justify-center gap-2 w-full sm:w-auto order-2 sm:order-1"
               >
                 <ChevronLeft className="h-4 w-4" />
-                <span>Anterior</span>
+                <span className="text-sm sm:text-base">Anterior</span>
               </Button>
               <Button 
                 onClick={handleNextStep}
                 disabled={
                   !shippingData.method || 
-                  (shippingData.method === "convenir" && !shippingData.address)
+                  (shippingData.method === "convenir" && !shippingData.address) ||
+                  (shippingData.method === "aex" && aexLoading)
                 }
-                className="h-11 px-6 bg-gradient-to-r from-blue-600 to-blue-700 hover:from-blue-700 hover:to-blue-800 shadow-lg hover:shadow-xl transition-all duration-300 flex items-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed"
+                className="h-12 px-4 sm:px-6 bg-gradient-to-r from-blue-600 to-blue-700 hover:from-blue-700 hover:to-blue-800 shadow-lg hover:shadow-xl transition-all duration-300 flex items-center justify-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed w-full sm:w-auto order-1 sm:order-2"
               >
-                <span>Siguiente: Confirmacion</span>
-                <ChevronRight className="h-4 w-4" />
+                {aexLoading ? (
+                  <>
+                    <Loader2 className="h-4 w-4 animate-spin" />
+                    <span className="text-sm sm:text-base">Calculando envío...</span>
+                  </>
+                ) : (
+                  <>
+                    <span className="text-sm sm:text-base">Siguiente: Confirmación</span>
+                    <ChevronRight className="h-4 w-4" />
+                  </>
+                )}
               </Button>
             </div>
           </CardContent>
@@ -681,19 +748,19 @@ export default function CheckoutPage() {
                 <Button 
                   onClick={handleViewOrders}
                   size="lg"
-                  className="h-12 px-6 bg-gradient-to-r from-blue-600 to-blue-700 hover:from-blue-700 hover:to-blue-800 shadow-lg hover:shadow-xl transition-all duration-300 flex items-center gap-2"
+                  className="h-14 px-6 bg-gradient-to-r from-blue-600 to-blue-700 hover:from-blue-700 hover:to-blue-800 shadow-lg hover:shadow-xl transition-all duration-300 flex items-center justify-center gap-2 w-full sm:w-auto"
                 >
                   <Package className="h-5 w-5" />
-                  <span>Ver Mis Ordenes</span>
+                  <span className="text-base sm:text-lg">Ver Mis Órdenes</span>
                 </Button>
                 <Button 
                   onClick={() => router.push('/products')}
                   variant="outline"
                   size="lg"
-                  className="h-12 px-6 border-2 hover:bg-gray-50 transition-all duration-300 flex items-center gap-2"
+                  className="h-14 px-6 border-2 hover:bg-gray-50 transition-all duration-300 flex items-center justify-center gap-2 w-full sm:w-auto"
                 >
                   <Home className="h-5 w-5" />
-                  <span>Seguir Comprando</span>
+                  <span className="text-base sm:text-lg">Seguir Comprando</span>
                 </Button>
               </div>
             </CardContent>

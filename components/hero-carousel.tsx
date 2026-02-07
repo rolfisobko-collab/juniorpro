@@ -12,37 +12,45 @@ export function HeroCarousel() {
   // Imágenes según el idioma
   const slides = language === "pt" ? [
     {
-      desktop: "https://i.ibb.co/20fSKDrq/1-post-br.jpg",
-      mobile: "https://i.ibb.co/8n95Kj6S/1-hist-br.jpg"
+      desktop: "https://i.ibb.co/Y7p9b4Tm/1.png",
+      mobile: "https://i.ibb.co/tTR7n8sz/1-2.png"
     },
     {
-      desktop: "https://i.ibb.co/YFkkyqpR/2-post-br.jpg", 
-      mobile: "https://i.ibb.co/Q74pBPfc/2-hist-br.jpg"
+      desktop: "https://i.ibb.co/ZRc2Jz96/2.png", 
+      mobile: "https://i.ibb.co/DHQ3cNnn/2-1.png"
     },
     {
-      desktop: "https://i.ibb.co/YBVsJZTW/3-post-br.jpg",
-      mobile: "https://i.ibb.co/qMwb4863/3-hist-br.jpg"
+      desktop: "https://i.ibb.co/Rk4J5jZ1/3.png",
+      mobile: "https://i.ibb.co/KxZWk17y/3-1.png"
     },
     {
-      desktop: "https://i.ibb.co/F210KS1/4-post-br.jpg",
-      mobile: "https://i.ibb.co/BV1RNtTw/4-hist-br.jpg"
+      desktop: "https://i.ibb.co/HT3WHPRr/4.png",
+      mobile: "https://i.ibb.co/QF08DNMF/4-1.png"
+    },
+    {
+      desktop: "https://i.ibb.co/WNZvP01h/5.png",
+      mobile: "https://i.ibb.co/zVpGD1wN/Carrusel-Carnatech-Tu-historia.png"
     }
   ] : [
     {
-      desktop: "https://i.ibb.co/wFHxQRGZ/1-post-es.jpg",
-      mobile: "https://i.ibb.co/S7d44bDC/1-hist-es.jpg"
+      desktop: "https://i.ibb.co/Y7p9b4Tm/1.png",
+      mobile: "https://i.ibb.co/tTR7n8sz/1-2.png"
     },
     {
-      desktop: "https://i.ibb.co/Bvp74MM/2-post-es.jpg", 
-      mobile: "https://i.ibb.co/0j8Q3kQz/2-hist-es.jpg"
+      desktop: "https://i.ibb.co/ZRc2Jz96/2.png", 
+      mobile: "https://i.ibb.co/DHQ3cNnn/2-1.png"
     },
     {
-      desktop: "https://i.ibb.co/bMdBcZD4/3-post-es.jpg",
-      mobile: "https://i.ibb.co/ksQ7zMDT/3-hist-es.jpg"
+      desktop: "https://i.ibb.co/Rk4J5jZ1/3.png",
+      mobile: "https://i.ibb.co/KxZWk17y/3-1.png"
     },
     {
-      desktop: "https://i.ibb.co/xqG2xjD5/4-post-es.jpg",
-      mobile: "https://i.ibb.co/N2gzVfsq/4-hist-es.jpg"
+      desktop: "https://i.ibb.co/HT3WHPRr/4.png",
+      mobile: "https://i.ibb.co/QF08DNMF/4-1.png"
+    },
+    {
+      desktop: "https://i.ibb.co/WNZvP01h/5.png",
+      mobile: "https://i.ibb.co/zVpGD1wN/Carrusel-Carnatech-Tu-historia.png"
     }
   ]
 
@@ -76,14 +84,14 @@ export function HeroCarousel() {
   const currentSlide = slides[currentIndex]
 
   return (
-    <div className="relative w-full h-[50vh] md:h-[70vh] lg:h-[80vh] overflow-hidden">
+    <div className="relative w-full h-[50vh] md:h-[37vh] lg:h-[40vh] overflow-hidden">
       {/* Imágenes del carrusel - Responsive */}
       <div className="relative w-full h-full">
         {/* Imagen Desktop */}
         <img
           src={currentSlide.desktop}
           alt={`Slide ${currentIndex + 1}`}
-          className="absolute inset-0 w-full h-full object-cover object-center hidden md:block"
+          className="absolute inset-0 w-full h-full object-contain object-center hidden md:block"
         />
         
         {/* Imagen Mobile */}

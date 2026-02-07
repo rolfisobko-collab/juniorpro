@@ -13,6 +13,7 @@ import { Header } from "@/components/header"
 import { ScrollToTop } from "@/components/scroll-to-top"
 import Footer from "@/components/footer"
 import { Toaster } from "@/components/ui/toaster"
+import WhatsAppFloatingButton from "@/components/whatsapp-floating-button"
 
 export default function ClientLayout({
   children,
@@ -47,6 +48,7 @@ export default function ClientLayout({
                 {!isPanelRoute && !isAuthRoute && !isNotFoundPage && <Header />}
                 {children}
                 {!isPanelRoute && !isAuthRoute && !isNotFoundPage && <Footer />}
+                {!isPanelRoute && !isAuthRoute && !isNotFoundPage && <WhatsAppFloatingButton />}
                 <Toaster />
               </CurrencyProvider>
             </FavoritesProvider>

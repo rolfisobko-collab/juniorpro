@@ -63,18 +63,18 @@ export default function HomePage() {
         featured={true}
       />
 
-      <section className="py-8 bg-gradient-to-r from-blue-50 via-blue-100 to-blue-50 border-y border-gray-200">
+      <section className="py-8 bg-gradient-to-r from-purple-50 via-blue-50 to-purple-50 border-y border-gray-200">
         <div className="container mx-auto px-4">
           <div className="grid grid-cols-2 md:grid-cols-6 gap-4 md:gap-6 max-w-6xl mx-auto">
             <div className="flex flex-col items-center text-center gap-2">
-              <div className="h-14 w-14 rounded-xl bg-gradient-to-br from-blue-500 to-blue-600 flex items-center justify-center shadow-lg relative overflow-hidden group">
+              <div className="h-14 w-14 rounded-xl bg-gradient-to-br from-purple-500 to-purple-600 flex items-center justify-center shadow-lg relative overflow-hidden group">
                 <div className="absolute inset-0 bg-gradient-to-tr from-transparent via-white/20 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
-                <div className="absolute top-1/2 left-1/2 w-20 h-20 bg-blue-400/20 rounded-full blur-xl transform -translate-x-1/2 -translate-y-1/2"></div>
-                <Truck className="h-7 w-7 text-white relative z-10" />
+                <div className="absolute top-1/2 left-1/2 w-20 h-20 bg-purple-400/20 rounded-full blur-xl transform -translate-x-1/2 -translate-y-1/2"></div>
+                <Zap className="h-7 w-7 text-white relative z-10" />
               </div>
               <div>
-                <p className="font-bold text-sm text-gray-800">{t('Free Shipping')}</p>
-                <p className="text-xs text-gray-600">{t('Shipping nationwide')}</p>
+                <p className="font-bold text-sm text-gray-800">{t('Tech Premium')}</p>
+                <p className="text-xs text-gray-600">{t('Latest technology')}</p>
               </div>
             </div>
 
@@ -86,50 +86,50 @@ export default function HomePage() {
               </div>
               <div>
                 <p className="font-bold text-sm text-gray-800">{t('Official Warranty')}</p>
-                <p className="text-xs text-gray-600">{t('Up to 30 days')}</p>
+                <p className="text-xs text-gray-600">{t('Up to 2 years')}</p>
               </div>
             </div>
 
             <div className="flex flex-col items-center text-center gap-2">
-              <div className="h-14 w-14 rounded-xl bg-gradient-to-br from-blue-500 to-blue-600 flex items-center justify-center shadow-lg relative overflow-hidden group">
+              <div className="h-14 w-14 rounded-xl bg-gradient-to-br from-green-500 to-green-600 flex items-center justify-center shadow-lg relative overflow-hidden group">
                 <div className="absolute inset-0 bg-gradient-to-tr from-transparent via-white/20 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
-                <div className="absolute top-1/2 left-1/2 w-20 h-20 bg-blue-400/20 rounded-full blur-xl transform -translate-x-1/2 -translate-y-1/2"></div>
-                <Zap className="h-7 w-7 text-white relative z-10" />
+                <div className="absolute top-1/2 left-1/2 w-20 h-20 bg-green-400/20 rounded-full blur-xl transform -translate-x-1/2 -translate-y-1/2"></div>
+                <Truck className="h-7 w-7 text-white relative z-10" />
               </div>
               <div>
-                <p className="font-bold text-sm text-gray-800">{t('Fast Shipping')}</p>
-                <p className="text-xs text-gray-600">{t('24-48 hours')}</p>
+                <p className="font-bold text-sm text-gray-800">{t('Fast Delivery')}</p>
+                <p className="text-xs text-gray-600">{t('Same day shipping')}</p>
               </div>
             </div>
 
             <div className="flex flex-col items-center text-center gap-2">
-              <div className="h-14 w-14 rounded-xl bg-gradient-to-br from-blue-500 to-blue-600 flex items-center justify-center shadow-lg relative overflow-hidden group">
+              <div className="h-14 w-14 rounded-xl bg-gradient-to-br from-orange-500 to-orange-600 flex items-center justify-center shadow-lg relative overflow-hidden group">
                 <div className="absolute inset-0 bg-gradient-to-tr from-transparent via-white/20 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
-                <div className="absolute top-1/2 left-1/2 w-20 h-20 bg-blue-400/20 rounded-full blur-xl transform -translate-x-1/2 -translate-y-1/2"></div>
+                <div className="absolute top-1/2 left-1/2 w-20 h-20 bg-orange-400/20 rounded-full blur-xl transform -translate-x-1/2 -translate-y-1/2"></div>
                 <Package className="h-7 w-7 text-white relative z-10" />
               </div>
               <div>
                 <p className="font-bold text-sm text-gray-800">{t('Secure Payment')}</p>
-                <p className="text-xs text-gray-600">{t('100% protected payments')}</p>
+                <p className="text-xs text-gray-600">{t('Card & crypto')}</p>
               </div>
             </div>
 
             <div className="flex flex-col items-center text-center gap-2">
-              <div className="h-14 w-14 rounded-xl bg-gradient-to-br from-blue-500 to-blue-600 flex items-center justify-center shadow-lg relative overflow-hidden group">
+              <div className="h-14 w-14 rounded-xl bg-gradient-to-br from-pink-500 to-pink-600 flex items-center justify-center shadow-lg relative overflow-hidden group">
                 <div className="absolute inset-0 bg-gradient-to-tr from-transparent via-white/20 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
-                <div className="absolute top-1/2 left-1/2 w-20 h-20 bg-blue-400/20 rounded-full blur-xl transform -translate-x-1/2 -translate-y-1/2"></div>
+                <div className="absolute top-1/2 left-1/2 w-20 h-20 bg-pink-400/20 rounded-full blur-xl transform -translate-x-1/2 -translate-y-1/2"></div>
                 <Award className="h-7 w-7 text-white relative z-10" />
               </div>
               <div>
-                <p className="font-bold text-sm text-gray-800">{t('Certified Quality')}</p>
-                <p className="text-xs text-gray-600">{t('Certified')}</p>
+                <p className="font-bold text-sm text-gray-800">{t('Expert Support')}</p>
+                <p className="text-xs text-gray-600">{t('24/7 assistance')}</p>
               </div>
             </div>
 
             <div className="flex flex-col items-center text-center gap-2">
-              <div className="h-14 w-14 rounded-xl bg-gradient-to-br from-blue-500 to-blue-600 flex items-center justify-center shadow-lg relative overflow-hidden group">
+              <div className="h-14 w-14 rounded-xl bg-gradient-to-br from-indigo-500 to-indigo-600 flex items-center justify-center shadow-lg relative overflow-hidden group">
                 <div className="absolute inset-0 bg-gradient-to-tr from-transparent via-white/20 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
-                <div className="absolute top-1/2 left-1/2 w-20 h-20 bg-blue-400/20 rounded-full blur-xl transform -translate-x-1/2 -translate-y-1/2"></div>
+                <div className="absolute top-1/2 left-1/2 w-20 h-20 bg-indigo-400/20 rounded-full blur-xl transform -translate-x-1/2 -translate-y-1/2"></div>
                 <div className="h-7 w-7 text-white relative z-10 flex items-center justify-center">
                   <svg className="w-5 h-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
                     <path d="M12 2L2 7v10c0 5.55 3.84 10.74 8 12 4.16-1.26 8-6.45 8-12V7l-10-5z"/>
@@ -137,8 +137,8 @@ export default function HomePage() {
                 </div>
               </div>
               <div>
-                <p className="font-bold text-sm text-gray-800">{t('Protected Purchase')}</p>
-                <p className="text-xs text-gray-600">{t('Purchase protected')}</p>
+                <p className="font-bold text-sm text-gray-800">{t('Buyer Protection')}</p>
+                <p className="text-xs text-gray-600">{t('30 days return')}</p>
               </div>
             </div>
           </div>

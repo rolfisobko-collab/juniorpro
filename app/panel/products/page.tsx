@@ -146,8 +146,11 @@ export default function AdminProductsPage() {
   }
 
   const handleDelete = async (id: string) => {
+    if (!confirm("¿Estás seguro de que quieres eliminar este producto?")) return
+
     try {
       console.log('🗑️ Deleting product:', id)
+      console.log('🆔 ID type:', typeof id, 'ID value:', id)
       
       const res = await fetch(`/api/admin/products/delete-simple`, {
         method: "DELETE",
@@ -156,12 +159,24 @@ export default function AdminProductsPage() {
         body: JSON.stringify({ id }), // Enviar el ID en el body
       })
 
+      console.log('📡 Response status:', res.status, res.statusText)
+
       if (!res.ok) {
-        const errorData = await res.json()
-        console.error('❌ Delete error:', errorData)
+        let errorData: any = {}
+        try {
+          errorData = await res.json()
+        } catch (parseError) {
+          console.error('❌ Parse error:', parseError)
+          errorData = { error: `HTTP ${res.status}: ${res.statusText}` }
+        }
+        
+        console.error('❌ Delete error - Status:', res.status)
+        console.error('❌ Delete error - StatusText:', res.statusText)
+        console.error('❌ Delete error - ErrorData:', errorData)
+        
         toast({ 
           title: "Error al eliminar", 
-          description: errorData.error || "No se pudo eliminar el producto",
+          description: errorData?.error || errorData?.message || "No se pudo eliminar el producto",
           variant: "destructive" 
         })
         return

@@ -77,10 +77,37 @@ export default function AEXLabelPrint({
 
   const printLabel = () => {
     if (labelData?.labelUrl) {
-      const printWindow = window.open(labelData.labelUrl, '_blank')
-      if (printWindow) {
-        printWindow.onload = () => {
-          printWindow.print()
+      if (labelData.labelUrl.startsWith('data:application/pdf')) {
+        // Es un PDF base64, crear un blob y abrir en nueva ventana
+        const base64Data = labelData.labelUrl.split(',')[1]
+        const binaryData = atob(base64Data)
+        const arrayBuffer = new ArrayBuffer(binaryData.length)
+        const uint8Array = new Uint8Array(arrayBuffer)
+        
+        for (let i = 0; i < binaryData.length; i++) {
+          uint8Array[i] = binaryData.charCodeAt(i)
+        }
+        
+        const blob = new Blob([uint8Array], { type: 'application/pdf' })
+        const pdfUrl = URL.createObjectURL(blob)
+        
+        const printWindow = window.open(pdfUrl, '_blank')
+        if (printWindow) {
+          printWindow.onload = () => {
+            setTimeout(() => {
+              printWindow.print()
+              // Limpiar el objeto URL después de imprimir
+              setTimeout(() => URL.revokeObjectURL(pdfUrl), 1000)
+            }, 500)
+          }
+        }
+      } else {
+        // Es una URL normal
+        const printWindow = window.open(labelData.labelUrl, '_blank')
+        if (printWindow) {
+          printWindow.onload = () => {
+            printWindow.print()
+          }
         }
       }
     }
@@ -88,12 +115,38 @@ export default function AEXLabelPrint({
 
   const downloadLabel = () => {
     if (labelData?.labelUrl) {
-      const link = document.createElement('a')
-      link.href = labelData.labelUrl
-      link.download = `etiqueta-aex-${orderId}.pdf`
-      document.body.appendChild(link)
-      link.click()
-      document.body.removeChild(link)
+      if (labelData.labelUrl.startsWith('data:application/pdf')) {
+        // Es un PDF base64, crear un blob y descargar
+        const base64Data = labelData.labelUrl.split(',')[1]
+        const binaryData = atob(base64Data)
+        const arrayBuffer = new ArrayBuffer(binaryData.length)
+        const uint8Array = new Uint8Array(arrayBuffer)
+        
+        for (let i = 0; i < binaryData.length; i++) {
+          uint8Array[i] = binaryData.charCodeAt(i)
+        }
+        
+        const blob = new Blob([uint8Array], { type: 'application/pdf' })
+        const url = URL.createObjectURL(blob)
+        
+        const link = document.createElement('a')
+        link.href = url
+        link.download = `etiqueta-aex-${orderId}.pdf`
+        document.body.appendChild(link)
+        link.click()
+        document.body.removeChild(link)
+        
+        // Limpiar el objeto URL después de descargar
+        setTimeout(() => URL.revokeObjectURL(url), 1000)
+      } else {
+        // Es una URL normal
+        const link = document.createElement('a')
+        link.href = labelData.labelUrl
+        link.download = `etiqueta-aex-${orderId}.pdf`
+        document.body.appendChild(link)
+        link.click()
+        document.body.removeChild(link)
+      }
     }
   }
 
@@ -183,13 +236,24 @@ export default function AEXLabelPrint({
                   </div>
                 )}
 
-                {labelData.labelUrl && (
+                {labelData?.labelUrl && (
                   <div className="mt-4">
-                    <img 
-                      src={labelData.labelUrl} 
-                      alt="Etiqueta AEX" 
-                      className="w-full max-w-md mx-auto border rounded"
-                    />
+                    {labelData.labelUrl.startsWith('data:application/pdf') ? (
+                      <div className="border-2 border-dashed border-gray-300 rounded-lg p-4 text-center">
+                        <p className="text-sm text-gray-600 mb-2">Vista previa de la etiqueta PDF</p>
+                        <div className="bg-gray-100 rounded p-4">
+                          <Package className="h-12 w-12 text-gray-400 mx-auto mb-2" />
+                          <p className="text-sm text-gray-600">Etiqueta AEX generada</p>
+                          <p className="text-xs text-gray-500 mt-1">Número: {labelData.trackingNumber}</p>
+                        </div>
+                      </div>
+                    ) : (
+                      <img 
+                        src={labelData.labelUrl} 
+                        alt="Etiqueta AEX" 
+                        className="w-full max-w-md mx-auto border rounded"
+                      />
+                    )}
                   </div>
                 )}
               </div>
