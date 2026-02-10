@@ -43,22 +43,35 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     let cancelled = false
 
     const load = async () => {
+      console.log('🔐 Loading auth state...')
+      
       try {
         if (isAuthDisabled()) {
           // Demo mode - usar localStorage
+          console.log('🔐 Demo mode enabled')
           const stored = localStorage.getItem(DEMO_USER_STORAGE_KEY)
           if (!stored) {
-            if (!cancelled) setUser(null)
+            if (!cancelled) {
+              console.log('🔐 No demo user found')
+              setUser(null)
+            }
           } else {
             try {
               const parsedUser = JSON.parse(stored)
-              if (!cancelled) setUser(parsedUser)
+              if (!cancelled) {
+                console.log('🔐 Demo user loaded:', parsedUser.email)
+                setUser(parsedUser)
+              }
             } catch {
-              if (!cancelled) setUser(null)
+              if (!cancelled) {
+                console.log('🔐 Invalid demo user data')
+                setUser(null)
+              }
             }
           }
         } else {
           // Real Firebase - escuchar cambios de auth
+          console.log('🔐 Firebase auth mode')
           const { onAuthStateChanged } = await import("@/lib/firebase")
           const unsubscribe = onAuthStateChanged((firebaseUser) => {
             if (!cancelled) {

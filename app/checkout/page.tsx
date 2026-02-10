@@ -26,26 +26,42 @@ export default function CheckoutPage() {
   // Redirigir si el carrito esta vacio o si no esta logueado
   useEffect(() => {
     if (items.length === 0) {
+      console.log('🛒 Cart is empty, redirecting to cart...')
       router.push('/cart')
+      return
     }
     
     // Verificar si el usuario esta logueado (intentar acceder a una ruta protegida)
     const checkAuth = async () => {
       try {
+        console.log('🔐 Checking authentication...')
         const response = await fetch('/api/auth/me')
         if (!response.ok) {
+          console.log('🔐 Not authenticated, redirecting to login...')
           // No esta autenticado, redirigir a login
+          toast({
+            title: "Inicia sesión requerida",
+            description: "Debes iniciar sesión para proceder al checkout",
+            variant: "destructive"
+          })
           router.push('/login?redirect=/checkout')
           return
         }
+        console.log('🔐 Authentication successful')
       } catch (error) {
+        console.log('🔐 Auth error:', error)
         // Error de autenticación, redirigir a login
+        toast({
+          title: "Error de autenticación",
+          description: "Debes iniciar sesión para proceder al checkout",
+          variant: "destructive"
+        })
         router.push('/login?redirect=/checkout')
       }
     }
     
     checkAuth()
-  }, [items, router])
+  }, [items, router, toast])
   
   const [currentStep, setCurrentStep] = useState(1)
   const [shippingData, setShippingData] = useState({
@@ -260,12 +276,12 @@ export default function CheckoutPage() {
     {
       id: "aex",
       name: "Envio AEX",
-      description: "Envio por Agencia de Envios Express",
+      description: "Próximamente disponible",
       cost: null,
       icon: Truck,
-      time: "2-3 días hábiles",
-      requiresAddress: true,
-      disabled: false
+      time: "Próximamente",
+      requiresAddress: false,
+      disabled: true
     },
     {
       id: "convenir",
@@ -279,13 +295,22 @@ export default function CheckoutPage() {
   ]
 
   const handleNextStep = async () => {
+    console.log('🔘 Next step clicked, current step:', currentStep)
+    
     if (currentStep < 3) {
       // Saltar el paso de pago (paso 2) y pasar directamente a confirmacion (paso 3)
       if (currentStep === 1) {
+        console.log('📦 Creating order...')
         // Crear la orden en la base de datos
-        await createOrder()
-        setCurrentStep(3) // Saltar del paso 1 (envio) al paso 3 (confirmacion)
+        const order = await createOrder()
+        if (order) {
+          console.log('✅ Order created, moving to step 3')
+          setCurrentStep(3) // Saltar del paso 1 (envio) al paso 3 (confirmacion)
+        } else {
+          console.log('❌ Order creation failed')
+        }
       } else {
+        console.log('➡️ Moving to step:', currentStep + 1)
         setCurrentStep(currentStep + 1)
       }
     }
@@ -293,6 +318,12 @@ export default function CheckoutPage() {
 
   const createOrder = async () => {
     try {
+      console.log('📦 Creating order with data:', {
+        itemCount: items.length,
+        shippingMethod: shippingData.method,
+        total: total
+      })
+
       const orderData = {
         items: items.map(item => ({
           productId: item.product.id,
@@ -312,6 +343,8 @@ export default function CheckoutPage() {
         paymentStatus: "pending"
       }
 
+      console.log('📤 Sending order data to /api/orders...')
+
       const response = await fetch('/api/orders', {
         method: 'POST',
         headers: {
@@ -320,20 +353,24 @@ export default function CheckoutPage() {
         body: JSON.stringify(orderData),
       })
 
+      console.log('📥 Response status:', response.status)
+
       if (!response.ok) {
-        throw new Error('Error creando la orden')
+        const errorText = await response.text()
+        console.error('❌ Order creation failed:', response.status, errorText)
+        throw new Error(`Error ${response.status}: ${errorText}`)
       }
 
       const order = await response.json()
-      console.log('Orden creada:', order)
+      console.log('✅ Order created successfully:', order)
       
       // NO limpiar el carrito todavía - esperar a que el usuario vea la confirmación
       return order
     } catch (error) {
-      console.error('Error creando orden:', error)
+      console.error('❌ Error creating order:', error)
       toast({
-        title: "Error",
-        description: "No se pudo crear la orden",
+        title: "Error al crear orden",
+        description: error instanceof Error ? error.message : "No se pudo crear la orden",
         variant: "destructive"
       })
       return null
@@ -352,10 +389,40 @@ export default function CheckoutPage() {
   }
 
   const handleViewOrders = () => {
-    // Limpiar el carrito después de que el usuario vea la confirmación
-    clearCart()
-    // Redirigir a la página de órdenes
-    router.push('/orders')
+    console.log('📋 View orders clicked')
+    
+    // Verificar autenticación antes de limpiar el carrito
+    const checkAuthAndRedirect = async () => {
+      try {
+        const response = await fetch('/api/auth/me')
+        if (!response.ok) {
+          console.log('🔐 Not authenticated, redirecting to login...')
+          toast({
+            title: "Inicia sesión requerida",
+            description: "Debes iniciar sesión para ver tus órdenes",
+            variant: "destructive"
+          })
+          router.push('/login?redirect=/orders')
+          return
+        }
+        
+        console.log('🔐 Authenticated, clearing cart and redirecting to orders...')
+        // Limpiar el carrito después de que el usuario vea la confirmación
+        clearCart()
+        // Redirigir a la página de órdenes
+        router.push('/orders')
+      } catch (error) {
+        console.log('🔐 Auth error:', error)
+        toast({
+          title: "Error de autenticación",
+          description: "Debes iniciar sesión para ver tus órdenes",
+          variant: "destructive"
+        })
+        router.push('/login?redirect=/orders')
+      }
+    }
+    
+    checkAuthAndRedirect()
   }
 
   const handleShippingSelect = (option: any) => {

@@ -167,4 +167,46 @@ export const products: Product[] = [
     reviews: 432,
     inStock: true,
   },
+  {
+    id: "13",
+    name: "XIAOMI REDMI 15C 128GB 4RAM BLACK GLOBAL",
+    category: "electronics",
+    price: 299,
+    image: "/placeholder.svg",
+    description: "Smartphone Xiaomi Redmi 15C con 128GB de almacenamiento, 4GB RAM, color negro versión global",
+    brand: "XIAOMI",
+    rating: 4.3,
+    reviews: 234,
+    inStock: true,
+    weight: 0.19, // 190g
+    featured: false,
+  },
+  {
+    id: "14",
+    name: "XIAOMI REDMI NOTE 13 PRO 256GB 8RAM BLUE",
+    category: "electronics",
+    price: 449,
+    image: "/placeholder.svg",
+    description: "Smartphone Xiaomi Redmi Note 13 Pro con 256GB de almacenamiento, 8GB RAM, cámara de 108MP",
+    brand: "XIAOMI",
+    rating: 4.5,
+    reviews: 567,
+    inStock: true,
+    weight: 0.20, // 200g
+    featured: true,
+  },
+  {
+    id: "15",
+    name: "XIAOMI 13 PRO 5G 256GB 12RAM LEICA",
+    category: "electronics",
+    price: 899,
+    image: "/placeholder.svg",
+    description: "Smartphone premium Xiaomi 13 Pro con 5G, 256GB, 12GB RAM, cámara Leica de 50MP",
+    brand: "XIAOMI",
+    rating: 4.7,
+    reviews: 892,
+    inStock: true,
+    weight: 0.21, // 210g
+    featured: true,
+  }
 ]

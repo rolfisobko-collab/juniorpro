@@ -78,7 +78,13 @@ export function ImageUpload({ value, onChange, className }: ImageUploadProps) {
 
   const handleUrlChange = (url: string) => {
     setPreview(url)
-    onChange(url)
+    // No llamar onChange aquí, solo actualizar el preview
+  }
+
+  const handleSave = () => {
+    if (preview) {
+      onChange(preview)
+    }
   }
 
   return (
@@ -136,6 +142,15 @@ export function ImageUpload({ value, onChange, className }: ImageUploadProps) {
           value={preview}
           onChange={(e) => handleUrlChange(e.target.value)}
         />
+        {preview && (
+          <Button 
+            onClick={handleSave}
+            className="w-full"
+            type="button"
+          >
+            Guardar Imagen
+          </Button>
+        )}
       </div>
 
       {!preview && (

@@ -6,9 +6,11 @@ import { useEffect, useState } from "react"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table"
-import { Plus, Pencil, Trash2, Search, Building, Eye, Upload } from "lucide-react"
+import { Plus, Pencil, Trash2, Search, Building, Eye, Upload, Image as ImageIcon } from "lucide-react"
 import { useToast } from "@/hooks/use-toast"
 import { BrandsModal } from "@/components/brands-modal"
+import { ImageLinkModal } from "@/components/image-link-modal"
+import { ImageUpload } from "@/components/image-upload"
 import Link from "next/link"
 import { useRouter } from "next/navigation"
 
@@ -36,6 +38,8 @@ export default function AdminProductsPage() {
   const [showConfirmDialog, setShowConfirmDialog] = useState(false)
   const [showPreviewDialog, setShowPreviewDialog] = useState(false)
   const [extractedProducts, setExtractedProducts] = useState<any[]>([])
+  const [imageModalProduct, setImageModalProduct] = useState<Product | null>(null)
+  const [updatedProductId, setUpdatedProductId] = useState<string | null>(null)
   const { toast } = useToast()
   const router = useRouter()
 
@@ -143,6 +147,66 @@ export default function AdminProductsPage() {
 
   const handleEdit = (product: any) => {
     router.push(`/panel/products/${product.id}/edit`)
+  }
+
+  const handleImageModal = (product: Product) => {
+    setImageModalProduct(product)
+  }
+
+  const handleImageUpdate = async (imageUrl: string) => {
+    if (imageModalProduct) {
+      try {
+        console.log('🔄 Updating product image:', imageModalProduct.id, imageUrl)
+        
+        const res = await fetch(`/api/admin/products/update-simple`, {
+          method: "PUT",
+          headers: { "Content-Type": "application/json" },
+          credentials: "include",
+          body: JSON.stringify({
+            id: imageModalProduct.id,
+            image: imageUrl
+          }),
+        })
+
+        if (!res.ok) {
+          const errorData = await res.json()
+          console.error('❌ API Error:', errorData)
+          throw new Error(errorData.error || 'Error al actualizar imagen')
+        }
+
+        const updatedProduct = await res.json()
+        console.log('✅ Product image updated:', updatedProduct)
+        
+        // Actualizar el producto en la lista local
+        setProducts(prev => {
+          const updated = prev.map(p => 
+            p.id === imageModalProduct.id 
+              ? { ...p, image: imageUrl }
+              : p
+          )
+          console.log('🔄 Products updated locally:', updated.find(p => p.id === imageModalProduct.id))
+          return updated
+        })
+        
+        // Animación visual de actualización
+        setUpdatedProductId(imageModalProduct.id)
+        setTimeout(() => setUpdatedProductId(null), 2000)
+        
+        toast({
+          title: "✅ ¡Imagen guardada!",
+          description: "La imagen se actualizó correctamente en la tabla",
+          variant: "default",
+        })
+        setImageModalProduct(null)
+      } catch (error) {
+        console.error('Error updating image:', error)
+        toast({
+          title: "Error",
+          description: "No se pudo actualizar la imagen",
+          variant: "destructive"
+        })
+      }
+    }
   }
 
   const handleDelete = async (id: string) => {
@@ -519,39 +583,103 @@ export default function AdminProductsPage() {
         <Table>
             <TableHeader>
               <TableRow>
+                <TableHead>Imagen</TableHead>
                 <TableHead>Nombre</TableHead>
                 <TableHead>Categoría</TableHead>
                 <TableHead>Precio</TableHead>
-                <TableHead>Stock</TableHead>
                 <TableHead className="text-right">Acciones</TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>
-              {filteredProducts.map((product) => (
-                <TableRow key={product.id}>
-                  <TableCell className="font-medium">{product.name}</TableCell>
-                  <TableCell className="capitalize">{product.category}</TableCell>
-                  <TableCell>${product.price.toLocaleString()}</TableCell>
-                  <TableCell>
-                    <span
-                      className={`inline-flex items-center px-2 py-1 rounded-full text-xs font-medium ${product.inStock ? "bg-green-100 text-green-800" : "bg-red-100 text-red-800"}`}
-                    >
-                      {product.inStock ? "En Stock" : "Agotado"}
-                    </span>
-                  </TableCell>
-                  <TableCell className="text-right">
-                    <Button variant="ghost" size="sm" onClick={() => handlePreview(product)}>
-                      <Eye className="h-4 w-4" />
-                    </Button>
-                    <Button variant="ghost" size="sm" onClick={() => handleEdit(product)}>
-                      <Pencil className="h-4 w-4" />
-                    </Button>
-                    <Button variant="ghost" size="sm" onClick={() => handleDelete(product.id)}>
-                      <Trash2 className="h-4 w-4 text-destructive" />
-                    </Button>
-                  </TableCell>
-                </TableRow>
-              ))}
+              {filteredProducts.map((product) => {
+                const hasNoImage = !product.image || product.image === "" || product.image === "/placeholder.svg"
+                return (
+                  <TableRow 
+                    key={product.id}
+                    className={`
+                      ${hasNoImage ? "bg-red-50 border-red-200 hover:bg-red-100" : ""}
+                      ${updatedProductId === product.id ? "bg-green-50 border-green-300 animate-pulse" : ""}
+                    `}
+                  >
+                    <TableCell>
+                      <div className="w-12 h-12 rounded-lg overflow-hidden bg-gray-100 flex items-center justify-center relative">
+                        {hasNoImage ? (
+                          <ImageIcon className="w-6 h-6 text-gray-400" />
+                        ) : (
+                          <>
+                            <img 
+                              src={product.image} 
+                              alt={product.name}
+                              className="w-full h-full object-cover"
+                              onError={(e) => {
+                                const target = e.target as HTMLImageElement;
+                                target.style.display = 'none';
+                                const fallback = target.parentElement?.querySelector('.fallback-icon');
+                                if (fallback) {
+                                  (fallback as HTMLElement).style.display = 'flex';
+                                }
+                              }}
+                            />
+                            <div className="fallback-icon hidden">
+                              <ImageIcon className="w-6 h-6 text-gray-400" />
+                            </div>
+                          </>
+                        )}
+                        {updatedProductId === product.id && (
+                          <div className="absolute -top-1 -right-1 bg-green-500 text-white rounded-full p-1 animate-bounce">
+                            <svg className="w-3 h-3" fill="currentColor" viewBox="0 0 20 20">
+                              <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
+                            </svg>
+                          </div>
+                        )}
+                      </div>
+                    </TableCell>
+                    <TableCell className="font-medium">
+                      <div className="flex items-center gap-2">
+                        {product.name}
+                        {hasNoImage && (
+                          <span className="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-red-100 text-red-800 border border-red-300">
+                            Sin imagen
+                          </span>
+                        )}
+                      </div>
+                    </TableCell>
+                    <TableCell className="capitalize">{product.category}</TableCell>
+                    <TableCell>${product.price.toLocaleString()}</TableCell>
+                    <TableCell className="text-right">
+                      <Button variant="ghost" size="sm" onClick={() => handlePreview(product)}>
+                        <Eye className="h-4 w-4" />
+                      </Button>
+                      <Button 
+                        variant="ghost" 
+                        size="sm" 
+                        onClick={() => {
+                          const searchQuery = encodeURIComponent(`${product.name} image`)
+                          window.open(`https://www.google.com/search?q=${searchQuery}&tbm=isch`, '_blank')
+                        }}
+                        title="Buscar imagen en Google"
+                      >
+                        <ImageIcon className="h-4 w-4" />
+                      </Button>
+                      <Button 
+                        variant="ghost" 
+                        size="sm" 
+                        onClick={() => handleImageModal(product)}
+                        title="Subir imagen"
+                        className="text-orange-600 hover:text-orange-700 hover:bg-orange-50"
+                      >
+                        <Upload className="h-4 w-4" />
+                      </Button>
+                      <Button variant="ghost" size="sm" onClick={() => handleEdit(product)}>
+                        <Pencil className="h-4 w-4" />
+                      </Button>
+                      <Button variant="ghost" size="sm" onClick={() => handleDelete(product.id)}>
+                        <Trash2 className="h-4 w-4 text-destructive" />
+                      </Button>
+                    </TableCell>
+                  </TableRow>
+                )
+              })}
             </TableBody>
           </Table>
         </div>
@@ -563,118 +691,33 @@ export default function AdminProductsPage() {
         onOpenChange={setIsBrandsModalOpen} 
       />
 
-      {/* Diálogo de previsualización de productos */}
-      {showPreviewDialog && extractedProducts.length > 0 && (
+      {/* Modal de subida de imagen */}
+      {imageModalProduct && (
         <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
-          <div className="bg-white rounded-lg p-6 max-w-4xl w-full mx-4 max-h-[80vh] overflow-y-auto">
-            <h2 className="text-xl font-bold mb-4">Previsualización de Productos ({extractedProducts.length})</h2>
-            <p className="text-muted-foreground mb-4">
-              Revisa los productos que se importarán desde el archivo HTML del ERP
-            </p>
-            
-            <div className="mb-4 max-h-96 overflow-y-auto">
-              <table className="w-full text-sm">
-                <thead className="sticky top-0 bg-white border-b">
-                  <tr>
-                    <th className="text-left p-2">Código</th>
-                    <th className="text-left p-2">Descripción</th>
-                    <th className="text-left p-2">Precio</th>
-                    <th className="text-left p-2">Stock</th>
-                    <th className="text-left p-2">Marca</th>
-                    <th className="text-left p-2">Categoría</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {extractedProducts.map((product, index) => (
-                    <tr key={index} className="border-b hover:bg-gray-50">
-                      <td className="p-2 font-mono text-xs">{product.codigo}</td>
-                      <td className="p-2 max-w-xs truncate" title={product.descripcion}>
-                        {product.descripcion}
-                      </td>
-                      <td className="p-2 text-right font-mono">
-                        ${product.price?.toFixed(2) || '0.00'}
-                      </td>
-                      <td className="p-2 text-center">{product.stock}</td>
-                      <td className="p-2">{product.brand}</td>
-                      <td className="p-2">{product.categoryKey}</td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
+          <div className="bg-white rounded-lg p-6 max-w-md w-full mx-4">
+            <div className="flex items-center justify-between mb-4">
+              <h3 className="text-lg font-semibold">
+                Subir imagen: {imageModalProduct.name.substring(0, 30)}...
+              </h3>
+              <button
+                onClick={() => setImageModalProduct(null)}
+                className="text-gray-400 hover:text-gray-600"
+              >
+                ✕
+              </button>
             </div>
-
-            <div className="flex justify-end gap-3">
+            
+            <ImageUpload 
+              value={imageModalProduct.image || ""}
+              onChange={handleImageUpdate}
+            />
+            
+            <div className="mt-4 flex justify-end">
               <Button 
                 variant="outline" 
-                onClick={() => {
-                  setShowPreviewDialog(false)
-                  setExtractedProducts([])
-                }}
-                disabled={isImporting}
+                onClick={() => setImageModalProduct(null)}
               >
                 Cancelar
-              </Button>
-              <Button 
-                onClick={handleConfirmPreviewImport}
-                disabled={isImporting}
-              >
-                {isImporting ? 'Importando...' : `Importar ${extractedProducts.length} productos`}
-              </Button>
-            </div>
-          </div>
-        </div>
-      )}
-
-      {/* Diálogo de confirmación de duplicados */}
-      {showConfirmDialog && pendingImport && (
-        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
-          <div className="bg-white rounded-lg p-6 max-w-2xl w-full mx-4 max-h-[80vh] overflow-y-auto">
-            <h2 className="text-xl font-bold mb-4">Confirmar Actualización de Productos</h2>
-            <p className="text-muted-foreground mb-4">
-              Se encontraron {pendingImport.result.duplicates.length} productos con códigos duplicados. 
-              ¿Desea actualizar los productos existentes con los nuevos datos?
-            </p>
-            
-            <div className="space-y-3 mb-6">
-              {pendingImport.result.duplicates.map((dup: any, index: number) => (
-                <div key={index} className="border rounded-lg p-3">
-                  <div className="flex justify-between items-start">
-                    <div className="flex-1">
-                      <p className="font-medium">Código: {dup.codigo}</p>
-                      <div className="grid grid-cols-2 gap-4 mt-2 text-sm">
-                        <div>
-                          <p className="text-muted-foreground">Actual:</p>
-                          <p className="font-medium">{dup.existing.name}</p>
-                          <p>Stock: {dup.existing.stock} | Marca: {dup.existing.brand}</p>
-                        </div>
-                        <div>
-                          <p className="text-muted-foreground">Nuevo:</p>
-                          <p className="font-medium">{dup.new.name}</p>
-                          <p>Stock: {dup.new.stock} | Marca: {dup.new.brand}</p>
-                        </div>
-                      </div>
-                    </div>
-                  </div>
-                </div>
-              ))}
-            </div>
-
-            <div className="flex justify-end gap-3">
-              <Button 
-                variant="outline" 
-                onClick={() => {
-                  setShowConfirmDialog(false)
-                  setPendingImport(null)
-                }}
-                disabled={isImporting}
-              >
-                Cancelar
-              </Button>
-              <Button 
-                onClick={handleConfirmImport}
-                disabled={isImporting}
-              >
-                {isImporting ? 'Actualizando...' : 'Confirmar Actualización'}
               </Button>
             </div>
           </div>

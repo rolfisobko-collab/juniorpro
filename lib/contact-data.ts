@@ -27,11 +27,11 @@ export let contactConfig: ContactConfig = {
   address: "Shopping Hwu 1 Salón 212",
   city: "Ciudad del Este",
   country: "Alto Paraná, Paraguay",
-  phone: "+595 982 859384",
+  phone: "+595 0993 506124",
   email: "contacto@techzone.com",
   workingHours: {
-    weekdays: "Lun - Vie: 9:00 - 18:00",
-    saturday: "Sáb: 9:00 - 13:00",
+    weekdays: "Lun - Sáb: 6:30 - 15:30",
+    saturday: "Domingo: Cerrado",
   },
   socialLinks: [
     { platform: "facebook", url: "https://facebook.com/techzone", enabled: true },

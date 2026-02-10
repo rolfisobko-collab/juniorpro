@@ -219,10 +219,9 @@ export default function Footer() {
               </li>
             </ul>
             <div className="pt-2">
-              <p className="text-xs text-muted-foreground">{t('Attention Hours')}</p>
-              <p className="text-sm font-medium">{t('Monday to Friday: 9:00 - 18:00')}</p>
-              <p className="text-sm font-medium">{t('Saturday: 10:00 - 14:00')}</p>
-              <p className="text-xs text-muted-foreground font-medium">{t('Sunday: Closed')}</p>
+              <p className="text-xs text-muted-foreground">Horario de atención</p>
+              <p className="text-sm font-medium">Lun - Sáb: 6:30 - 15:30</p>
+              <p className="text-xs text-muted-foreground font-medium">Domingo: Cerrado</p>
             </div>
           </div>
         </div>

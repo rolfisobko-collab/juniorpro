@@ -217,13 +217,13 @@ export default function ProductDetailPage({ params }: { params: Promise<{ id: st
         <div className="grid lg:grid-cols-2 gap-8 lg:gap-16 items-start">
           {/* Sección de imágenes */}
           <div className="space-y-4">
-            <div className="relative aspect-square rounded-3xl overflow-hidden bg-gradient-to-br from-gray-100 to-gray-200 shadow-2xl group">
-              <div className="absolute inset-0 bg-gradient-to-t from-black/5 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
+            <div className="relative aspect-square rounded-3xl overflow-hidden bg-gradient-to-br from-gray-100 to-gray-200 shadow-2xl group p-4">
+              <div className="absolute inset-4 bg-gradient-to-t from-black/5 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
               <Image 
                 src={product.image || "/placeholder.svg"} 
                 alt={product.name} 
                 fill 
-                className="object-cover transition-transform duration-700 group-hover:scale-110" 
+                className="object-cover transition-transform duration-700 group-hover:scale-110 rounded-2xl" 
                 sizes="(max-width: 768px) 100vw, 50vw"
                 quality={95}
                 priority
@@ -241,13 +241,15 @@ export default function ProductDetailPage({ params }: { params: Promise<{ id: st
             </div>
             
             {/* Miniaturas (opcional para futuro) */}
-            <div className="grid grid-cols-4 gap-2">
-              {[1, 2, 3, 4].map((i) => (
-                <div key={i} className="aspect-square rounded-xl overflow-hidden bg-gray-100 border-2 border-transparent hover:border-blue-500 transition-all duration-300 cursor-pointer">
-                  <div className="w-full h-full bg-gradient-to-br from-gray-200 to-gray-300 animate-pulse" />
-                </div>
-              ))}
-            </div>
+            {false && ( // Desactivado temporalmente hasta que el tipo tenga la propiedad images
+              <div className="grid grid-cols-4 gap-2">
+                {[1, 2, 3, 4].map((i) => (
+                  <div key={i} className="aspect-square rounded-xl overflow-hidden bg-gray-100 border-2 border-transparent hover:border-blue-500 transition-all duration-300 cursor-pointer">
+                    <div className="w-full h-full bg-gradient-to-br from-gray-200 to-gray-300 animate-pulse" />
+                  </div>
+                ))}
+              </div>
+            )}
           </div>
 
           {/* Sección de información */}

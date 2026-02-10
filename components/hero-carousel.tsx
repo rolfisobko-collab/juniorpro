@@ -28,8 +28,8 @@ export function HeroCarousel() {
       mobile: "https://i.ibb.co/QF08DNMF/4-1.png"
     },
     {
-      desktop: "https://i.ibb.co/WNZvP01h/5.png",
-      mobile: "https://i.ibb.co/zVpGD1wN/Carrusel-Carnatech-Tu-historia.png"
+      desktop: "https://i.ibb.co/3mtb8wgC/5.png",
+      mobile: "https://i.ibb.co/8qK2cR6G/5-1.png"
     }
   ] : [
     {
@@ -49,8 +49,8 @@ export function HeroCarousel() {
       mobile: "https://i.ibb.co/QF08DNMF/4-1.png"
     },
     {
-      desktop: "https://i.ibb.co/WNZvP01h/5.png",
-      mobile: "https://i.ibb.co/zVpGD1wN/Carrusel-Carnatech-Tu-historia.png"
+      desktop: "https://i.ibb.co/3mtb8wgC/5.png",
+      mobile: "https://i.ibb.co/8qK2cR6G/5-1.png"
     }
   ]
 

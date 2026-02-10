@@ -1,0 +1,799 @@
+[
+  {
+    "name": "SAMSUNG A06 64GB 4RAM SM-A065M/DS BLACK",
+    "category": "Electrónica",
+    "subcategory": "Smartphones",
+    "price": 78.5,
+    "stock": 10,
+    "image": "/samsung-a06-black.jpg",
+    "description": "Samsung A06 con 64GB de almacenamiento y 4GB de RAM, color negro.",
+    "brand": "Samsung",
+    "model": "SM-A065M/DS",
+    "warranty": "1 año"
+  },
+  {
+    "name": "SAMSUNG A06 64GB 4RAM SM-A065M/DS LIGHT BLUE",
+    "category": "Electrónica",
+    "subcategory": "Smartphones",
+    "price": 78.5,
+    "stock": 10,
+    "image": "/samsung-a06-light-blue.jpg",
+    "description": "Samsung A06 con 64GB de almacenamiento y 4GB de RAM, color azul claro.",
+    "brand": "Samsung",
+    "model": "SM-A065M/DS",
+    "warranty": "1 año"
+  },
+  {
+    "name": "SAMSUNG A06 64GB 4RAM SM-A065M/DS LIGHT GREEN",
+    "category": "Electrónica",
+    "subcategory": "Smartphones",
+    "price": 78.5,
+    "stock": 10,
+    "image": "/samsung-a06-light-green.jpg",
+    "description": "Samsung A06 con 64GB de almacenamiento y 4GB de RAM, color verde claro.",
+    "brand": "Samsung",
+    "model": "SM-A065M/DS",
+    "warranty": "1 año"
+  },
+  {
+    "name": "SAMSUNG A07 64GB 4RAM SM-A075M/DS BLACK CAR/BR GAR",
+    "category": "Electrónica",
+    "subcategory": "Smartphones",
+    "price": 98.0,
+    "stock": 8,
+    "image": "/samsung-a07-black.jpg",
+    "description": "Samsung A07 con 64GB de almacenamiento y 4GB de RAM, color negro con garantía CAR/BR.",
+    "brand": "Samsung",
+    "model": "SM-A075M/DS",
+    "warranty": "1 año"
+  },
+  {
+    "name": "SAMSUNG A07 64GB 4RAM SM-A075M/DS GREEN CAR/BR GAR",
+    "category": "Electrónica",
+    "subcategory": "Smartphones",
+    "price": 97.0,
+    "stock": 8,
+    "image": "/samsung-a07-green.jpg",
+    "description": "Samsung A07 con 64GB de almacenamiento y 4GB de RAM, color verde con garantía CAR/BR.",
+    "brand": "Samsung",
+    "model": "SM-A075M/DS",
+    "warranty": "1 año"
+  },
+  {
+    "name": "SAMSUNG A07 64GB 4RAM SM-A075M/DS LIGHT VIOLET",
+    "category": "Electrónica",
+    "subcategory": "Smartphones",
+    "price": 95.0,
+    "stock": 6,
+    "image": "/samsung-a07-violet.jpg",
+    "description": "Samsung A07 con 64GB de almacenamiento y 4GB de RAM, color violeta claro.",
+    "brand": "Samsung",
+    "model": "SM-A075M/DS",
+    "warranty": "1 año"
+  },
+  {
+    "name": "SAMSUNG A07 64GB 4RAM SM-A075M/DS VIOLET CAR/BR GAR",
+    "category": "Electrónica",
+    "subcategory": "Smartphones",
+    "price": 97.0,
+    "stock": 8,
+    "image": "/samsung-a07-violet-gar.jpg",
+    "description": "Samsung A07 con 64GB de almacenamiento y 4GB de RAM, color violeta con garantía CAR/BR.",
+    "brand": "Samsung",
+    "model": "SM-A075M/DS",
+    "warranty": "1 año"
+  },
+  {
+    "name": "SAMSUNG A16 128GB 4RAM SM-A165M 4G BLACK GAR.PY/ARG/UY",
+    "category": "Electrónica",
+    "subcategory": "Smartphones",
+    "price": 115.0,
+    "stock": 12,
+    "image": "/samsung-a16-black.jpg",
+    "description": "Samsung A16 con 128GB de almacenamiento y 4GB de RAM, color negro con garantía PY/ARG/UY.",
+    "brand": "Samsung",
+    "model": "SM-A165M",
+    "warranty": "1 año"
+  },
+  {
+    "name": "SAMSUNG A16 128GB 4RAM SM-A165M 4G GRAY GAR.PY/ARG/UY",
+    "category": "Electrónica",
+    "subcategory": "Smartphones",
+    "price": 115.0,
+    "stock": 10,
+    "image": "/samsung-a16-gray.jpg",
+    "description": "Samsung A16 con 128GB de almacenamiento y 4GB de RAM, color gris con garantía PY/ARG/UY.",
+    "brand": "Samsung",
+    "model": "SM-A165M",
+    "warranty": "1 año"
+  },
+  {
+    "name": "SAMSUNG A16 128GB 4RAM SM-A165M 4G GREEN GAR.PY/ARG/UY",
+    "category": "Electrónica",
+    "subcategory": "Smartphones",
+    "price": 116.0,
+    "stock": 8,
+    "image": "/samsung-a16-green.jpg",
+    "description": "Samsung A16 con 128GB de almacenamiento y 4GB de RAM, color verde con garantía PY/ARG/UY.",
+    "brand": "Samsung",
+    "model": "SM-A165M",
+    "warranty": "1 año"
+  },
+  {
+    "name": "SAMSUNG A17 128GB 4RAM SM-A175F DS LTE 4G BLACK",
+    "category": "Electrónica",
+    "subcategory": "Smartphones",
+    "price": 141.0,
+    "stock": 15,
+    "image": "/samsung-a17-black.jpg",
+    "description": "Samsung A17 con 128GB de almacenamiento y 4GB de RAM, color negro.",
+    "brand": "Samsung",
+    "model": "SM-A175F",
+    "warranty": "1 año"
+  },
+  {
+    "name": "SAMSUNG A17 128GB 4RAM SM-A175F DS LTE 4G BLUE",
+    "category": "Electrónica",
+    "subcategory": "Smartphones",
+    "price": 141.0,
+    "stock": 12,
+    "image": "/samsung-a17-blue.jpg",
+    "description": "Samsung A17 con 128GB de almacenamiento y 4GB de RAM, color azul.",
+    "brand": "Samsung",
+    "model": "SM-A175F",
+    "warranty": "1 año"
+  },
+  {
+    "name": "SAMSUNG A17 128GB 4RAM SM-A175F DS LTE 4G GRAY",
+    "category": "Electrónica",
+    "subcategory": "Smartphones",
+    "price": 141.0,
+    "stock": 10,
+    "image": "/samsung-a17-gray.jpg",
+    "description": "Samsung A17 con 128GB de almacenamiento y 4GB de RAM, color gris.",
+    "brand": "Samsung",
+    "model": "SM-A175F",
+    "warranty": "1 año"
+  },
+  {
+    "name": "SAMSUNG A17 128GB 6RAM SM-A176B 5G BLACK",
+    "category": "Electrónica",
+    "subcategory": "Smartphones",
+    "price": 184.0,
+    "stock": 8,
+    "image": "/samsung-a17-5g-black.jpg",
+    "description": "Samsung A17 5G con 128GB de almacenamiento y 6GB de RAM, color negro.",
+    "brand": "Samsung",
+    "model": "SM-A176B",
+    "warranty": "1 año"
+  },
+  {
+    "name": "SAMSUNG A17 128GB 6RAM SM-A176B 5G BLUE",
+    "category": "Electrónica",
+    "subcategory": "Smartphones",
+    "price": 184.0,
+    "stock": 8,
+    "image": "/samsung-a17-5g-blue.jpg",
+    "description": "Samsung A17 5G con 128GB de almacenamiento y 6GB de RAM, color azul.",
+    "brand": "Samsung",
+    "model": "SM-A176B",
+    "warranty": "1 año"
+  },
+  {
+    "name": "SAMSUNG A17 128GB 6RAM SM-A176B 5G GRAY",
+    "category": "Electrónica",
+    "subcategory": "Smartphones",
+    "price": 184.0,
+    "stock": 6,
+    "image": "/samsung-a17-5g-gray.jpg",
+    "description": "Samsung A17 5G con 128GB de almacenamiento y 6GB de RAM, color gris.",
+    "brand": "Samsung",
+    "model": "SM-A176B",
+    "warranty": "1 año"
+  },
+  {
+    "name": "SAMSUNG A17 256GB 8RAM SM-A176B 5G BLUE",
+    "category": "Electrónica",
+    "subcategory": "Smartphones",
+    "price": 186.0,
+    "stock": 5,
+    "image": "/samsung-a17-256gb-blue.jpg",
+    "description": "Samsung A17 5G con 256GB de almacenamiento y 8GB de RAM, color azul.",
+    "brand": "Samsung",
+    "model": "SM-A176B",
+    "warranty": "1 año"
+  },
+  {
+    "name": "SAMSUNG A17 256GB 8RAM SM-A176B 5G GRAY",
+    "category": "Electrónica",
+    "subcategory": "Smartphones",
+    "price": 186.0,
+    "stock": 5,
+    "image": "/samsung-a17-256gb-gray.jpg",
+    "description": "Samsung A17 5G con 256GB de almacenamiento y 8GB de RAM, color gris.",
+    "brand": "Samsung",
+    "model": "SM-A176B",
+    "warranty": "1 año"
+  },
+  {
+    "name": "SAMSUNG A26 A266M 5G 8/256GB BLACK GAR PY/AR/UY",
+    "category": "Electrónica",
+    "subcategory": "Smartphones",
+    "price": 205.0,
+    "stock": 10,
+    "image": "/samsung-a26-black.jpg",
+    "description": "Samsung A26 5G con 8GB RAM y 256GB almacenamiento, color negro con garantía PY/AR/UY.",
+    "brand": "Samsung",
+    "model": "A266M",
+    "warranty": "1 año"
+  },
+  {
+    "name": "SAMSUNG A26 A266M 5G 8/256GB MINT GREEN GAR PY/AR/UY",
+    "category": "Electrónica",
+    "subcategory": "Smartphones",
+    "price": 205.0,
+    "stock": 8,
+    "image": "/samsung-a26-mint.jpg",
+    "description": "Samsung A26 5G con 8GB RAM y 256GB almacenamiento, color verde menta con garantía PY/AR/UY.",
+    "brand": "Samsung",
+    "model": "A266M",
+    "warranty": "1 año"
+  },
+  {
+    "name": "SAMSUNG A36 A366E 5G 8/256GB BLACK",
+    "category": "Electrónica",
+    "subcategory": "Smartphones",
+    "price": 262.0,
+    "stock": 12,
+    "image": "/samsung-a36-black.jpg",
+    "description": "Samsung A36 5G con 8GB RAM y 256GB almacenamiento, color negro.",
+    "brand": "Samsung",
+    "model": "A366E",
+    "warranty": "1 año"
+  },
+  {
+    "name": "SAMSUNG A36 A366E 5G 8/256GB LAVANDER",
+    "category": "Electrónica",
+    "subcategory": "Smartphones",
+    "price": 262.0,
+    "stock": 8,
+    "image": "/samsung-a36-lavender.jpg",
+    "description": "Samsung A36 5G con 8GB RAM y 256GB almacenamiento, color lavanda.",
+    "brand": "Samsung",
+    "model": "A366E",
+    "warranty": "1 año"
+  },
+  {
+    "name": "SAMSUNG A36 A366E 5G 8/256GB LIME",
+    "category": "Electrónica",
+    "subcategory": "Smartphones",
+    "price": 260.0,
+    "stock": 10,
+    "image": "/samsung-a36-lime.jpg",
+    "description": "Samsung A36 5G con 8GB RAM y 256GB almacenamiento, color lima.",
+    "brand": "Samsung",
+    "model": "A366E",
+    "warranty": "1 año"
+  },
+  {
+    "name": "SAMSUNG A36 A366E 5G 8/256GB WHITE",
+    "category": "Electrónica",
+    "subcategory": "Smartphones",
+    "price": 262.0,
+    "stock": 8,
+    "image": "/samsung-a36-white.jpg",
+    "description": "Samsung A36 5G con 8GB RAM y 256GB almacenamiento, color blanco.",
+    "brand": "Samsung",
+    "model": "A366E",
+    "warranty": "1 año"
+  },
+  {
+    "name": "SAMSUNG A56 A566E 5G 12/256GB AWESOME PINK",
+    "category": "Electrónica",
+    "subcategory": "Smartphones",
+    "price": 359.0,
+    "stock": 6,
+    "image": "/samsung-a56-pink.jpg",
+    "description": "Samsung A56 5G con 12GB RAM y 256GB almacenamiento, color rosa awesome.",
+    "brand": "Samsung",
+    "model": "A566E",
+    "warranty": "1 año"
+  },
+  {
+    "name": "SAMSUNG A56 A566E 5G 12/256GB GRAPHITE",
+    "category": "Electrónica",
+    "subcategory": "Smartphones",
+    "price": 360.0,
+    "stock": 8,
+    "image": "/samsung-a56-graphite.jpg",
+    "description": "Samsung A56 5G con 12GB RAM y 256GB almacenamiento, color grafito.",
+    "brand": "Samsung",
+    "model": "A566E",
+    "warranty": "1 año"
+  },
+  {
+    "name": "SAMSUNG A56 A566E 5G 12/256GB LIGHT GRAY",
+    "category": "Electrónica",
+    "subcategory": "Smartphones",
+    "price": 360.0,
+    "stock": 8,
+    "image": "/samsung-a56-light-gray.jpg",
+    "description": "Samsung A56 5G con 12GB RAM y 256GB almacenamiento, color gris claro.",
+    "brand": "Samsung",
+    "model": "A566E",
+    "warranty": "1 año"
+  },
+  {
+    "name": "SAMSUNG A56 A566E 5G 12/256GB LIGHT OLIVE",
+    "category": "Electrónica",
+    "subcategory": "Smartphones",
+    "price": 359.0,
+    "stock": 6,
+    "image": "/samsung-a56-olive.jpg",
+    "description": "Samsung A56 5G con 12GB RAM y 256GB almacenamiento, color verde oliva claro.",
+    "brand": "Samsung",
+    "model": "A566E",
+    "warranty": "1 año"
+  },
+  {
+    "name": "SAMSUNG A56 A566E 5G 8/128GB LIGHT GRAY",
+    "category": "Electrónica",
+    "subcategory": "Smartphones",
+    "price": 289.0,
+    "stock": 10,
+    "image": "/samsung-a56-128gb-gray.jpg",
+    "description": "Samsung A56 5G con 8GB RAM y 128GB almacenamiento, color gris claro.",
+    "brand": "Samsung",
+    "model": "A566E",
+    "warranty": "1 año"
+  },
+  {
+    "name": "SAMSUNG A56 A566E 5G 8/128GB OLIVE",
+    "category": "Electrónica",
+    "subcategory": "Smartphones",
+    "price": 289.0,
+    "stock": 8,
+    "image": "/samsung-a56-128gb-olive.jpg",
+    "description": "Samsung A56 5G con 8GB RAM y 128GB almacenamiento, color verde oliva.",
+    "brand": "Samsung",
+    "model": "A566E",
+    "warranty": "1 año"
+  },
+  {
+    "name": "SAMSUNG A56 A566E 5G 8/128GB PINK",
+    "category": "Electrónica",
+    "subcategory": "Smartphones",
+    "price": 289.0,
+    "stock": 6,
+    "image": "/samsung-a56-128gb-pink.jpg",
+    "description": "Samsung A56 5G con 8GB RAM y 128GB almacenamiento, color rosa.",
+    "brand": "Samsung",
+    "model": "A566E",
+    "warranty": "1 año"
+  },
+  {
+    "name": "TABLET SAMSUNG TAB A9 X110 WIFI 64/4 GRAFITE",
+    "category": "Electrónica",
+    "subcategory": "Tablets",
+    "price": 99.0,
+    "stock": 8,
+    "image": "/samsung-tab-a9-grafite.jpg",
+    "description": "Tablet Samsung Tab A9 con WiFi, 64GB almacenamiento y 4GB RAM, color grafito.",
+    "brand": "Samsung",
+    "model": "X110",
+    "warranty": "1 año"
+  },
+  {
+    "name": "ROBOT XIAOMI VACUUM 220V X20 MAX -PRETO /IVO",
+    "category": "Electrónica",
+    "subcategory": "Electrodomésticos",
+    "price": 520.0,
+    "stock": 5,
+    "image": "/xiaomi-vacuum-x20-max.jpg",
+    "description": "Robot aspirador Xiaomi Vacuum X20 MAX 220V, color negro/ivo.",
+    "brand": "Xiaomi",
+    "model": "X20 MAX",
+    "warranty": "1 año"
+  },
+  {
+    "name": "ROBOT XIAOMI VACUUM 5 220V BRANCO /IVO",
+    "category": "Electrónica",
+    "subcategory": "Electrodomésticos",
+    "price": 520.0,
+    "stock": 5,
+    "image": "/xiaomi-vacuum-5.jpg",
+    "description": "Robot aspirador Xiaomi Vacuum 5 220V, color blanco/ivo.",
+    "brand": "Xiaomi",
+    "model": "Vacuum 5",
+    "warranty": "1 año"
+  },
+  {
+    "name": "ROBOT XIAOMI VACUUM H40 220V - WHITE /IVO",
+    "category": "Electrónica",
+    "subcategory": "Electrodomésticos",
+    "price": 265.0,
+    "stock": 8,
+    "image": "/xiaomi-vacuum-h40.jpg",
+    "description": "Robot aspirador Xiaomi Vacuum H40 220V, color blanco/ivo.",
+    "brand": "Xiaomi",
+    "model": "H40",
+    "warranty": "1 año"
+  },
+  {
+    "name": "ROBOT XIAOMI VACUUM S40 BIVOLT BRANCO /IVO",
+    "category": "Electrónica",
+    "subcategory": "Electrodomésticos",
+    "price": 175.0,
+    "stock": 10,
+    "image": "/xiaomi-vacuum-s40.jpg",
+    "description": "Robot aspirador Xiaomi Vacuum S40 bivolt, color blanco/ivo.",
+    "brand": "Xiaomi",
+    "model": "S40",
+    "warranty": "1 año"
+  },
+  {
+    "name": "ROBOT XIAOMI VACUUM S40 PRO BIVOLT BRANCO /IVO",
+    "category": "Electrónica",
+    "subcategory": "Electrodomésticos",
+    "price": 260.0,
+    "stock": 8,
+    "image": "/xiaomi-vacuum-s40-pro.jpg",
+    "description": "Robot aspirador Xiaomi Vacuum S40 PRO bivolt, color blanco/ivo.",
+    "brand": "Xiaomi",
+    "model": "S40 PRO",
+    "warranty": "1 año"
+  },
+  {
+    "name": "ROBOT XIAOMI VACUUM S40C BIVOLT BRANCO /IVO",
+    "category": "Electrónica",
+    "subcategory": "Electrodomésticos",
+    "price": 167.0,
+    "stock": 10,
+    "image": "/xiaomi-vacuum-s40c.jpg",
+    "description": "Robot aspirador Xiaomi Vacuum S40C bivolt, color blanco/ivo.",
+    "brand": "Xiaomi",
+    "model": "S40C",
+    "warranty": "1 año"
+  },
+  {
+    "name": "ROBOT XIAOMI VACUUM X20 PRO WHITE 220V /IVO",
+    "category": "Electrónica",
+    "subcategory": "Electrodomésticos",
+    "price": 480.0,
+    "stock": 6,
+    "image": "/xiaomi-vacuum-x20-pro.jpg",
+    "description": "Robot aspirador Xiaomi Vacuum X20 PRO 220V, color blanco/ivo.",
+    "brand": "Xiaomi",
+    "model": "X20 PRO",
+    "warranty": "1 año"
+  },
+  {
+    "name": "TABLET XIAOMI REDMI PAD 2 4RAM 128GB GRAPHITE GRAY 11'",
+    "category": "Electrónica",
+    "subcategory": "Tablets",
+    "price": 148.75,
+    "stock": 8,
+    "image": "/xiaomi-redmi-pad-2-4gb.jpg",
+    "description": "Tablet Xiaomi Redmi Pad 2 con 4GB RAM y 128GB almacenamiento, pantalla 11', color gris grafito.",
+    "brand": "Xiaomi",
+    "model": "Redmi Pad 2",
+    "warranty": "1 año"
+  },
+  {
+    "name": "TABLET XIAOMI REDMI PAD 2 8RAM 256GB GRAPHITE GRAY 11'",
+    "category": "Electrónica",
+    "subcategory": "Tablets",
+    "price": 182.0,
+    "stock": 6,
+    "image": "/xiaomi-redmi-pad-2-8gb.jpg",
+    "description": "Tablet Xiaomi Redmi Pad 2 con 8GB RAM y 256GB almacenamiento, pantalla 11', color gris grafito.",
+    "brand": "Xiaomi",
+    "model": "Redmi Pad 2",
+    "warranty": "1 año"
+  },
+  {
+    "name": "TABLET XIAOMI REDMI PAD 2 8RAM 256GB GREEN 11'",
+    "category": "Electrónica",
+    "subcategory": "Tablets",
+    "price": 179.75,
+    "stock": 6,
+    "image": "/xiaomi-redmi-pad-2-green.jpg",
+    "description": "Tablet Xiaomi Redmi Pad 2 con 8GB RAM y 256GB almacenamiento, pantalla 11', color verde.",
+    "brand": "Xiaomi",
+    "model": "Redmi Pad 2",
+    "warranty": "1 año"
+  },
+  {
+    "name": "XIAOMI 15T PRO 512GB 12RAM BLACK GLOBAL",
+    "category": "Electrónica",
+    "subcategory": "Smartphones",
+    "price": 698.0,
+    "stock": 5,
+    "image": "/xiaomi-15t-pro-black.jpg",
+    "description": "Xiaomi 15T Pro con 512GB almacenamiento y 12GB RAM, versión global, color negro.",
+    "brand": "Xiaomi",
+    "model": "15T Pro",
+    "warranty": "1 año"
+  },
+  {
+    "name": "XIAOMI 15T PRO 512GB 12RAM GOLD GLOBAL",
+    "category": "Electrónica",
+    "subcategory": "Smartphones",
+    "price": 715.0,
+    "stock": 4,
+    "image": "/xiaomi-15t-pro-gold.jpg",
+    "description": "Xiaomi 15T Pro con 512GB almacenamiento y 12GB RAM, versión global, color dorado.",
+    "brand": "Xiaomi",
+    "model": "15T Pro",
+    "warranty": "1 año"
+  },
+  {
+    "name": "XIAOMI 15T PRO 512GB 12RAM GRAY GLOBAL",
+    "category": "Electrónica",
+    "subcategory": "Smartphones",
+    "price": 698.0,
+    "stock": 5,
+    "image": "/xiaomi-15t-pro-gray.jpg",
+    "description": "Xiaomi 15T Pro con 512GB almacenamiento y 12GB RAM, versión global, color gris.",
+    "brand": "Xiaomi",
+    "model": "15T Pro",
+    "warranty": "1 año"
+  }
+] 
+
+*SAMSUNG 06/02*
+SAMSUNG A06 64GB 4RAM SM-A065M/DS BLACK / 78.50 |
+SAMSUNG A06 64GB 4RAM SM-A065M/DS LIGHT BLUE / 78.50 |
+SAMSUNG A06 64GB 4RAM SM-A065M/DS LIGHT GREEN / 78.50 |
+SAMSUNG A07 64GB 4RAM SM-A075M/DS BLACK CAR/BR GAR / 98.00 |
+SAMSUNG A07 64GB 4RAM SM-A075M/DS GREEN CAR/BR GAR / 97.00 |
+SAMSUNG A07 64GB 4RAM SM-A075M/DS LIGHT VIOLET / 95.00 |
+SAMSUNG A07 64GB 4RAM SM-A075M/DS VIOLET CAR/BR GAR / 97.00 |
+SAMSUNG A16 128GB 4RAM SM-A165M 4G BLACK GAR.PY/ARG/UY / 115.00 |
+SAMSUNG A16 128GB 4RAM SM-A165M 4G GRAY GAR.PY/ARG/UY / 115.00 |
+SAMSUNG A16 128GB 4RAM SM-A165M 4G GREEN GAR.PY/ARG/UY / 116.00 |
+SAMSUNG A17 128GB 4RAM SM-A175F DS LTE 4G BLACK / 141.00 |
+SAMSUNG A17 128GB 4RAM SM-A175F DS LTE 4G BLUE / 141.00 |
+SAMSUNG A17 128GB 4RAM SM-A175F DS LTE 4G GRAY / 141.00 |
+SAMSUNG A17 128GB 6RAM SM-A176B 5G BLACK / 184.00 |
+SAMSUNG A17 128GB 6RAM SM-A176B 5G BLUE / 184.00 |
+SAMSUNG A17 128GB 6RAM SM-A176B 5G GRAY / 184.00 |
+SAMSUNG A17 256GB 8RAM SM-A176B 5G BLUE / 186.00 |
+SAMSUNG A17 256GB 8RAM SM-A176B 5G GRAY / 186.00 |
+SAMSUNG A26 A266M 5G 8/256GB BLACK GAR PY/AR/UY / 205.00 |
+SAMSUNG A26 A266M 5G 8/256GB MINT GREEN GAR PY/AR/UY / 205.00 |
+SAMSUNG A36 A366E 5G 8/256GB BLACK / 262.00 |
+SAMSUNG A36 A366E 5G 8/256GB LAVANDER / 262.00 |
+SAMSUNG A36 A366E 5G 8/256GB LIME / 260.00 |
+SAMSUNG A36 A366E 5G 8/256GB WHITE / 262.00 |
+SAMSUNG A56 A566E 5G 12/256GB AWESOME PINK / 359.00 |
+SAMSUNG A56 A566E 5G 12/256GB GRAPHITE / 360.00 |
+SAMSUNG A56 A566E 5G 12/256GB LIGHT GRAY / 360.00 |
+SAMSUNG A56 A566E 5G 12/256GB LIGHT OLIVE / 359.00 |
+SAMSUNG A56 A566E 5G 8/128GB LIGHT GRAY / 289.00 |
+SAMSUNG A56 A566E 5G 8/128GB OLIVE / 289.00 |
+SAMSUNG A56 A566E 5G 8/128GB PINK / 289.00 |
+TABLET SAMSUNG TAB A9 X110 WIFI 64/4 GRAFITE / 99.00
+
+*XIAOMI 06/02*
+ROBOT XIAOMI VACUUM 220V X20 MAX -PRETO /IVO 520.00 |
+ROBOT XIAOMI VACUUM 5 220V BRANCO /IVO 520.00 |
+ROBOT XIAOMI VACUUM H40 220V - WHITE /IVO 265.00 |
+ROBOT XIAOMI VACUUM S40 BIVOLT BRANCO /IVO 175.00 |
+ROBOT XIAOMI VACUUM S40 PRO BIVOLT BRANCO /IVO 260.00 |
+ROBOT XIAOMI VACUUM S40C BIVOLT BRANCO /IVO 167.00 |
+ROBOT XIAOMI VACUUM X20 PRO WHITE 220V /IVO 480.00 |
+TABLET XIAOMI REDMI PAD 2 4RAM 128GB GRAPHITE GRAY 11' / 148.75 |
+TABLET XIAOMI REDMI PAD 2 8RAM 256GB GRAPHITE GRAY 11' / 182.00 |
+TABLET XIAOMI REDMI PAD 2 8RAM 256GB GREEN 11' / 179.75 |
+XIAOMI 15T PRO 512GB 12RAM BLACK GLOBAL / 698.00 |
+XIAOMI 15T PRO 512GB 12RAM GOLD GLOBAL / 715.00 |
+XIAOMI 15T PRO 512GB 12RAM GRAY GLOBAL / 698.00 |
+XIAOMI NOTE 14 128GB 6RAM BLACK GLOBAL / 130.50 |
+XIAOMI NOTE 14 128GB 6RAM BLUE GLOBAL / 130.50 |
+XIAOMI NOTE 14 128GB 6RAM GREEN GLOBAL / 130.50 |
+XIAOMI NOTE 14 128GB 6RAM PURPLE GLOBAL / 130.50 |
+XIAOMI NOTE 14 256GB 8RAM 5G BLACK GLOBAL / 186.75 |
+XIAOMI NOTE 14 256GB 8RAM 5G GREEN GLOBAL / 183.75 |
+XIAOMI NOTE 14 256GB 8RAM 5G PURPLE GLOBAL / 186.75 |
+XIAOMI NOTE 14 256GB 8RAM BLACK GLOBAL / 162.00 |
+XIAOMI NOTE 14 256GB 8RAM BLUE GLOBAL / 159.90 |
+XIAOMI NOTE 14 256GB 8RAM GREEN GLOBAL / 159.90 |
+XIAOMI NOTE 14 PRO 256GB 8RAM 5G BLACK GLOBAL / 251.75 |
+XIAOMI NOTE 14 PRO 256GB 8RAM 5G GREEN GLOBAL / 248.75 |
+XIAOMI NOTE 14 PRO 256GB 8RAM 5G PURPLE GLOBAL / 251.75 |
+XIAOMI NOTE 14 PRO 256GB 8RAM BLACK GLOBAL / 230.00 |
+XIAOMI NOTE 14 PRO 512GB 12RAM 5G BLACK GLOBAL / 299.75 |
+XIAOMI NOTE 14 PRO 512GB 12RAM 5G GOLD GLOBAL / 299.75 |
+XIAOMI NOTE 14 PRO 512GB 12RAM 5G GREEN GLOBAL / 299.00 |
+XIAOMI NOTE 14 PRO 512GB 12RAM 5G PURPLE GLOBAL / 299.75 |
+XIAOMI NOTE 14 PRO+ 256GB 8RAM 5G BLUE GLOBAL / 302.75 |
+XIAOMI NOTE 15 128GB 6RAM BLACK GLOBAL / 162.00 |
+XIAOMI NOTE 15 128GB 6RAM BLUE GLOBAL / 162.00 |
+XIAOMI NOTE 15 128GB 6RAM GREEN GLOBAL / 162.00 |
+XIAOMI NOTE 15 128GB 6RAM PURPLE GLOBAL / 162.00 |
+XIAOMI NOTE 15 256GB 8RAM 5G BLACK GLOBAL / 230.00 |
+XIAOMI NOTE 15 256GB 8RAM 5G PURPLE GLOBAL / 230.00 |
+XIAOMI NOTE 15 256GB 8RAM BLACK GLOBAL / 187.00 |
+XIAOMI NOTE 15 256GB 8RAM BLUE GLOBAL / 187.00 |
+XIAOMI NOTE 15 256GB 8RAM GREEN GLOBAL / 187.00 |
+XIAOMI NOTE 15 256GB 8RAM PURPLE GLOBAL / 187.00 |
+XIAOMI NOTE 15 PRO 256GB 8RAM 5G BLACK GLOBAL / 284.00 |
+XIAOMI NOTE 15 PRO 256GB 8RAM 5G BLUE GLOBAL / 284.00 |
+XIAOMI NOTE 15 PRO 256GB 8RAM 5G TITANIUM GLOBAL / 284.00 |
+XIAOMI NOTE 15 PRO 256GB 8RAM BLACK GLOBAL / 240.00 |
+XIAOMI NOTE 15 PRO 256GB 8RAM BLUE GLOBAL / 240.00 |
+XIAOMI NOTE 15 PRO 256GB 8RAM TITANUIM GLOBAL / 240.00 |
+XIAOMI NOTE 15 PRO 512GB 8RAM 5G BLACK GLOBAL / 299.00 |
+XIAOMI NOTE 15 PRO 512GB 8RAM 5G PURPLE GLOBAL / 299.00 |
+XIAOMI NOTE 15 PRO 512GB 8RAM 5G TITANIUM GLOBAL / 299.00 |
+XIAOMI NOTE 15 PRO+ 256GB 8RAM 5G BLACK GLOBAL / 348.00 |
+XIAOMI NOTE 15 PRO+ 256GB 8RAM 5G BLUE GLOBAL / 348.00 |
+XIAOMI NOTE 15 PRO+ 256GB 8RAM 5G BROWN GLOBAL / 348.00 |
+XIAOMI NOTE 15 PRO+ 512GB 12RAM 5G BLACK GLOBAL / 399.00 |
+XIAOMI NOTE 15 PRO+ 512GB 12RAM 5G BLUE GLOBAL / 399.00 |
+XIAOMI POCO C71 128GB 4RAM BLACK GLOBAL / 84.00 |
+XIAOMI POCO C71 128GB 4RAM BLUE GLOBAL / 84.00 |
+XIAOMI POCO C71 128GB 4RAM GOLD GLOBAL / 84.00 |
+XIAOMI POCO C71 64GB 3RAM BLACK GLOBAL / 69.00 |
+XIAOMI POCO C71 64GB 3RAM BLUE GLOBAL / 69.00 |
+XIAOMI POCO C71 64GB 3RAM GOLD GLOBAL / 69.00 |
+XIAOMI POCO C85 128GB 6RAM BLACK GLOBAL / 98.00 |
+XIAOMI POCO C85 128GB 6RAM GREEN GLOBAL / 98.00 |
+XIAOMI POCO C85 128GB 6RAM PURPLE GLOBAL / 98.00 |
+XIAOMI POCO C85 256GB 8RAM BLACK GLOBAL / 122.00 |
+XIAOMI POCO C85 256GB 8RAM GREEN GLOBAL / 122.00 |
+XIAOMI POCO C85 256GB 8RAM PURPLE GLOBAL / 122.00 |
+XIAOMI POCO F7 12RAM 512GB 5G SILVER GLOBAL / 410.00 |
+XIAOMI POCO F7 12RAM 512GB 5G WHITE GLOBAL / 410.00 |
+XIAOMI POCO F8 PRO 12RAM 256GB 5G BLACK GLOBAL / 486.00 |
+XIAOMI POCO F8 PRO 12RAM 512GB 5G SILVER GLOBAL / 575.00 |
+XIAOMI POCO F8 ULTRA 12RAM 256GB 5G BLACK GLOBAL / 699.00 |
+XIAOMI POCO F8 ULTRA 12RAM 256GB 5G BLUE GLOBAL / 699.00 |
+XIAOMI POCO M6 PRO 512GB 12RAM BLACK GLOBAL / 189.00 |
+XIAOMI POCO M7 256GB 8RAM BLACK GLOBAL / 131.50 |
+XIAOMI POCO M7 PRO 256GB 8RAM 5G BLACK GLOBAL / 212.00 |
+XIAOMI POCO M7 PRO 256GB 8RAM 5G GREEN GLOBAL / 212.00 |
+XIAOMI POCO M7 PRO 512GB 12RAM 5G BLACK GLOBAL / 235.75 |
+XIAOMI POCO M7 PRO 512GB 12RAM 5G GREEN GLOBAL / 234.75 |
+XIAOMI POCO M8 256GB 8RAM 5G BLACK GLOBAL / 206.00 |
+XIAOMI POCO M8 256GB 8RAM 5G GREEN GLOBAL / 206.00 |
+XIAOMI POCO M8 256GB 8RAM 5G SILVER GLOBAL / 206.00 |
+XIAOMI POCO M8 512GB 8RAM 5G BLACK GLOBAL / 247.00 |
+XIAOMI POCO M8 512GB 8RAM 5G GREEN GLOBAL / 247.00 |
+XIAOMI POCO M8 512GB 8RAM 5G SILVER GLOBAL / 247.00 |
+XIAOMI POCO M8 PRO 256GB 8RAM 5G BLACK GLOBAL / 292.00 |
+XIAOMI POCO M8 PRO 256GB 8RAM 5G GREEN GLOBAL / 292.00 |
+XIAOMI POCO M8 PRO 256GB 8RAM 5G SILVER GLOBAL / 292.00 |
+XIAOMI POCO M8 PRO 512GB 12RAM 5G BLACK GLOBAL / 348.00 |
+XIAOMI POCO M8 PRO 512GB 12RAM 5G GREEN GLOBAL / 348.00 |
+XIAOMI POCO M8 PRO 512GB 12RAM 5G SILVER GLOBAL / 348.00 |
+XIAOMI POCO X7 12RAM 512GB 5G GREEN GLOBAL / 263.75 |
+XIAOMI POCO X7 12RAM 512GB 5G SILVER GLOBAL / 264.75 |
+XIAOMI POCO X7 256GB 8RAM 5G BLACK GLOBAL / 223.75 |
+XIAOMI POCO X7 256GB 8RAM 5G GREEN GLOBAL / 222.75 |
+XIAOMI POCO X7 PRO 256GB 12RAM 5G GREEN GLOBAL / 288.75 |
+XIAOMI POCO X7 PRO 256GB 8RAM 5G GREEN GLOBAL / 283.00 |
+XIAOMI POCO X7 PRO 512GB 12RAM 5G GREEN GLOBAL / 349.75 |
+XIAOMI REDMI 14C 256GB 8RAM BLACK GLOBAL / 108.75 |
+XIAOMI REDMI 15 128GB 6RAM BLACK GLOBAL / 119.50 |
+XIAOMI REDMI 15 128GB 6RAM GREY GLOBAL / 119.50 |
+XIAOMI REDMI 15 256GB 8RAM BLACK GLOBAL / 139.00 |
+XIAOMI REDMI 15 256GB 8RAM GREY GLOBAL / 139.00 |
+XIAOMI REDMI 15 256GB 8RAM PURPLE GLOBAL / 141.00 |
+XIAOMI REDMI 15C 128GB 4RAM BLACK GLOBAL / 93.75 |
+XIAOMI REDMI 15C 128GB 4RAM GREEN GLOBAL / 93.75 |
+XIAOMI REDMI 15C 256GB 4RAM BLACK GLOBAL / 105.00 |
+XIAOMI REDMI 15C 256GB 4RAM BLUE GLOBAL / 105.00 |
+XIAOMI REDMI 15C 256GB 4RAM GREEN GLOBAL / 105.00 |
+XIAOMI REDMI 15C 256GB 8RAM BLACK GLOBAL / 121.00 |
+XIAOMI REDMI 15C 256GB 8RAM BLUE GLOBAL / 121.00 |
+XIAOMI REDMI 15C 256GB 8RAM ORANGE GLOBAL / 122.00 |
+XIAOMI REDMI 15C 256GB 8RAM VERDE GLOBAL / 120.00 |
+XIAOMI REDMI A5 128GB 4RAM BLACK GLOBAL / 85.75 |
+XIAOMI REDMI A5 128GB 4RAM BLUE GLOBAL / 85.75 |
+XIAOMI REDMI A5 128GB 4RAM GOLD GLOBAL / 85.75 |
+XIAOMI REDMI A5 128GB 4RAM GREEN GLOBAL / 85.75 |
+XIAOMI REDMI A5 64GB 3RAM BLACK GLOBAL / 71.00 |
+XIAOMI REDMI A5 64GB 3RAM BLUE GLOBAL / 71.00 |
+XIAOMI REDMI A5 64GB 3RAM GOLD GLOBAL / 71.00
+
+*REALME 06/02*
+REALME 14 RMX5070 5G 256GB/12RAM MECHA SILVER / 260.00 |
+REALME 14 RMX5070 5G 256GB/12RAM STORM TITANIUM / 260.00 |
+REALME 14 RMX5070 5G 512GB/12RAM WARRIOR PINK NFC ANATEL / 267.00 
+REALME C63 RMX3939 128GB/6RAM JADE GREEN / 94.75 |
+REALME C63 RMX3939 128GB/6RAM LEATHER BLUE / 94.75 |
+REALME C67 RMX3890 256GB/8RAM BLACK ROCK ANATEL / 124.75 |
+REALME C67 RMX3890 256GB/8RAM SUNNY OASIS ANATEL / 124.75 |
+REALME C71 RMX3943 5G 8RAM/256GB BLACK / 167.00 |
+REALME C71 RMX3943 5G 8RAM/256GB GREEN / 167.00 |
+REALME C71 RMX5303 128GB/4RAM FOREST OWL / 130.00 |
+REALME C71 RMX5303 128GB/4RAM WHITE SWAN / 130.00 |
+REALME C71 RMX5303 256GB/4RAM FOREST OWL / 130.00 |
+REALME C71 RMX5303 256GB/4RAM WHITE SWAN / 130.00 |
+REALME C71 RMX5303 256GB/8RAM FOREST OWL / 138.75 |
+REALME C71 RMX5303 256GB/8RAM WHITE SWAN / 138.75 |
+REALME C75 RMX3941 256GB/8RAM BLACK NFC / 160.00 |
+REALME C75 RMX3941 256GB/8RAM GOLD NFC / 160.00 |
+REALME C75X RMX5020 256GB/8RAM NFC BLUE ANATEL / 153.00 |
+REALME C75X RMX5020 256GB/8RAM NFC PINK ANATEL / 151.00 |
+REALME C85 PRO RMX5555 256GB/8RAM NFC PARROT PURPLE / 190.00 |
+REALME C85 PRO RMX5555 256GB/8RAM NFC PEACOCK GREEN / 190.00 |
+REALME C85 RMX5566 128GB/6RAM NFC KINGFISHER BLUE / 160.00 |
+REALME C85 RMX5566 128GB/6RAM NFC SWAN BLACK / 160.00 |
+REALME C85 RMX5566 256GB/8RAM NFC KINGFISHER BLUE / 179.00 |
+REALME C85 RMX5566 256GB/8RAM NFC SWAN BLACK / 179.00 |
+REALME GT7 RMX5061 5G 512GB/16RAM DREAM EDITION ASTON M G/ 850.00 |
+REALME NOTE 60 RMX3933 128GB/4RAM BLACK / 84.00 |
+REALME NOTE 60 RMX3933 128GB/4RAM BLUE / 84.00 |
+REALME NOTE 60 RMX3933 64GB/3RAM BLACK CX/SLIM / 61.75 |
+REALME NOTE 60X RMX3938 128GB/4RAM BLACK ANATEL / 85.00 |
+REALME NOTE 60X RMX3938 128GB/4RAM GREEN ANATEL / 85.00 |
+REALME NOTE 70 RMX5313 128GB/4RAM BEACH GOLD / 93.00 |
+REALME NOTE 70 RMX5313 128GB/4RAM OBSIDIAN BLACK / 93.00 |
+REALME NOTE 70 RMX5313 256GB/8RAM BEACH GOLD / 125.00 |
+REALME NOTE 70 RMX5313 256GB/8RAM OBSIDIAN BLACK / 125.00 |
+REALME P3 RMX5079 5G 256GB/8RAM NFC GREEN CX/SLIM / 185.00 |
+REALME P3 ULTRA RMX5031 5G 512GB/12RAM NFC BLUE / 330.00
+
+*MACBOOK 06/02*
+APPLE MACBOOK M3 AIR 24/512GB MC8M4LL/A SPACE GRAY 13.6 2/ 1,120.00 |
+APPLE MACBOOK M3 AIR 24/512GB MC8Q4LL/A MIDNIGHT 13.6 202/ 1,120.00 |
+APPLE MACBOOK M4 AIR 16/256GB MW0Y3LL/A STARLIGHT 13.6' 2/ 930.00 |
+APPLE TV 4K 3GN MN893LL/A 128GB / 150.00 |
+
+*IPHONE 06/02*
+IPHONE 13 128GB A2633 TH/A MIDNIGHT / 510.00 |
+IPHONE 13 128GB A2633 TH/A STARLIGHT / 510.00 |
+IPHONE 13 128GB CPO MIDNIGHT / 465.00 |
+IPHONE 13 128GB CPO STARLIGHT / 465.00 |
+IPHONE 13 256GB CPO MIDNIGHT / 525.00 |
+IPHONE 13 256GB CPO STARLIGHT / 525.00 |
+IPHONE 15 128GB A3090 128GB BLACK HN SIM FISICO + ESIM / 608.00 |
+IPHONE 15 128GB A3090 128GB BLUE HN SIM FISICO + ESIM / 608.00 |
+IPHONE 16 128GB A3287 HN/A BLACK SIM FISICO + ESIM / 730.00 |
+IPHONE 16 128GB A3287 HN/A PINK SIM FISICO + ESIM / 735.00 |
+IPHONE 16 128GB A3287 HN/A TEAL SIM FISICO + ESIM / 715.00 |
+IPHONE 16 128GB A3287 HN/A ULTRAMARINE SIM FISICO + ESIM / 725.00 |
+IPHONE 16 256GB A3287 HN/A BLACK SIM FISICO+ESIM / 815.00 |
+IPHONE 16 PRO 128GB A3294 CH DESERT TITANIUM DUAL SIM / 970.00 |
+IPHONE 16 PRO 128GB A3294 CH WHITE TITANIUM DUAL SIM / 970.00 |
+IPHONE 16E 128GB A3409 HN/A ESIM + SIM FISICO BLACK / 556.00 |
+IPHONE 16E 128GB A3409 HN/A WHITE SIM FISICO + ESIM / 555.00 |
+IPHONE 17 256GB A3258 LL/A ESIM BLUE / 905.00 |
+IPHONE 17 256GB A3258 LL/A ESIM LAVENDER / 905.00 |
+IPHONE 17 256GB A3519 4J/A ESIM BLUE / 890.00 |
+IPHONE 17 256GB A3519 4J/A ESIM LAVENDER / 890.00 |
+IPHONE 17 256GB A3519 4J/A ESIM WHITE / 905.00 |
+IPHONE 17 256GB A3520 HN/A BLACK SIM FISICO + ESIM / 905.00 |
+IPHONE 17 256GB A3520 HN/A BLUE SIM FISICO + ESIM / 885.00 |
+IPHONE 17 256GB A3520 HN/A LAVENDER SIM FISICO + ESIM / 890.00 |
+IPHONE 17 256GB A3520 HN/A WHITE SIM FISICO + ESIM / 905.00 |
+IPHONE 17 PRO 256GB A3256 BE/A ORANGE SIM FISICO + ESIM (/ 1,295.00 |
+IPHONE 17 PRO 256GB A3256 LL/A ESIM COSMIC ORANGE / 1,250.00 |
+IPHONE 17 PRO 256GB A3522 JP/A ESIM COSMIC ORANGE / 1,235.00 |
+IPHONE 17 PRO 256GB A3522 VC/A ESIM COSMIC ORANGE / 1,250.00 |
+IPHONE 17 PRO 512GB A3522 4J/A ESIM ORANGE / 1,410.00 |
+IPHONE 17 PRO MAX 256GB A3257 LL/A ESIM COSMIC ORANGE / 1,355.00 |
+IPHONE 17 PRO MAX 256GB A3257 LL/A ESIM DEEP BLUE / 1,365.00 |
+IPHONE 17 PRO MAX 256GB A3526 BE/A BLUE SIM FISICO + ESIM/ 1,405.00 |
+IPHONE 17 PRO MAX 2TB A3257 LL/A ESIM COSMIC ORANGE / 2,160.00 |
+IPHONE 17 PRO MAX 2TB A3257 LL/A ESIM DEEP BLUE / 2,160.00 |
+IPHONE 17 PRO MAX 2TB A3257 LL/A ESIM SILVER / 2,185.00 |
+IPHONE 17 PRO MAX 512GB A3257 LL/A ESIM COSMIC ORANGE / 1,575.00 |
+IPHONE 17 PRO MAX 512GB A3257 LL/A ESIM DEEP BLUE / 1,605.00 |
+IPHONE 17 PRO MAX 512GB A3525 4J/A ESIM COSMIC ORANGE / 1,560.00 |
+IPHONE 17 PRO MAX 512GB A3525 4J/A ESIM DEEP BLUE / 1,580.00 |
+IPHONE AIR 256GB A3260 LL/A ESIM LIGHT GOLD / 999.00 |
+IPHONE AIR 256GB A3517 ZD/A ESIM SKY BLUE / 999.00
+
+Xiaomi robot s40 bivolt $157
+
+Xiaomi robot s40 pro bivolt $234
+
+Xiaomi robot X20 MAX 220V  NEGRO  $500
+
+Xiaomi robot X20 PRO 220V   BRANCO $450
+
+Xiaomi robot X20+ 220V          BRANCO $42

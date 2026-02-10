@@ -1,0 +1,62 @@
+[
+  {
+    "name": "Xiaomi robot s40 bivolt",
+    "category": "Electrónica",
+    "subcategory": "Electrodomésticos",
+    "price": 157,
+    "stock": 3,
+    "image": "/xiaomi-robot-s40-bivolt.jpg",
+    "description": "Robot aspirador Xiaomi robot s40 bivolt con tecnología avanzada de limpieza.",
+    "brand": "Xiaomi",
+    "model": "Vacuum",
+    "warranty": "1 año"
+  },
+  {
+    "name": "Xiaomi robot s40 pro bivolt",
+    "category": "Electrónica",
+    "subcategory": "Electrodomésticos",
+    "price": 234,
+    "stock": 11,
+    "image": "/xiaomi-robot-s40-pro-bivolt.jpg",
+    "description": "Robot aspirador Xiaomi robot s40 pro bivolt con tecnología avanzada de limpieza.",
+    "brand": "Xiaomi",
+    "model": "Vacuum",
+    "warranty": "1 año"
+  },
+  {
+    "name": "Xiaomi robot X20 MAX 220V  NEGRO",
+    "category": "Electrónica",
+    "subcategory": "Electrodomésticos",
+    "price": 500,
+    "stock": 4,
+    "image": "/xiaomi-robot-x20-max-220v--negro.jpg",
+    "description": "Robot aspirador Xiaomi robot X20 MAX 220V  NEGRO con tecnología avanzada de limpieza.",
+    "brand": "Xiaomi",
+    "model": "X20",
+    "warranty": "1 año"
+  },
+  {
+    "name": "Xiaomi robot X20 PRO 220V   BRANCO",
+    "category": "Electrónica",
+    "subcategory": "Electrodomésticos",
+    "price": 450,
+    "stock": 10,
+    "image": "/xiaomi-robot-x20-pro-220v---branco.jpg",
+    "description": "Robot aspirador Xiaomi robot X20 PRO 220V   BRANCO con tecnología avanzada de limpieza.",
+    "brand": "Xiaomi",
+    "model": "X20",
+    "warranty": "1 año"
+  },
+  {
+    "name": "Xiaomi robot X20+ 220V          BRANCO",
+    "category": "Electrónica",
+    "subcategory": "Electrodomésticos",
+    "price": 42,
+    "stock": 12,
+    "image": "/xiaomi-robot-x20--220v----------branco.jpg",
+    "description": "Robot aspirador Xiaomi robot X20+ 220V          BRANCO con tecnología avanzada de limpieza.",
+    "brand": "Xiaomi",
+    "model": "X20",
+    "warranty": "1 año"
+  }
+]

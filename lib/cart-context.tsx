@@ -26,9 +26,38 @@ export function CartProvider({ children }: { children: ReactNode }) {
   const [items, setItems] = useState<CartItem[]>([])
 
   useEffect(() => {
-    let cancelled = false
+    // Cargar desde localStorage inmediatamente (prioridad absoluta)
+    const loadCartFromStorage = () => {
+      try {
+        const storedCart = localStorage.getItem("cart")
+        console.log('🛒 Loading cart from localStorage...')
+        
+        if (storedCart) {
+          const parsedCart = JSON.parse(storedCart)
+          // Filtrar items inválidos que no tengan product completo
+          const validItems = parsedCart.filter((item: CartItem) => 
+            item && item.product && item.product.id && item.product.price
+          )
+          setItems(validItems)
+          console.log('🛒 Cart loaded from localStorage:', validItems.length, 'items')
+        } else {
+          console.log('🛒 No cart found in localStorage')
+          setItems([])
+        }
+      } catch (error) {
+        console.error('🛒 Error loading cart from localStorage:', error)
+        setItems([])
+      }
+    }
 
-    const load = async () => {
+    // Ejecutar inmediatamente
+    loadCartFromStorage()
+
+    // Luego intentar sincronizar con el servidor (opcional, en background)
+    const syncWithServer = async () => {
+      // Pequeño delay para asegurar que el auth context esté cargado
+      await new Promise(resolve => setTimeout(resolve, 100))
+      
       try {
         const res = await fetch("/api/cart", {
           method: "GET",
@@ -38,39 +67,24 @@ export function CartProvider({ children }: { children: ReactNode }) {
 
         if (res.ok) {
           const data = (await res.json()) as { items?: CartItem[] }
-          if (!cancelled) {
-            // Filtrar items inválidos que no tengan product completo
-            const validItems = (data.items ?? []).filter(item => 
+          // Solo usar datos del servidor si localStorage está vacío
+          const storedCart = localStorage.getItem("cart")
+          if (!storedCart && data.items) {
+            const validItems = data.items.filter(item => 
               item && item.product && item.product.id && item.product.price
             )
             setItems(validItems)
+            localStorage.setItem("cart", JSON.stringify(validItems))
+            console.log('🛒 Cart loaded from server and saved to localStorage:', validItems.length, 'items')
           }
-          return
         }
-      } catch {
-        // ignore
-      }
-
-      const storedCart = localStorage.getItem("cart")
-      if (storedCart && !cancelled) {
-        try {
-          const parsedCart = JSON.parse(storedCart)
-          // Filtrar items inválidos que no tengan product completo
-          const validItems = parsedCart.filter((item: CartItem) => 
-            item && item.product && item.product.id && item.product.price
-          )
-          setItems(validItems)
-        } catch {
-          // Si hay error al parsear, limpiar el carrito
-          setItems([])
-        }
+      } catch (error) {
+        console.log('🛒 Server sync failed, using localStorage only:', error)
+        // ignore, ya tenemos datos de localStorage
       }
     }
 
-    load()
-    return () => {
-      cancelled = true
-    }
+    syncWithServer()
   }, [])
 
   useEffect(() => {

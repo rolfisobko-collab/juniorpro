@@ -28,7 +28,7 @@ export const defaultCTAs: CTA[] = [
     description_pt: "O futuro em suas mãos. Chip A19 Pro e câmera revolucionária.",
     buttonText: "Comprar Ahora",
     buttonText_pt: "Comprar Agora",
-    buttonLink: "/products?category=electronics",
+    buttonLink: "/products/prod_1770627714955_31_vosqjsbib",
     imageDesktop: "https://i.ebayimg.com/images/g/zcgAAeSw~d5owejX/s-l1200.jpg",
     imageMobile: "https://i.ebayimg.com/images/g/zcgAAeSw~d5owejX/s-l800.jpg",
     desktopWidth: 280,

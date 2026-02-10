@@ -14,51 +14,75 @@ interface ParaguayLocationSelectProps {
   onLocationSelect: (location: { address: string; city: string; department: string }) => void
 }
 
-// Datos de Paraguay
+// Datos de Paraguay - Todos los departamentos y distritos
 const paraguayData = {
-  "Asunción": {
-    department: "Asunción",
-    cities: ["Asunción", "Lambaré", "Luque", "San Antonio", "San Lorenzo", "Villarrica", "Ñemby"]
-  },
   "Alto Paraná": {
     department: "Alto Paraná",
-    cities: ["Ciudad del Este", "Hernandarias", "Presidente Franco", "Puerto Iguazú", "Encarnación", "Cambyretá"]
+    cities: ["Ciudad del Este", "Hernandarias", "Presidente Franco", "Puerto Iguazú", "Doctor Juan León Mallorquín", "Domingo López de Almada", "General Francisco Caballero Alvarez", "Iraty", "Itakyry", "Juan Emilio O'Leary", "Los Cedrales", "Mbaracayú", "Minga Guazú", "Naranjal", "Ñacunday", "Pitanga", "Santa Rita", "Santa Rosa del Monday", "Tavapy", "Yataity Corá", "Tres de Mayo"]
+  },
+  "Alto Paraguay": {
+    department: "Alto Paraguay",
+    cities: ["Bahía Negra", "Cerro Corá", "Fuerte Olimpo", "General Elizardo Aquino", "Puerto Casado", "Puerto Pinasco", "Capitán Pablo Lagerenza"]
+  },
+  "Amambay": {
+    department: "Amambay",
+    cities: ["Pedro Juan Caballero", "Bella Vista", "Capitán Bado", "General Caballero", "Zanja Pytá", "Puerto Casado", "Río Verde", "Ypehú"]
+  },
+  "Boquerón": {
+    department: "Boquerón",
+    cities: ["Filadelfia", "Loma Plata", "Mariscal Estigarribia", "Neuland", "Cerro León", "Doctor Pedro P. Peña", "General Eugenio A. Garay", "Mcal. Estigarribia", "Nueva Asunción", "Ovando", "Poí", "Sargento José Félix López", "Tres Hierro"]
+  },
+  "Caaguazú": {
+    department: "Caaguazú",
+    cities: ["Caaguazú", "Carayaó", "Coronel Oviedo", "General Higinio Morínigo", "Itanará", "Mcal. Estigarribia", "Naranjal", "Paso Yobai", "Raúl Arsenio Oviedo", "Repatriación", "San Joaquín", "San José de los Arroyos", "Santa Rosa del Mbutuy", "Tembiaporá", "Yhú", "3 de Mayo"]
+  },
+  "Caazapá": {
+    department: "Caazapá",
+    cities: ["Caazapá", "Abaí", "Altos", "Buena Vista", "Doctor Moisés S. Bertoni", "Fulgencio Yegros", "General Higinio Morínigo", "Itapúa", "Moisés Bertoni", "Pirayú", "San Juan Nepomuceno", "San Lorenzo", "Tavaí", "Yuty"]
+  },
+  "Canindeyú": {
+    department: "Canindeyú",
+    cities: ["Salto del Guairá", "Curuguaty", "General Francisco Caballero Alvarez", "Hernandarias", "Itanará", "Mbaracayú", "Palma del Sol", "Puerto Adela", "Puerto Casado", "San Pedro del Paraná", "Villa Hayes", "Yataity Corá"]
   },
   "Central": {
     department: "Central", 
-    cities: ["Areguá", "Caacupé", "Carapeguá", "Capiatá", "Itá", "Itauguá", "Julián Augusto Saldivar", "Limpio", "Nueva Italia", "Pirayú", "San Antonio", "San José de los Arroyos", "San Juan Bautista", "San Pedro", "Sapucaí", "Villarrica", "Yaguarón", "Ybycuí", "Ypané"]
+    cities: ["Areguá", "Caacupé", "Carapeguá", "Capiatá", "Itá", "Itauguá", "Julián Augusto Saldivar", "Limpio", "Nueva Italia", "Pirayú", "San Antonio", "San José de los Arroyos", "San Juan Bautista", "San Lorenzo", "Sapucaí", "Villarrica", "Yaguarón", "Ybycuí", "Ypané", "Luque", "Lambaré", "Ñemby", "San Antonio", "Itauguá"]
   },
   "Concepción": {
     department: "Concepción",
-    cities: ["Concepción", "Horqueta", "General Resquín", "Yby Pytá", "Pedro Juan Caballero", "Coronel Oviedo", "Trinidad", "Altos", "Yataity"]
+    cities: ["Concepción", "Horqueta", "General Resquín", "Yby Pytá", "Pedro Juan Caballero", "Coronel Oviedo", "Trinidad", "Altos", "Yataity", "Tacuatí", " Paso Yobai", "Loreto", "Mcal. Estigarribia"]
   },
   "Cordillera": {
     department: "Cordillera",
-    cities: ["Caaguazú", "Coronel Oviedo", "Mcal. López", "Naranjal", "Raúl Arsenio Oviedo", "San Joaquín", "San José", "Yataity"]
+    cities: ["Caaguazú", "Coronel Oviedo", "Mcal. López", "Naranjal", "Raúl Arsenio Oviedo", "San Joaquín", "San José", "Yataity", "Arroyos y Esteros", "Altos", "Atyrá", "Emboscada", "Loma Grande", "Piribebuy", "Tobatí", "Valenzuela"]
   },
   "Guairá": {
     department: "Guairá",
-    cities: ["Villarrica", "Mbocayaty", "Naranjal", "Yby Pytá", "Itanará", "Paso Yobai", "Independencia", "General Higinio Morínigo"]
+    cities: ["Villarrica", "Mbocayaty", "Naranjal", "Yby Pytá", "Itanará", "Paso Yobai", "Independencia", "General Higinio Morínigo", "Borja", "Capitán Mauricio José Troche", "Félix Pérez Cardozo", "Itapúa", "Mcal. Estigarribia", "Ñumí", "Pirayú", "Yataity"]
   },
   "Itapúa": {
     department: "Itapúa",
-    cities: ["Encarnación", "San Juan Bautista", "San Pedro del Ycuamandiyú", "Carmen del Paraná", "Trinidad", "General Artigas", "Pirayú", "Coronel Bogado", "Alborada", "Cambyretá", "Eden", "Fram", "San Cosme y Damián", "Yatay", "Bella Vista", "Capitán Miranda"]
+    cities: ["Encarnación", "San Juan Bautista", "San Pedro del Ycuamandiyú", "Carmen del Paraná", "Trinidad", "General Artigas", "Pirayú", "Coronel Bogado", "Alborada", "Cambyretá", "Eden", "Fram", "San Cosme y Damián", "Yatay", "Bella Vista", "Capitán Miranda", "Carlos Antonio López", "Coronel Martínez", "Edelira", "General Delgado", "Hohenau", "Jesús", "Mayor Otaño", "Natalio", "Obligado", "Patria", "San Pedro del Paraná", "Tomás Romero Pereira", "Trinidad", "Yataity Corá", "Ybycuí", "Yuty"]
   },
   "Misiones": {
     department: "Misiones",
-    cities: ["San Juan Bautista", "San Ignacio", "Ayolas", "Santa María", "San Miguel", "San Pedro", "Yabebyry", "Pilar"]
+    cities: ["San Juan Bautista", "San Ignacio", "Ayolas", "Santa María", "San Miguel", "San Pedro", "Yabebyry", "Pilar", "Santiago", "Yataity", "San Patricio", "Aguaray", "Cerro Corá", "General Alvear", "Santa Rosa", "Villa Florida"]
   },
   "Ñeembucú": {
     department: "Ñeembucú",
-    cities: ["Pilar", "Capiatá", "Benjamín Aceval", "San Estanislao", "Villarrica", "Alto Verá", "Guarambaré", "Yby Pytá", "Humaitá", "General Elizardo Aquino", "Lima", "Pirayú"]
+    cities: ["Pilar", "Capiatá", "Benjamín Aceval", "San Estanislao", "Villarrica", "Alto Verá", "Guarambaré", "Yby Pytá", "Humaitá", "General Elizardo Aquino", "Lima", "Pirayú", "Alberdi", "Desmochados", "General José María Rojas", "Obligado", "Paso Yobai", "San Antonio", "San Miguel", "Tacuaras", "Ybycuí"]
   },
   "Paraguarí": {
     department: "Paraguarí",
-    cities: ["San Pedro", "San Juan Bautista", "Yhú", "San Antonio", "Escobar", "Yby Pytá", "Coronel Oviedo", "Mcal. López", "Sapucaí", "Capiatá", "Villarrica", "Guarambaré", "Pirayú"]
+    cities: ["San Pedro", "San Juan Bautista", "Yhú", "San Antonio", "Escobar", "Yby Pytá", "Coronel Oviedo", "Mcal. López", "Sapucaí", "Capiatá", "Villarrica", "Guarambaré", "Pirayú", "Acahay", "Carayaó", "Caapucú", "Mbuyapey", "Quiindy", "San Roque", "Sapucaí", "Yaguarón", "Ybycuí", "Ybytimí"]
   },
   "Presidente Hayes": {
     department: "Presidente Hayes",
-    cities: ["Villarrica", "San Pedro", "Benjamín Aceval", "Tres Bocas", "Alto Verá", "Pilar", "Isla Pucú", "Nanawa", "Puerto Pinasco"]
+    cities: ["Villarrica", "San Pedro", "Benjamín Aceval", "Tres Bocas", "Alto Verá", "Pilar", "Isla Pucú", "Nanawa", "Puerto Pinasco", "Clorinda", "Puerto Casado", "Teniente Esteban Martínez", "Puerto Eva", "Villa Hayes"]
+  },
+  "San Pedro": {
+    department: "San Pedro",
+    cities: ["San Pedro de Ycuamandiyú", "Capiibary", "Choré", "General Elizardo Aquino", "Guayaibí", "Itacurubí del Rosario", "Lima", "Ñeembucú", "Puerto Casado", "Santa Rosa del Aguaray", "Tacuatí", "Unión", "Yataity", "Yby Pytá", "Yhú", "25 de Diciembre", "Antonio Irala", "Capiatá", "Coronel Bogado", "General Elizardo Aquino", "Guayaibí", "Itacurubí", "Lima", "Ñeembucú", "Puerto Casado", "Santa Rosa del Aguaray", "Tacuatí", "Unión", "Yataity", "Yby Pytá", "Yhú"]
   }
 }
 

@@ -1,0 +1,62 @@
+[
+  {
+    "name": "SAMSUNG A06 64GB 4RAM SM-A065M/DS BLACK",
+    "category": "Electrónica",
+    "subcategory": "Smartphones",
+    "price": 78.5,
+    "stock": 10,
+    "image": "/samsung-a06-black.jpg",
+    "description": "Samsung A06 con 64GB de almacenamiento y 4GB de RAM, color negro.",
+    "brand": "Samsung",
+    "model": "SM-A065M/DS",
+    "warranty": "1 año"
+  },
+  {
+    "name": "XIAOMI NOTE 14 128GB 6RAM BLACK GLOBAL",
+    "category": "Electrónica",
+    "subcategory": "Smartphones",
+    "price": 130.5,
+    "stock": 12,
+    "image": "/xiaomi-note-14-black.jpg",
+    "description": "Xiaomi Note 14 con 128GB almacenamiento y 6GB RAM, versión global, color negro.",
+    "brand": "Xiaomi",
+    "model": "NOTE 14",
+    "warranty": "1 año"
+  },
+  {
+    "name": "REALME 14 RMX5070 5G 256GB/12RAM MECHA SILVER",
+    "category": "Electrónica",
+    "subcategory": "Smartphones",
+    "price": 260.0,
+    "stock": 8,
+    "image": "/realme-14-mecha-silver.jpg",
+    "description": "Realme 14 5G con 256GB almacenamiento y 12GB RAM, color mecha silver.",
+    "brand": "Realme",
+    "model": "RMX5070",
+    "warranty": "1 año"
+  },
+  {
+    "name": "APPLE MACBOOK M3 AIR 24/512GB MC8M4LL/A SPACE GRAY 13.6",
+    "category": "Electrónica",
+    "subcategory": "Computadoras",
+    "price": 1120.0,
+    "stock": 5,
+    "image": "/macbook-m3-air-space-gray.jpg",
+    "description": "MacBook Air M3 con 24GB RAM y 512GB almacenamiento, pantalla 13.6', color space gray.",
+    "brand": "Apple",
+    "model": "MC8M4LL/A",
+    "warranty": "1 año"
+  },
+  {
+    "name": "IPHONE 16 128GB A3287 HN/A BLACK SIM FISICO + ESIM",
+    "category": "Electrónica",
+    "subcategory": "Smartphones",
+    "price": 730.0,
+    "stock": 10,
+    "image": "/iphone-16-black.jpg",
+    "description": "iPhone 16 con 128GB almacenamiento, dual SIM (física + eSIM), color negro.",
+    "brand": "Apple",
+    "model": "A3287",
+    "warranty": "1 año"
+  }
+]

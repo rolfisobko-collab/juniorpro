@@ -10,29 +10,36 @@ export async function PUT(req: Request) {
     
     console.log('🔄 UPDATE SIMPLE - Updating product:', id, body)
 
-    // Usar SQL directo para evitar problemas con weight
-    await prisma.$executeRaw`
-      UPDATE "Product" 
-      SET 
-        name = ${body.name},
-        brand = ${body.brand},
-        description = ${body.description},
-        price = ${body.price},
-        "categoryKey" = ${body.categoryKey},
-        image = ${body.image},
-        images = ${body.images || []},
-        "inStock" = ${body.inStock ?? true},
-        weight = ${body.weight ?? 0.5},
-        length = ${body.length ?? 20},
-        width = ${body.width ?? 15},
-        height = ${body.height ?? 10},
-        "valorDeclarado" = ${body.valorDeclarado || null},
-        "descripcionAduana" = ${body.descripcionAduana || null},
-        "categoriaArancelaria" = ${body.categoriaArancelaria || null},
-        "paisOrigen" = ${body.paisOrigen || null},
-        "updatedAt" = NOW()
-      WHERE id = ${id}
-    `
+    // Usar Prisma directamente para actualizar solo los campos necesarios
+    const updateData: any = {}
+    
+    if (body.name !== undefined) updateData.name = body.name
+    if (body.brand !== undefined) updateData.brand = body.brand
+    if (body.description !== undefined) updateData.description = body.description
+    if (body.price !== undefined) updateData.price = body.price
+    if (body.categoryKey !== undefined) updateData.categoryKey = body.categoryKey
+    if (body.image !== undefined) updateData.image = body.image
+    if (body.images !== undefined) updateData.images = body.images
+    if (body.inStock !== undefined) updateData.inStock = body.inStock
+    if (body.weight !== undefined) updateData.weight = body.weight
+    if (body.length !== undefined) updateData.length = body.length
+    if (body.width !== undefined) updateData.width = body.width
+    if (body.height !== undefined) updateData.height = body.height
+    if (body.valorDeclarado !== undefined) updateData.valorDeclarado = body.valorDeclarado
+    if (body.descripcionAduana !== undefined) updateData.descripcionAduana = body.descripcionAduana
+    if (body.categoriaArancelaria !== undefined) updateData.categoriaArancelaria = body.categoriaArancelaria
+    if (body.paisOrigen !== undefined) updateData.paisOrigen = body.paisOrigen
+    
+    if (Object.keys(updateData).length === 0) {
+      return NextResponse.json({ error: "No fields to update" }, { status: 400 })
+    }
+    
+    console.log('🔄 UPDATE SIMPLE - Updating with data:', updateData)
+    
+    await prisma.product.update({
+      where: { id },
+      data: updateData
+    })
 
     // Obtener el producto actualizado
     const updatedProduct = await prisma.$queryRaw`

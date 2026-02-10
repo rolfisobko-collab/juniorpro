@@ -25,6 +25,8 @@ export default function ProductsClient({
   const [selectedSubcategory, setSelectedSubcategory] = useState<string>(initialSubcategory || "")
   const [sortBy, setSortBy] = useState("featured")
   const [loading, setLoading] = useState(false)
+  const [hasMore, setHasMore] = useState(true)
+  const [page, setPage] = useState(1)
 
   useEffect(() => {
     console.log('Initial params:', { initialCategory, initialSubcategory })
@@ -38,22 +40,28 @@ export default function ProductsClient({
     }
   }, [initialCategory, initialSubcategory])
 
-  const fetchProducts = async (category: string, subcategory: string, sort: string) => {
-    console.log('Fetching products:', { category, subcategory, sort })
+  const fetchProducts = async (category: string, subcategory: string, sort: string, pageNum: number = 1, append: boolean = false) => {
+    console.log('Fetching products:', { category, subcategory, sort, pageNum })
     setLoading(true)
     try {
       const params = new URLSearchParams({
         ...(category !== "all" && { category }),
         ...(subcategory && { subcategory }),
         ...(sort && { sort }),
-        limit: "50"
+        limit: "50",
+        page: pageNum.toString()
       })
       
       const response = await fetch(`/api/products?${params}`)
       const data = await response.json()
       
       if (data.products) {
-        setProducts(data.products)
+        if (append) {
+          setProducts(prev => [...prev, ...data.products])
+        } else {
+          setProducts(data.products)
+        }
+        setHasMore(data.products.length === 50)
       }
     } catch (error) {
       console.error("Error fetching products:", error)
@@ -64,19 +72,35 @@ export default function ProductsClient({
 
   useEffect(() => {
     console.log('Current state:', { selectedCategory, selectedSubcategory, sortBy })
-    fetchProducts(selectedCategory, selectedSubcategory, sortBy)
+    setPage(1)
+    setHasMore(true)
+    fetchProducts(selectedCategory, selectedSubcategory, sortBy, 1, false)
   }, [selectedCategory, selectedSubcategory, sortBy])
+
+  const loadMore = () => {
+    if (!loading && hasMore) {
+      const nextPage = page + 1
+      setPage(nextPage)
+      fetchProducts(selectedCategory, selectedSubcategory, sortBy, nextPage, true)
+    }
+  }
+
+  // Detectar scroll para carga automática
+  useEffect(() => {
+    const handleScroll = () => {
+      if (window.innerHeight + document.documentElement.scrollTop >= document.documentElement.offsetHeight - 1000) {
+        loadMore()
+      }
+    }
+
+    window.addEventListener('scroll', handleScroll)
+    return () => window.removeEventListener('scroll', handleScroll)
+  }, [loading, hasMore, page, selectedCategory, selectedSubcategory, sortBy])
 
   return (
     <div className="container mx-auto px-4 py-8 min-h-screen">
       <div className="mb-8">
         <h1 className="font-serif text-4xl md:text-5xl font-bold mb-4">Catálogo de Productos</h1>
-        <p className="text-lg text-muted-foreground">
-          {products.length > 0 ? 
-            `Explora nuestra selección exclusiva (${products.length} productos desde la base de datos)` : 
-            "Cargando productos..."
-          }
-        </p>
       </div>
 
       <div className="flex flex-col sm:flex-row gap-4 mb-8">
@@ -126,11 +150,26 @@ export default function ProductsClient({
           ))}
         </div>
       ) : (
-        <div className="grid grid-cols-1 max-[325px]:grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 sm:gap-6 pb-8">
-          {products.map((product) => (
-            <ProductCard key={product.id} product={product} />
-          ))}
-        </div>
+        <>
+          <div className="grid grid-cols-1 max-[325px]:grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 sm:gap-6 pb-8">
+            {products.map((product) => (
+              <ProductCard key={product.id} product={product} />
+            ))}
+          </div>
+          
+          {hasMore && (
+            <div className="flex justify-center pb-8">
+              <Button 
+                onClick={loadMore}
+                disabled={loading}
+                variant="outline"
+                className="min-w-[200px]"
+              >
+                {loading ? 'Cargando...' : 'Cargar más productos'}
+              </Button>
+            </div>
+          )}
+        </>
       )}
 
       {!loading && products.length === 0 && (
