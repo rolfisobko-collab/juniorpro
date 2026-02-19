@@ -12,7 +12,7 @@ export let brandingConfig: BrandingConfig = {
   id: "1",
   siteName: "TechZone",
   logoText: "T",
-  logoImage: "https://i.ibb.co/xtY7zPtM/Tech-Zone-store-9.png",
+  logoImage: "/logo-optimized.png",
   faviconImage: "",
   primaryColor: "#0ea5e9",
   updatedAt: new Date().toISOString(),

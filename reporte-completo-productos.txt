@@ -1,0 +1,43 @@
+
+REPORTE COMPLETO DE PRODUCTOS POR CATEGORÍA
+=============================================
+Fecha: 2026-02-13T12:55:17.903Z
+Servidor: http://localhost:3000
+
+📊 RESUMEN GENERAL:
+-------------------
+🎯 TOTAL DE PRODUCTOS: 100
+
+📂 DISTRIBUCIÓN POR CATEGORÍA:
+-------------------------------
+
+Smartphones (smartphones):
+   📊 Total: 99 productos
+   📋 Productos principales:
+      • IPHONE 16E 128GB A3409 HN/A WHITE SIM FISICO + ESIM - $610.5
+      • IPHONE 17 256GB A3520 HN/A LAVENDER SIM FISICO + ESIM - $979
+      • IPHONE 17 PRO 256GB A3522 VC/A ESIM COSMIC ORANGE - $1.38
+      • IPHONE 17 PRO MAX 256GB A3257 LL/A ESIM COSMIC ORANGE - $1.49
+      • IPHONE 17 PRO MAX 256GB A3257 LL/A ESIM DEEP BLUE - $1.5
+      ... y 94 productos más
+
+
+Computadoras (computadoras):
+   📊 Total: 1 productos
+   📋 Productos principales:
+      • APPLE TV 4K 3GN MN893LL/A 128GB - $165
+
+
+
+📁 DETALLE POR SUBCATEGORÍA:
+----------------------------
+Smartphones → Sin subcategoría: 99 productos
+Computadoras → Sin subcategoría: 1 productos
+
+📈 ANÁLISIS DE COBERTURA:
+-------------------------
+✅ Smartphones: 99 productos (99.0%)
+✅ Computadoras: 1 productos (1.0%)
+
+=============================================
+    

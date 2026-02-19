@@ -34,7 +34,7 @@ export function BrandingLogo({ href = "/", variant = "header", className = "" }:
         <img
           src={branding.logoImage || "/placeholder.svg"}
           alt={branding.siteName}
-          className={`${isSidebar ? "h-8 w-auto" : "h-10 w-auto"} object-contain rounded-lg group-hover:scale-110 transition-transform`}
+          className={`${isSidebar ? "h-10 w-auto" : "h-12 w-auto"} object-contain rounded-lg group-hover:scale-110 transition-transform`}
         />
       ) : (
         <div

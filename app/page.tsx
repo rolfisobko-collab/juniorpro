@@ -11,6 +11,16 @@ import Image from "next/image"
 import { ArrowRight, ShieldCheck, Truck, Zap, Package, Award } from "lucide-react"
 import { useTranslation } from "@/lib/i18n/translation-provider"
 
+const getCategoryFromName = (name: string) => {
+  if (name === "Smartphones" || name === "Computadoras" || name === "Audio" || name === "Videojuegos") {
+    return "electronics"
+  } else if (name === "Perfumes Masculinos" || name === "Perfumes Femeninos") {
+    return "perfumes"
+  } else {
+    return "appliances"
+  }
+}
+
 export default function HomePage() {
   const { t, language } = useTranslation()
   const activeCTAs = defaultCTAs.filter((cta) => cta.isActive).sort((a, b) => a.position - b.position)
@@ -30,23 +40,22 @@ export default function HomePage() {
               </p>
             </div>
 
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+            <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-6 gap-4">
               {homeCategories.map((category: any) => (
                 <Link
                   key={category.key || category.id}
-                  href={`/products?category=${category.key || category.slug}`}
+                  href={category.link}
                   className="group relative overflow-hidden rounded-2xl border border-gray-200 bg-white hover:border-blue-500 transition-all duration-300 hover:shadow-lg"
                 >
-                  <div className="aspect-[16/9] relative overflow-hidden">
+                  <div className="aspect-square w-48 h-48 mx-auto relative overflow-hidden">
                     <Image
                       src={category.image || "/placeholder.svg"}
                       alt={category.name}
                       fill
                       className="object-cover group-hover:scale-110 transition-transform duration-500"
                     />
-                    <div className="absolute inset-0 bg-gradient-to-t from-gray-900 via-gray-900/20 to-transparent" />
-                    <div className="absolute bottom-0 left-0 right-0 p-6 text-white">
-                      <h3 className="text-xl font-bold mb-2">{category.name}</h3>
+                    <div className="absolute bottom-0 left-0 right-0 p-4 text-white">
+                      <h3 className="text-lg font-bold mb-1">{category.name}</h3>
                       <p className="text-sm opacity-90">{category.description}</p>
                     </div>
                   </div>
