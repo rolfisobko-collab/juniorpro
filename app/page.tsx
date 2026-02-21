@@ -53,6 +53,9 @@ export default function HomePage() {
                       alt={category.name}
                       fill
                       className="object-cover group-hover:scale-110 transition-transform duration-500"
+                      sizes="(max-width: 768px) 50vw, (max-width: 1024px) 33vw, 16vw"
+                      priority={category.order <= 4}
+                      loading={category.order <= 4 ? "eager" : "lazy"}
                     />
                     <div className="absolute bottom-0 left-0 right-0 p-4 text-white">
                       <h3 className="text-lg font-bold mb-1">{category.name}</h3>

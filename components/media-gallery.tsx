@@ -79,7 +79,7 @@ export function MediaGallery({
                     <div key={index} className="relative group">
                       <div className="aspect-square rounded-lg overflow-hidden border">
                         <img
-                          src={image}
+                          src={`${image}?t=${Date.now()}`}
                           alt={`Imagen ${index + 1}`}
                           className="w-full h-full object-cover"
                         />

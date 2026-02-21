@@ -5,8 +5,9 @@ import PanelLayout from "@/components/panel-layout"
 import { useEffect, useState } from "react"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table"
-import { Plus, Pencil, Trash2, Search, Building, Eye, Upload, Image as ImageIcon } from "lucide-react"
+import { Plus, Pencil, Trash2, Search, Building, Eye, Upload, Image as ImageIcon, ArrowUpDown, ArrowUp, ArrowDown } from "lucide-react"
 import { useToast } from "@/hooks/use-toast"
 import { BrandsModal } from "@/components/brands-modal"
 import { ImageLinkModal } from "@/components/image-link-modal"
@@ -32,6 +33,8 @@ export default function AdminProductsPage() {
   const [categories, setCategories] = useState<any[]>([])
   const [brands, setBrands] = useState<any[]>([])
   const [searchQuery, setSearchQuery] = useState("")
+  const [sortBy, setSortBy] = useState("name")
+  const [sortOrder, setSortOrder] = useState<"asc" | "desc">("asc")
   const [isBrandsModalOpen, setIsBrandsModalOpen] = useState(false)
   const [isImporting, setIsImporting] = useState(false)
   const [pendingImport, setPendingImport] = useState<any>(null)
@@ -40,6 +43,8 @@ export default function AdminProductsPage() {
   const [extractedProducts, setExtractedProducts] = useState<any[]>([])
   const [imageModalProduct, setImageModalProduct] = useState<Product | null>(null)
   const [updatedProductId, setUpdatedProductId] = useState<string | null>(null)
+  const [editingPriceId, setEditingPriceId] = useState<string | null>(null)
+  const [editingPriceValue, setEditingPriceValue] = useState<string>("")
   const { toast } = useToast()
   const router = useRouter()
 
@@ -140,6 +145,113 @@ export default function AdminProductsPage() {
       product.category.toLowerCase().includes(searchQuery.toLowerCase()),
   )
 
+  const sortedProducts = [...filteredProducts].sort((a, b) => {
+    let comparison = 0
+    
+    switch (sortBy) {
+      case "name":
+        comparison = a.name.localeCompare(b.name)
+        break
+      case "price":
+        comparison = a.price - b.price
+        break
+      case "category":
+        comparison = a.category.localeCompare(b.category)
+        break
+      case "brand":
+        comparison = a.brand.localeCompare(b.brand)
+        break
+      default:
+        comparison = a.name.localeCompare(b.name)
+    }
+    
+    return sortOrder === "asc" ? comparison : -comparison
+  })
+
+  const handleSort = (field: string) => {
+    if (sortBy === field) {
+      setSortOrder(sortOrder === "asc" ? "desc" : "asc")
+    } else {
+      setSortBy(field)
+      setSortOrder("asc")
+    }
+  }
+
+  const handlePriceDoubleClick = (product: Product) => {
+    setEditingPriceId(product.id)
+    setEditingPriceValue(product.price.toString())
+  }
+
+  const handlePriceChange = (value: string) => {
+    // Solo permitir números y punto
+    const cleanValue = value.replace(/[^0-9.]/g, '')
+    setEditingPriceValue(cleanValue)
+  }
+
+  const handlePriceSave = async (productId: string) => {
+    const newPrice = parseFloat(editingPriceValue)
+    
+    if (isNaN(newPrice) || newPrice < 0) {
+      toast({
+        title: "Error",
+        description: "El precio debe ser un número válido mayor o igual a 0",
+        variant: "destructive"
+      })
+      return
+    }
+
+    try {
+      const res = await fetch(`/api/admin/products/update-simple`, {
+        method: "PUT",
+        headers: { "Content-Type": "application/json" },
+        credentials: "include",
+        body: JSON.stringify({
+          id: productId,
+          price: newPrice
+        }),
+      })
+
+      if (!res.ok) {
+        const errorData = await res.json()
+        throw new Error(errorData.error || 'Error al actualizar precio')
+      }
+
+      // Actualizar el producto en la lista local
+      setProducts(prev => 
+        prev.map(p => 
+          p.id === productId 
+            ? { ...p, price: newPrice }
+            : p
+        )
+      )
+
+      // Animación visual de actualización
+      setUpdatedProductId(productId)
+      setTimeout(() => setUpdatedProductId(null), 2000)
+
+      toast({
+        title: "✅ ¡Precio actualizado!",
+        description: `El precio se actualizó a $${newPrice.toLocaleString()}`,
+        variant: "default",
+      })
+
+      setEditingPriceId(null)
+      setEditingPriceValue("")
+    } catch (error) {
+      console.error('Error updating price:', error)
+      toast({
+        title: "Error",
+        description: "No se pudo actualizar el precio",
+        variant: "destructive"
+      })
+    }
+  }
+
+  const handlePriceCancel = () => {
+    setEditingPriceId(null)
+    setEditingPriceValue("")
+  }
+
   const handlePreview = (product: any) => {
     // Abrir producto en nueva pestaña
     window.open(`/products/${product.id}`, '_blank')
@@ -177,7 +289,7 @@ export default function AdminProductsPage() {
         const updatedProduct = await res.json()
         console.log('✅ Product image updated:', updatedProduct)
         
-        // Actualizar el producto en la lista local
+        // Actualizar el producto en la lista local con timestamp para evitar caché
         setProducts(prev => {
           const updated = prev.map(p => 
             p.id === imageModalProduct.id 
@@ -568,14 +680,41 @@ export default function AdminProductsPage() {
         </div>
 
       <div className="mb-4">
-        <div className="relative max-w-md">
-          <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
-          <Input
-            placeholder="Buscar productos..."
-            className="pl-10"
-            value={searchQuery}
-            onChange={(e) => setSearchQuery(e.target.value)}
-          />
+        <div className="flex gap-4 items-center max-w-2xl">
+          <div className="relative flex-1 max-w-md">
+            <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
+            <Input
+              placeholder="Buscar productos..."
+              className="pl-10"
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+            />
+          </div>
+          <div className="flex gap-2 items-center">
+            <span className="text-sm font-medium text-gray-700">Ordenar por:</span>
+            <Select
+              value={`${sortBy}-${sortOrder}`}
+              onValueChange={(value) => {
+                const [field, order] = value.split('-')
+                setSortBy(field)
+                setSortOrder(order as "asc" | "desc")
+              }}
+            >
+              <SelectTrigger className="w-40">
+                <SelectValue />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="name-asc">Nombre A-Z</SelectItem>
+                <SelectItem value="name-desc">Nombre Z-A</SelectItem>
+                <SelectItem value="price-asc">Precio: Menor a Mayor</SelectItem>
+                <SelectItem value="price-desc">Precio: Mayor a Menor</SelectItem>
+                <SelectItem value="category-asc">Categoría A-Z</SelectItem>
+                <SelectItem value="category-desc">Categoría Z-A</SelectItem>
+                <SelectItem value="brand-asc">Marca A-Z</SelectItem>
+                <SelectItem value="brand-desc">Marca Z-A</SelectItem>
+              </SelectContent>
+            </Select>
+          </div>
         </div>
       </div>
 
@@ -584,14 +723,54 @@ export default function AdminProductsPage() {
             <TableHeader>
               <TableRow>
                 <TableHead>Imagen</TableHead>
-                <TableHead>Nombre</TableHead>
-                <TableHead>Categoría</TableHead>
-                <TableHead>Precio</TableHead>
+                <TableHead>
+                  <Button 
+                    variant="ghost" 
+                    size="sm" 
+                    onClick={() => handleSort("name")}
+                    className="h-auto p-0 font-semibold hover:bg-blue-50"
+                  >
+                    Nombre
+                    {sortBy === "name" && (
+                      sortOrder === "asc" ? <ArrowUp className="ml-2 h-4 w-4" /> : <ArrowDown className="ml-2 h-4 w-4" />
+                    )}
+                    {sortBy !== "name" && <ArrowUpDown className="ml-2 h-4 w-4" />}
+                  </Button>
+                </TableHead>
+                <TableHead>Descripción</TableHead>
+                <TableHead>
+                  <Button 
+                    variant="ghost" 
+                    size="sm" 
+                    onClick={() => handleSort("category")}
+                    className="h-auto p-0 font-semibold hover:bg-blue-50"
+                  >
+                    Categoría
+                    {sortBy === "category" && (
+                      sortOrder === "asc" ? <ArrowUp className="ml-2 h-4 w-4" /> : <ArrowDown className="ml-2 h-4 w-4" />
+                    )}
+                    {sortBy !== "category" && <ArrowUpDown className="ml-2 h-4 w-4" />}
+                  </Button>
+                </TableHead>
+                <TableHead>
+                  <Button 
+                    variant="ghost" 
+                    size="sm" 
+                    onClick={() => handleSort("price")}
+                    className="h-auto p-0 font-semibold hover:bg-blue-50"
+                  >
+                    Precio
+                    {sortBy === "price" && (
+                      sortOrder === "asc" ? <ArrowUp className="ml-2 h-4 w-4" /> : <ArrowDown className="ml-2 h-4 w-4" />
+                    )}
+                    {sortBy !== "price" && <ArrowUpDown className="ml-2 h-4 w-4" />}
+                  </Button>
+                </TableHead>
                 <TableHead className="text-right">Acciones</TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>
-              {filteredProducts.map((product) => {
+              {sortedProducts.map((product) => {
                 const hasNoImage = !product.image || product.image === "" || product.image === "/placeholder.svg"
                 return (
                   <TableRow 
@@ -608,7 +787,7 @@ export default function AdminProductsPage() {
                         ) : (
                           <>
                             <img 
-                              src={product.image} 
+                              src={`${product.image}?t=${Date.now()}`} 
                               alt={product.name}
                               className="w-full h-full object-cover"
                               onError={(e) => {
@@ -644,8 +823,61 @@ export default function AdminProductsPage() {
                         )}
                       </div>
                     </TableCell>
+                    <TableCell>
+                      <div className="max-w-xs">
+                        <p className="text-sm text-gray-600 line-clamp-2" title={product.description}>
+                          {product.description || 'Sin descripción'}
+                        </p>
+                      </div>
+                    </TableCell>
                     <TableCell className="capitalize">{product.category}</TableCell>
-                    <TableCell>${product.price.toLocaleString()}</TableCell>
+                    <TableCell 
+  className={`capitalize ${updatedProductId === product.id ? "bg-green-50" : ""}`}
+  onDoubleClick={() => handlePriceDoubleClick(product)}
+>
+  {editingPriceId === product.id ? (
+    <div className="flex items-center gap-2">
+      <Input
+        type="number"
+        step="0.01"
+        min="0"
+        value={editingPriceValue}
+        onChange={(e) => handlePriceChange(e.target.value)}
+        onBlur={() => handlePriceSave(product.id)}
+        onKeyDown={(e) => {
+          if (e.key === 'Enter') {
+            handlePriceSave(product.id)
+          } else if (e.key === 'Escape') {
+            handlePriceCancel()
+          }
+        }}
+        className="w-32 h-8 text-sm"
+        autoFocus
+      />
+      <Button 
+        size="sm" 
+        onClick={() => handlePriceSave(product.id)}
+        className="h-8 px-2 text-xs bg-green-600 hover:bg-green-700"
+      >
+        ✓
+      </Button>
+      <Button 
+        size="sm" 
+        onClick={handlePriceCancel}
+        className="h-8 px-2 text-xs bg-gray-600 hover:bg-gray-700"
+      >
+        ✕
+      </Button>
+    </div>
+  ) : (
+    <div className="flex items-center justify-between group cursor-pointer hover:bg-blue-50 px-2 py-1 rounded transition-colors">
+      <span className="font-medium">${product.price.toLocaleString()}</span>
+      <span className="text-xs text-gray-400 opacity-0 group-hover:opacity-100 transition-opacity">
+        Doble click para editar
+      </span>
+    </div>
+  )}
+</TableCell>
                     <TableCell className="text-right">
                       <Button variant="ghost" size="sm" onClick={() => handlePreview(product)}>
                         <Eye className="h-4 w-4" />

@@ -11,7 +11,7 @@ export let homeCategories: HomeCategory[] = [
   {
     id: "1",
     name: "Smartphones",
-    image: "https://i.ibb.co/Sw2TPxPQ/1.png",
+    image: "/categories/smartphones.png",
     link: "/products?category=smartphones&subcategory=Smartphones",
     order: 1,
     active: true,
@@ -19,7 +19,7 @@ export let homeCategories: HomeCategory[] = [
   {
     id: "2",
     name: "Computadoras",
-    image: "https://i.ibb.co/nMq549t9/3.png",
+    image: "/categories/computadoras.png",
     link: "/products?category=computadoras&subcategory=Laptops",
     order: 2,
     active: true,
@@ -27,7 +27,7 @@ export let homeCategories: HomeCategory[] = [
   {
     id: "3",
     name: "Audio",
-    image: "https://i.ibb.co/VYJnd3sh/4.png",
+    image: "/categories/audio.png",
     link: "/products?category=smartphones&subcategory=Audio",
     order: 3,
     active: true,
@@ -35,7 +35,7 @@ export let homeCategories: HomeCategory[] = [
   {
     id: "4",
     name: "Videojuegos",
-    image: "https://i.ibb.co/KjBtg2W0/5.png",
+    image: "/categories/videojuegos.png",
     link: "/products?category=smartphones&subcategory=Videojuegos",
     order: 4,
     active: true,
@@ -43,7 +43,7 @@ export let homeCategories: HomeCategory[] = [
   {
     id: "5",
     name: "Perfumes Masculinos",
-    image: "https://i.ibb.co/5XNNvLyT/6.png",
+    image: "/categories/perfumes-masculinos.png",
     link: "/products?category=smartphones&subcategory=Masculinos",
     order: 5,
     active: true,
@@ -51,7 +51,7 @@ export let homeCategories: HomeCategory[] = [
   {
     id: "6",
     name: "Perfumes Femeninos",
-    image: "https://i.ibb.co/j1vy4Vp/7.png",
+    image: "/categories/perfumes-femeninos.png",
     link: "/products?category=smartphones&subcategory=Femeninos",
     order: 6,
     active: true,
