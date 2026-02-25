@@ -1,136 +1,124 @@
 "use client"
 
-import { useEffect, useState, useRef } from "react"
+import { useEffect, useRef, useState } from "react"
 import type { UnifiedProduct } from "@/lib/product-types"
 
 interface CartAnimationProps {
   product: UnifiedProduct
-  trigger: {x: number, y: number} | false
+  trigger: { x: number; y: number } | false
   onComplete?: () => void
 }
 
+const CONFETTI_COLORS = ["#009FE3", "#FFD700", "#FF6B6B", "#6BCB77", "#FF9F1C", "#fff"]
+
+function spawnConfetti(x: number, y: number) {
+  const count = 18
+  for (let i = 0; i < count; i++) {
+    const el = document.createElement("div")
+    const color = CONFETTI_COLORS[Math.floor(Math.random() * CONFETTI_COLORS.length)]
+    const size = 6 + Math.random() * 6
+    const angle = (Math.PI * 2 * i) / count + Math.random() * 0.3
+    const dist = 50 + Math.random() * 60
+    const tx = Math.cos(angle) * dist
+    const ty = Math.sin(angle) * dist - 30
+
+    el.style.cssText = `
+      position: fixed;
+      left: ${x}px;
+      top: ${y}px;
+      width: ${size}px;
+      height: ${size}px;
+      background: ${color};
+      border-radius: ${Math.random() > 0.5 ? "50%" : "2px"};
+      pointer-events: none;
+      z-index: 99999;
+      transform: translate(-50%, -50%);
+      animation: confetti-fly 0.7s ease-out forwards;
+      --tx: ${tx}px;
+      --ty: ${ty}px;
+    `
+    document.body.appendChild(el)
+    setTimeout(() => el.remove(), 800)
+  }
+}
+
+// Inject confetti keyframe once
+if (typeof document !== "undefined") {
+  if (!document.getElementById("confetti-style")) {
+    const s = document.createElement("style")
+    s.id = "confetti-style"
+    s.textContent = `
+      @keyframes confetti-fly {
+        0%   { opacity: 1; transform: translate(-50%, -50%) scale(1); }
+        100% { opacity: 0; transform: translate(calc(-50% + var(--tx)), calc(-50% + var(--ty))) scale(0.3) rotate(360deg); }
+      }
+      @keyframes fly-to-cart {
+        0%   { transform: translate(-50%, -50%) scale(1);   opacity: 1; }
+        60%  { opacity: 1; }
+        100% { transform: translate(calc(-50% + var(--dx)), calc(-50% + var(--dy))) scale(0.15); opacity: 0; }
+      }
+    `
+    document.head.appendChild(s)
+  }
+}
+
 export function CartAnimation({ product, trigger, onComplete }: CartAnimationProps) {
-  const [isVisible, setIsVisible] = useState(false)
-  const [startPosition, setStartPosition] = useState({ x: 0, y: 0 })
-  const [endPosition, setEndPosition] = useState({ x: 0, y: 0 })
+  const [anim, setAnim] = useState<{ x: number; y: number; dx: number; dy: number } | null>(null)
 
   useEffect(() => {
-    if (trigger) {
-      // Obtener posición del carrito (buscar todos los posibles botones)
-      const cartButtons = document.querySelectorAll('[data-cart-button]')
-      let cartRect = null
-      
-      // Buscar el botón de carrito visible
-      cartButtons.forEach((button) => {
-        const rect = button.getBoundingClientRect()
-        if (rect.width > 0 && rect.height > 0) {
-          cartRect = rect
-        }
-      })
-      
-      // Si no encuentra el botón, usar posición por defecto (esquina superior derecha)
-      const endX = (cartRect as any)?.left + (cartRect as any)?.width / 2 || window.innerWidth - 40
-      const endY = (cartRect as any)?.top + (cartRect as any)?.height / 2 || 100
-      
-      setEndPosition({ x: endX, y: endY })
-      setStartPosition(trigger)
-      setIsVisible(true)
-      
-      // Debug en consola
-      console.log('🚀 Animación iniciada:', {
-        start: trigger,
-        end: { x: endX, y: endY },
-        cartFound: !!cartRect
-      })
-      
-      setTimeout(() => {
-        setIsVisible(false)
-        onComplete?.()
-      }, 1000) // Un poco más de tiempo para ver la animación
+    if (!trigger) return
+
+    // Find visible cart button
+    let cartRect: DOMRect | null = null
+    document.querySelectorAll("[data-cart-button]").forEach((btn) => {
+      const r = btn.getBoundingClientRect()
+      if (r.width > 0 && r.height > 0) cartRect = r
+    })
+
+    const endX = cartRect ? (cartRect as DOMRect).left + (cartRect as DOMRect).width / 2 : window.innerWidth - 50
+    const endY = cartRect ? (cartRect as DOMRect).top + (cartRect as DOMRect).height / 2 : 50
+
+    setAnim({
+      x: trigger.x,
+      y: trigger.y,
+      dx: endX - trigger.x,
+      dy: endY - trigger.y,
+    })
+
+    // Spawn confetti at cart position when image arrives (~700ms)
+    const t1 = setTimeout(() => {
+      spawnConfetti(endX, endY)
+    }, 680)
+
+    const t2 = setTimeout(() => {
+      setAnim(null)
+      onComplete?.()
+    }, 800)
+
+    return () => {
+      clearTimeout(t1)
+      clearTimeout(t2)
     }
-  }, [trigger, onComplete])
+  }, [trigger])
 
-  if (!isVisible) return null
-
-  // Calcular distancias para la animación
-  const deltaX = endPosition.x - startPosition.x
-  const deltaY = endPosition.y - startPosition.y
+  if (!anim) return null
 
   return (
-    <>
-      <style jsx global>{`
-        @keyframes fly-to-cart-${Date.now()} {
-          0% {
-            transform: scale(1) rotate(0deg);
-            opacity: 1;
-          }
-          25% {
-            transform: scale(1.2) rotate(180deg);
-            opacity: 0.9;
-          }
-          100% {
-            transform: scale(0.3) rotate(720deg) translate(${deltaX}px, ${deltaY}px);
-            opacity: 0;
-          }
-        }
-
-        @keyframes trail-${Date.now()} {
-          0% {
-            transform: translate(-50%, -50%) scale(1);
-            opacity: 0.6;
-          }
-          100% {
-            transform: translate(calc(-50% + ${deltaX * 0.6}px), calc(-50% + ${deltaY * 0.6}px)) scale(0.2);
-            opacity: 0;
-          }
-        }
-      `}</style>
-      
-      <div className="fixed pointer-events-none z-[9999]">
-        <div
-          className="absolute"
-          style={{
-            left: `${startPosition.x}px`,
-            top: `${startPosition.y}px`,
-            transform: 'translate(-50%, -50%)',
-          }}
-        >
-          <div className="relative">
-            {/* Miniatura del producto que vuela */}
-            <div 
-              className="w-14 h-14 sm:w-16 sm:h-16 rounded-xl overflow-hidden shadow-2xl border-2 border-white bg-white"
-              style={{
-                animation: `fly-to-cart-${Date.now()} 1s cubic-bezier(0.25, 0.46, 0.45, 0.94) forwards`,
-              }}
-            >
-              <img
-                src={product.image || "/placeholder.svg"}
-                alt={product.name}
-                className="w-full h-full object-contain p-1"
-                onError={(e) => {
-                  const target = e.target as HTMLImageElement;
-                  target.src = "https://via.placeholder.com/64x64/f3f4f6/6b7280?text=Product";
-                }}
-              />
-            </div>
-            
-            {/* Efecto de estela mejorada */}
-            <div className="absolute inset-0">
-              {[...Array(8)].map((_, i) => (
-                <div
-                  key={i}
-                  className="absolute w-3 h-3 bg-gradient-to-r from-blue-400 to-blue-600 rounded-full shadow-lg"
-                  style={{
-                    left: '50%',
-                    top: '50%',
-                    animation: `trail-${Date.now()} 0.8s cubic-bezier(0.25, 0.46, 0.45, 0.94) ${i * 0.1}s forwards`,
-                  }}
-                />
-              ))}
-            </div>
-          </div>
-        </div>
-      </div>
-    </>
+    <div
+      className="fixed pointer-events-none z-[9999] w-14 h-14 rounded-xl overflow-hidden shadow-xl border-2 border-white bg-white"
+      style={{
+        left: anim.x,
+        top: anim.y,
+        animation: "fly-to-cart 0.75s cubic-bezier(0.4, 0, 0.2, 1) forwards",
+        ["--dx" as any]: `${anim.dx}px`,
+        ["--dy" as any]: `${anim.dy}px`,
+      }}
+    >
+      <img
+        src={product.image || "/placeholder.svg"}
+        alt={product.name}
+        className="w-full h-full object-contain p-1"
+      />
+    </div>
   )
 }

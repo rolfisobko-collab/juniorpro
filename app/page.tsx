@@ -40,7 +40,7 @@ export default function HomePage() {
               </p>
             </div>
 
-            <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-6 gap-4">
+            <div className="flex flex-wrap justify-center gap-4">
               {homeCategories.map((category: any) => (
                 <Link
                   key={category.key || category.id}
@@ -59,7 +59,6 @@ export default function HomePage() {
                     />
                     <div className="absolute bottom-0 left-0 right-0 p-4 text-white">
                       <h3 className="text-lg font-bold mb-1">{category.name}</h3>
-                      <p className="text-sm opacity-90">{category.description}</p>
                     </div>
                   </div>
                 </Link>

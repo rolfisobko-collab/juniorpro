@@ -70,7 +70,7 @@ export function Header() {
                 variant="ghost"
                 size="icon"
                 onClick={() => setSidebarOpen(true)}
-                className="hover:bg-blue-50 hover:scale-110 transition-all"
+                className="hover:bg-[#009FE3]/10 hover:text-[#009FE3] hover:scale-110 transition-all duration-200"
               >
                 <Menu className="h-6 w-6" />
                 <span className="sr-only">Abrir categorías</span>
@@ -124,7 +124,7 @@ export function Header() {
                 <Button
                   variant="ghost"
                   size="icon"
-                  className="relative hover:bg-blue-50 hover:scale-110 transition-all"
+                  className="relative hover:bg-[#009FE3]/10 hover:text-[#009FE3] hover:scale-110 transition-all duration-200"
                 >
                   <Heart className="h-5 w-5" />
                   {favorites.length > 0 && (
@@ -140,7 +140,7 @@ export function Header() {
                 <Button
                   variant="ghost"
                   size="icon"
-                  className="relative hover:bg-blue-50 hover:scale-110 transition-all"
+                  className="relative hover:bg-[#009FE3]/10 hover:text-[#009FE3] hover:scale-110 transition-all duration-200"
                   data-cart-button
                 >
                   <ShoppingCart className="h-5 w-5" />
@@ -156,7 +156,7 @@ export function Header() {
               {user ? (
                 <DropdownMenu>
                   <DropdownMenuTrigger asChild>
-                    <Button variant="ghost" size="icon" className="hover:bg-blue-50 hover:scale-110 transition-all relative">
+                    <Button variant="ghost" size="icon" className="hover:bg-[#009FE3]/10 hover:text-[#009FE3] hover:scale-110 transition-all duration-200 relative">
                       {user.avatar ? (
                         <img 
                           src={user.avatar} 

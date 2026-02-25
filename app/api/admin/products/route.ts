@@ -19,44 +19,48 @@ export async function GET(req: Request) {
     const { searchParams } = new URL(req.url)
     const search = (searchParams.get("search") ?? "").trim()
     const categoryKey = (searchParams.get("category") ?? "").trim()
-    
-    console.log('🔍 Search params:', { search, categoryKey })
+    const page = Math.max(1, parseInt(searchParams.get("page") ?? "1", 10))
+    const pageSize = Math.min(100, Math.max(1, parseInt(searchParams.get("pageSize") ?? "100", 10)))
+    const skip = (page - 1) * pageSize
 
-    console.log('📊 Querying products...')
-    const products = await prisma.product.findMany({
-      where: {
-        ...(categoryKey ? { categoryKey } : {}),
-        ...(search
-          ? {
-              OR: [
-                { name: { contains: search, mode: "insensitive" } },
-                { description: { contains: search, mode: "insensitive" } },
-                { brand: { contains: search, mode: "insensitive" } },
-              ],
-            }
-          : {}),
-      },
-      orderBy: { updatedAt: "desc" },
-      take: 500,
-      select: {
-        id: true,
-        name: true,
-        price: true,
-        brand: true,
-        categoryKey: true,
-        description: true,
-        image: true,
-        images: true,
-        rating: true,
-        reviews: true,
-        inStock: true,
-        updatedAt: true,
-      }
-    })
-    
-    console.log('✅ Found products:', products.length)
+    const where = {
+      ...(categoryKey ? { categoryKey } : {}),
+      ...(search
+        ? {
+            OR: [
+              { name: { contains: search, mode: "insensitive" as const } },
+              { description: { contains: search, mode: "insensitive" as const } },
+              { brand: { contains: search, mode: "insensitive" as const } },
+            ],
+          }
+        : {}),
+    }
 
-    return NextResponse.json({ products })
+    const [products, total] = await Promise.all([
+      prisma.product.findMany({
+        where,
+        orderBy: { updatedAt: "desc" },
+        skip,
+        take: pageSize,
+        select: {
+          id: true,
+          name: true,
+          price: true,
+          brand: true,
+          categoryKey: true,
+          description: true,
+          image: true,
+          images: true,
+          rating: true,
+          reviews: true,
+          inStock: true,
+          updatedAt: true,
+        }
+      }),
+      prisma.product.count({ where }),
+    ])
+
+    return NextResponse.json({ products, total, page, pageSize, totalPages: Math.ceil(total / pageSize) })
   } catch (error) {
     console.error('❌ Error in GET /api/admin/products:', error)
     return NextResponse.json({ 

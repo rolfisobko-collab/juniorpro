@@ -97,86 +97,148 @@ export default function ProductsClient({
     return () => window.removeEventListener('scroll', handleScroll)
   }, [loading, hasMore, page, selectedCategory, selectedSubcategory, sortBy])
 
+  const activeCategory = categories.find((c: any) => c.key === selectedCategory)
+  const subcategories: any[] = selectedCategory !== "all" && activeCategory?.subcategories?.length
+    ? activeCategory.subcategories
+    : []
+
   return (
-    <div className="container mx-auto px-4 py-8 min-h-screen">
-      <div className="mb-8">
-        <h1 className="font-serif text-4xl md:text-5xl font-bold mb-4">Catálogo de Productos</h1>
-      </div>
+    <div className="min-h-screen bg-gray-50">
+      {/* Header */}
+      <div className="bg-white border-b border-gray-100 shadow-sm">
+        <div className="container mx-auto px-4 py-8">
+          <div className="flex flex-col md:flex-row md:items-end md:justify-between gap-4">
+            <div>
+              <p className="text-sm font-medium text-[#009FE3] uppercase tracking-widest mb-1">Tienda</p>
+              <h1 className="font-serif text-3xl md:text-4xl font-bold text-gray-900">Catálogo de Productos</h1>
+              <p className="text-gray-500 mt-1 text-sm">
+                {selectedCategory === "all" ? "Todos los productos" : activeCategory?.name}
+                {selectedSubcategory && ` · ${subcategories.find((s: any) => s.slug === selectedSubcategory)?.name || selectedSubcategory}`}
+              </p>
+            </div>
+            <div className="flex items-center gap-2">
+              <SlidersHorizontal className="h-4 w-4 text-gray-400" />
+              <Select value={sortBy} onValueChange={setSortBy} disabled={loading}>
+                <SelectTrigger className="w-[190px] bg-white border-gray-200 text-sm">
+                  <SelectValue placeholder="Ordenar por" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="featured">Destacados</SelectItem>
+                  <SelectItem value="price_asc">Precio: Menor a Mayor</SelectItem>
+                  <SelectItem value="price_desc">Precio: Mayor a Menor</SelectItem>
+                  <SelectItem value="rating_desc">Mejor Valorados</SelectItem>
+                  <SelectItem value="latest">Más Recientes</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+          </div>
+        </div>
 
-      <div className="flex flex-col sm:flex-row gap-4 mb-8">
-        <div className="flex items-center gap-2 flex-wrap">
-          <Button
-            variant={selectedCategory === "all" ? "default" : "outline"}
-            onClick={() => setSelectedCategory("all")}
-            size="sm"
-            disabled={loading}
-          >
-            Todos
-          </Button>
-          {categories.map((category) => (
-            <Button
-              key={category.key}
-              variant={selectedCategory === category.key ? "default" : "outline"}
-              onClick={() => setSelectedCategory(category.key)}
-              size="sm"
+        {/* Categorías */}
+        <div className="container mx-auto px-4 pb-0">
+          <div className="flex items-center gap-2 overflow-x-auto pb-0 scrollbar-hide">
+            <button
+              onClick={() => { setSelectedCategory("all"); setSelectedSubcategory("") }}
               disabled={loading}
+              className={`flex-shrink-0 px-4 py-2.5 rounded-t-xl text-sm font-semibold transition-all duration-200 border-b-2 ${
+                selectedCategory === "all"
+                  ? "border-[#009FE3] text-[#009FE3] bg-blue-50"
+                  : "border-transparent text-gray-500 hover:text-gray-800 hover:bg-gray-50"
+              }`}
             >
-              {category.name}
-            </Button>
-          ))}
-        </div>
-
-        <div className="flex items-center gap-2 sm:ml-auto">
-          <SlidersHorizontal className="h-4 w-4 text-muted-foreground" />
-          <Select value={sortBy} onValueChange={setSortBy} disabled={loading}>
-            <SelectTrigger className="w-[180px]">
-              <SelectValue placeholder="Ordenar por" />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectItem value="featured">Destacados</SelectItem>
-              <SelectItem value="price_asc">Precio: Menor a Mayor</SelectItem>
-              <SelectItem value="price_desc">Precio: Mayor a Menor</SelectItem>
-              <SelectItem value="rating_desc">Mejor Valorados</SelectItem>
-              <SelectItem value="latest">Más Recientes</SelectItem>
-            </SelectContent>
-          </Select>
-        </div>
-      </div>
-
-      {loading ? (
-        <div className="grid grid-cols-1 max-[325px]:grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 sm:gap-6">
-          {[...Array(8)].map((_, i) => (
-            <div key={i} className="bg-accent animate-pulse rounded-md h-64 w-full" />
-          ))}
-        </div>
-      ) : (
-        <>
-          <div className="grid grid-cols-1 max-[325px]:grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 sm:gap-6 pb-8">
-            {products.map((product) => (
-              <ProductCard key={product.id} product={product} />
+              Todos
+            </button>
+            {categories.map((category: any) => (
+              <button
+                key={category.key}
+                onClick={() => { setSelectedCategory(category.key); setSelectedSubcategory("") }}
+                disabled={loading}
+                className={`flex-shrink-0 px-4 py-2.5 rounded-t-xl text-sm font-semibold transition-all duration-200 border-b-2 ${
+                  selectedCategory === category.key
+                    ? "border-[#009FE3] text-[#009FE3] bg-blue-50"
+                    : "border-transparent text-gray-500 hover:text-gray-800 hover:bg-gray-50"
+                }`}
+              >
+                {category.name}
+              </button>
             ))}
           </div>
-          
-          {hasMore && (
-            <div className="flex justify-center pb-8">
-              <Button 
-                onClick={loadMore}
-                disabled={loading}
-                variant="outline"
-                className="min-w-[200px]"
-              >
-                {loading ? 'Cargando...' : 'Cargar más productos'}
-              </Button>
-            </div>
-          )}
-        </>
-      )}
+        </div>
+      </div>
 
-      {!loading && products.length === 0 && (
-        <div className="text-center py-16">
-          <p className="text-muted-foreground text-lg">No se encontraron productos en esta categoría</p>
+      {/* Subcategorías */}
+      {subcategories.length > 0 && (
+        <div className="bg-white border-b border-gray-100">
+          <div className="container mx-auto px-4 py-3">
+            <div className="flex items-center gap-2 overflow-x-auto scrollbar-hide">
+              <button
+                onClick={() => setSelectedSubcategory("")}
+                className={`flex-shrink-0 px-3 py-1.5 rounded-full text-xs font-medium transition-all duration-200 ${
+                  selectedSubcategory === ""
+                    ? "bg-[#009FE3] text-white shadow-sm"
+                    : "bg-gray-100 text-gray-600 hover:bg-gray-200"
+                }`}
+              >
+                Todo
+              </button>
+              {subcategories.map((sub: any) => (
+                <button
+                  key={sub.slug}
+                  onClick={() => setSelectedSubcategory(sub.slug === selectedSubcategory ? "" : sub.slug)}
+                  className={`flex-shrink-0 px-3 py-1.5 rounded-full text-xs font-medium transition-all duration-200 ${
+                    selectedSubcategory === sub.slug
+                      ? "bg-[#009FE3] text-white shadow-sm"
+                      : "bg-gray-100 text-gray-600 hover:bg-gray-200"
+                  }`}
+                >
+                  {sub.name}
+                </button>
+              ))}
+            </div>
+          </div>
         </div>
       )}
+
+      {/* Productos */}
+      <div className="container mx-auto px-4 py-8">
+        {loading ? (
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 sm:gap-6">
+            {[...Array(8)].map((_, i) => (
+              <div key={i} className="bg-white animate-pulse rounded-3xl h-80 w-full shadow-sm" />
+            ))}
+          </div>
+        ) : (
+          <>
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 sm:gap-6 pb-8">
+              {products.map((product) => (
+                <ProductCard key={product.id} product={product} />
+              ))}
+            </div>
+
+            {hasMore && (
+              <div className="flex justify-center pb-8">
+                <Button
+                  onClick={loadMore}
+                  disabled={loading}
+                  className="min-w-[220px] bg-[#009FE3] hover:bg-[#007BB8] text-white rounded-full px-8 py-3 text-sm font-semibold shadow-md hover:shadow-lg transition-all duration-200"
+                >
+                  {loading ? "Cargando..." : "Ver más productos"}
+                </Button>
+              </div>
+            )}
+          </>
+        )}
+
+        {!loading && products.length === 0 && (
+          <div className="text-center py-24">
+            <div className="w-16 h-16 bg-gray-100 rounded-full flex items-center justify-center mx-auto mb-4">
+              <SlidersHorizontal className="w-7 h-7 text-gray-400" />
+            </div>
+            <p className="text-gray-700 font-semibold text-lg mb-1">Sin resultados</p>
+            <p className="text-gray-400 text-sm">No encontramos productos con ese filtro.</p>
+          </div>
+        )}
+      </div>
     </div>
   )
 }

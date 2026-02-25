@@ -1,0 +1,14 @@
+[
+  {
+    "name": "Nombre del producto",
+    "category": "Categoría principal",
+    "subcategory": "Subcategoría específica",
+    "price": 0,
+    "stock": 0,
+    "image": "/nombre-del-archivo.jpg",
+    "description": "Descripción detallada del producto",
+    "brand": "Marca",
+    "model": "Modelo",
+    "warranty": "Garantía"
+  }
+]

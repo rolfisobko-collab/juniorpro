@@ -2,7 +2,7 @@
 
 import type React from "react"
 import PanelLayout from "@/components/panel-layout"
-import { useEffect, useState } from "react"
+import { useEffect, useRef, useState } from "react"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
@@ -30,11 +30,21 @@ interface Product {
 
 export default function AdminProductsPage() {
   const [products, setProducts] = useState<Product[]>([])
+  const [totalProducts, setTotalProducts] = useState(0)
+  const [isLoading, setIsLoading] = useState(false)
+  const [loadProgress, setLoadProgress] = useState(0)
   const [categories, setCategories] = useState<any[]>([])
+  const [subcategories, setSubcategories] = useState<any[]>([])
   const [brands, setBrands] = useState<any[]>([])
   const [searchQuery, setSearchQuery] = useState("")
+  const [filterCategory, setFilterCategory] = useState("all")
+  const [filterSubcategory, setFilterSubcategory] = useState("all")
   const [sortBy, setSortBy] = useState("name")
   const [sortOrder, setSortOrder] = useState<"asc" | "desc">("asc")
+  const [currentPage, setCurrentPage] = useState(1)
+  const loadAbortRef = useRef<boolean>(false)
+  const PAGE_SIZE = 50
+  const BATCH_SIZE = 100
   const [isBrandsModalOpen, setIsBrandsModalOpen] = useState(false)
   const [isImporting, setIsImporting] = useState(false)
   const [pendingImport, setPendingImport] = useState<any>(null)
@@ -57,6 +67,16 @@ export default function AdminProductsPage() {
         if (categoriesRes.ok) {
           const categoriesData = await categoriesRes.json()
           setCategories(categoriesData)
+          // Extraer todas las subcategorías
+          const allSubs: any[] = []
+          categoriesData.forEach((cat: any) => {
+            if (cat.subcategories) {
+              cat.subcategories.forEach((sub: any) => {
+                allSubs.push({ ...sub, categoryKey: cat.key, categoryName: cat.name })
+              })
+            }
+          })
+          setSubcategories(allSubs)
         }
 
         // Cargar marcas (mock por ahora)
@@ -77,73 +97,98 @@ export default function AdminProductsPage() {
     loadData()
   }, [])
 
-  useEffect(() => {
-    let cancelled = false
+  const mapProduct = (p: any, cats: any[]) => {
+    const category = cats.find((c) => c.key === p.categoryKey)
+    return {
+      id: p.id,
+      name: p.name,
+      brand: p.brand,
+      description: p.description,
+      price: p.price,
+      category: category?.name || p.categoryKey || 'Sin categoría',
+      image: p.image || p.images?.[0] || '',
+      rating: p.rating || 0,
+      reviews: p.reviews || 0,
+      inStock: p.inStock ?? true,
+    } as Product
+  }
 
-    const load = async () => {
-      try {
-        const res = await fetch(`/api/admin/products?search=${encodeURIComponent(searchQuery)}`, {
-          method: "GET",
-          headers: { "Content-Type": "application/json" },
-          credentials: "include",
-        })
+  const loadAllProducts = async (search: string, cats: any[]) => {
+    loadAbortRef.current = true // signal any previous load to stop
+    const abortToken = {}
+    loadAbortRef.current = false
+    
+    setProducts([])
+    setTotalProducts(0)
+    setLoadProgress(0)
+    setIsLoading(true)
+    setCurrentPage(1)
 
-        if (!res.ok) {
-          const errorData = await res.json()
-          console.error('❌ API Error:', errorData)
-          toast({
-            title: "Error al cargar productos",
-            description: errorData.error || "Error desconocido",
-            variant: "destructive"
-          })
-          return
-        }
-
-        const data = (await res.json()) as { products?: any[] }
-        console.log('✅ Products loaded:', data.products?.length || 0)
-        console.log('📂 Available categories:', categories.map(c => ({ key: c.key, name: c.name })))
-        console.log('🔍 Sample product categoryKey:', data.products?.[0]?.categoryKey)
-        
-        const mapped = (data.products ?? []).map((p) => {
-          const category = categories.find((c) => c.key === p.categoryKey)
-          console.log(`🏷️ Product ${p.name}: categoryKey=${p.categoryKey}, found=${!!category}, categoryName=${category?.name}`)
-          
-          return {
-            id: p.id,
-            name: p.name,
-            brand: p.brand,
-            description: p.description,
-            price: p.price,
-            category: category?.name || p.categoryKey || 'Sin categoría', // Mapear categoryKey a category para el frontend
-            image: p.image || p.images?.[0] || '', // Usar primera imagen si no hay image
-            rating: p.rating || 0,
-            reviews: p.reviews || 0,
-            inStock: p.inStock ?? true,
-          }
-        }) as Product[]
-
-        if (!cancelled) setProducts(mapped)
-      } catch (error) {
-        console.error('❌ Load error:', error)
-        toast({
-          title: "Error de conexión",
-          description: "No se pudieron cargar los productos",
-          variant: "destructive"
-        })
+    try {
+      // First batch — get total count too
+      const firstRes = await fetch(
+        `/api/admin/products?search=${encodeURIComponent(search)}&page=1&pageSize=${BATCH_SIZE}`,
+        { credentials: "include" }
+      )
+      if (!firstRes.ok) {
+        const err = await firstRes.json()
+        toast({ title: "Error al cargar productos", description: err.error || "Error desconocido", variant: "destructive" })
+        setIsLoading(false)
+        return
       }
-    }
+      const firstData = await firstRes.json() as { products: any[]; total: number; totalPages: number }
+      const total = firstData.total ?? 0
+      const totalPages = firstData.totalPages ?? 1
+      setTotalProducts(total)
+      setProducts(firstData.products.map(p => mapProduct(p, cats)))
+      setLoadProgress(Math.min(firstData.products.length, total))
 
-    void load()
-    return () => {
-      cancelled = true
+      // Load remaining pages sequentially without blocking UI
+      for (let page = 2; page <= totalPages; page++) {
+        if ((loadAbortRef as any).shouldStop) break
+        await new Promise(r => setTimeout(r, 50)) // small pause so UI breathes
+        const res = await fetch(
+          `/api/admin/products?search=${encodeURIComponent(search)}&page=${page}&pageSize=${BATCH_SIZE}`,
+          { credentials: "include" }
+        )
+        if (!res.ok) break
+        const data = await res.json() as { products: any[] }
+        const mapped = data.products.map(p => mapProduct(p, cats))
+        setProducts(prev => {
+          const existingIds = new Set(prev.map(p => p.id))
+          const newOnes = mapped.filter(p => !existingIds.has(p.id))
+          return [...prev, ...newOnes]
+        })
+        setLoadProgress(prev => prev + mapped.length)
+      }
+    } catch (error) {
+      console.error('❌ Load error:', error)
+      toast({ title: "Error de conexión", description: "No se pudieron cargar los productos", variant: "destructive" })
+    } finally {
+      setIsLoading(false)
     }
-  }, [searchQuery])
+  }
 
-  const filteredProducts = products.filter(
-    (product) =>
+  // Reload when search changes (debounced 400ms) or categories load
+  useEffect(() => {
+    if (categories.length === 0) return
+    const timer = setTimeout(() => {
+      void loadAllProducts(searchQuery, categories)
+    }, searchQuery ? 400 : 0)
+    return () => clearTimeout(timer)
+  }, [searchQuery, categories])
+
+  const filteredProducts = products.filter((product) => {
+    const matchesSearch =
       product.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      product.category.toLowerCase().includes(searchQuery.toLowerCase()),
-  )
+      product.category.toLowerCase().includes(searchQuery.toLowerCase())
+    const matchesCategory =
+      filterCategory === "all" || product.category === categories.find(c => c.key === filterCategory)?.name || product.category === filterCategory
+    return matchesSearch && matchesCategory
+  })
+
+  // Reset page when filters change - handled inline
+  const totalPages = Math.ceil(filteredProducts.length / PAGE_SIZE)
 
   const sortedProducts = [...filteredProducts].sort((a, b) => {
     let comparison = 0
@@ -167,6 +212,8 @@ export default function AdminProductsPage() {
     
     return sortOrder === "asc" ? comparison : -comparison
   })
+
+  const paginatedProducts = sortedProducts.slice((currentPage - 1) * PAGE_SIZE, currentPage * PAGE_SIZE)
 
   const handleSort = (field: string) => {
     if (sortBy === field) {
@@ -679,42 +726,77 @@ export default function AdminProductsPage() {
           </label>
         </div>
 
-      <div className="mb-4">
-        <div className="flex gap-4 items-center max-w-2xl">
-          <div className="relative flex-1 max-w-md">
+      <div className="mb-4 space-y-3">
+        <div className="flex flex-wrap gap-3 items-center">
+          <div className="relative flex-1 min-w-[200px] max-w-xs">
             <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
             <Input
               placeholder="Buscar productos..."
               className="pl-10"
               value={searchQuery}
-              onChange={(e) => setSearchQuery(e.target.value)}
+              onChange={(e) => { setSearchQuery(e.target.value); setCurrentPage(1) }}
             />
           </div>
-          <div className="flex gap-2 items-center">
-            <span className="text-sm font-medium text-gray-700">Ordenar por:</span>
-            <Select
-              value={`${sortBy}-${sortOrder}`}
-              onValueChange={(value) => {
-                const [field, order] = value.split('-')
-                setSortBy(field)
-                setSortOrder(order as "asc" | "desc")
-              }}
-            >
-              <SelectTrigger className="w-40">
-                <SelectValue />
+
+          <Select value={filterCategory} onValueChange={(v) => { setFilterCategory(v); setFilterSubcategory("all"); setCurrentPage(1) }}>
+            <SelectTrigger className="w-44">
+              <SelectValue placeholder="Categoría" />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="all">Todas las categorías</SelectItem>
+              {categories.map((cat: any) => (
+                <SelectItem key={cat.key} value={cat.key}>{cat.name}</SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
+
+          {filterCategory !== "all" && subcategories.filter(s => s.categoryKey === filterCategory).length > 0 && (
+            <Select value={filterSubcategory} onValueChange={(v) => { setFilterSubcategory(v); setCurrentPage(1) }}>
+              <SelectTrigger className="w-44">
+                <SelectValue placeholder="Subcategoría" />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="name-asc">Nombre A-Z</SelectItem>
-                <SelectItem value="name-desc">Nombre Z-A</SelectItem>
-                <SelectItem value="price-asc">Precio: Menor a Mayor</SelectItem>
-                <SelectItem value="price-desc">Precio: Mayor a Menor</SelectItem>
-                <SelectItem value="category-asc">Categoría A-Z</SelectItem>
-                <SelectItem value="category-desc">Categoría Z-A</SelectItem>
-                <SelectItem value="brand-asc">Marca A-Z</SelectItem>
-                <SelectItem value="brand-desc">Marca Z-A</SelectItem>
+                <SelectItem value="all">Todas las subcategorías</SelectItem>
+                {subcategories.filter(s => s.categoryKey === filterCategory).map((sub: any) => (
+                  <SelectItem key={sub.id} value={sub.slug}>{sub.name}</SelectItem>
+                ))}
               </SelectContent>
             </Select>
-          </div>
+          )}
+
+          <Select
+            value={`${sortBy}-${sortOrder}`}
+            onValueChange={(value) => {
+              const [field, order] = value.split('-')
+              setSortBy(field)
+              setSortOrder(order as "asc" | "desc")
+            }}
+          >
+            <SelectTrigger className="w-44">
+              <SelectValue />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="name-asc">Nombre A-Z</SelectItem>
+              <SelectItem value="name-desc">Nombre Z-A</SelectItem>
+              <SelectItem value="price-asc">Precio: menor a mayor</SelectItem>
+              <SelectItem value="price-desc">Precio: mayor a menor</SelectItem>
+              <SelectItem value="category-asc">Categoría A-Z</SelectItem>
+              <SelectItem value="brand-asc">Marca A-Z</SelectItem>
+            </SelectContent>
+          </Select>
+
+          <span className="text-sm text-muted-foreground ml-auto flex items-center gap-2">
+            {isLoading && (
+              <span className="inline-flex items-center gap-1 text-[#009FE3]">
+                <svg className="animate-spin h-3 w-3" viewBox="0 0 24 24" fill="none">
+                  <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"/>
+                  <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v8z"/>
+                </svg>
+                {loadProgress}/{totalProducts}
+              </span>
+            )}
+            {!isLoading && `${filteredProducts.length} de ${totalProducts}`} productos · pág. {currentPage}/{totalPages || 1}
+          </span>
         </div>
       </div>
 
@@ -770,7 +852,7 @@ export default function AdminProductsPage() {
               </TableRow>
             </TableHeader>
             <TableBody>
-              {sortedProducts.map((product) => {
+              {paginatedProducts.map((product) => {
                 const hasNoImage = !product.image || product.image === "" || product.image === "/placeholder.svg"
                 return (
                   <TableRow 
@@ -915,6 +997,53 @@ export default function AdminProductsPage() {
             </TableBody>
           </Table>
         </div>
+
+        {/* Paginación */}
+        {totalPages > 1 && (
+          <div className="flex items-center justify-between mt-4 px-1">
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={() => setCurrentPage(p => Math.max(1, p - 1))}
+              disabled={currentPage === 1}
+            >
+              ← Anterior
+            </Button>
+            <div className="flex items-center gap-1">
+              {Array.from({ length: Math.min(totalPages, 7) }, (_, i) => {
+                let page: number
+                if (totalPages <= 7) {
+                  page = i + 1
+                } else if (currentPage <= 4) {
+                  page = i + 1
+                } else if (currentPage >= totalPages - 3) {
+                  page = totalPages - 6 + i
+                } else {
+                  page = currentPage - 3 + i
+                }
+                return (
+                  <Button
+                    key={page}
+                    variant={currentPage === page ? "default" : "outline"}
+                    size="sm"
+                    className="w-9"
+                    onClick={() => setCurrentPage(page)}
+                  >
+                    {page}
+                  </Button>
+                )
+              })}
+            </div>
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={() => setCurrentPage(p => Math.min(totalPages, p + 1))}
+              disabled={currentPage === totalPages}
+            >
+              Siguiente →
+            </Button>
+          </div>
+        )}
       </div>
 
       {/* Modal de gestión de marcas */}

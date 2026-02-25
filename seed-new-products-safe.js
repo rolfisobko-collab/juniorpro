@@ -47,7 +47,7 @@ async function main() {
 
     // 3. Leer el JSON con los nuevos productos
     console.log('📖 Leyendo productos desde JSON...');
-    const productsData = JSON.parse(fs.readFileSync('products-final-complete.json', 'utf8'));
+    const productsData = JSON.parse(fs.readFileSync('products-new.json', 'utf8'));
     console.log(`📊 Se encontraron ${productsData.length} productos en el JSON\n`);
 
     // 4. Asegurar que existan las categorías necesarias
@@ -56,9 +56,24 @@ async function main() {
     // Mapeo de subcategorías a categoryKey
     const categoryMapping = {
       'Smartphones': 'smartphones',
-      'Tablets': 'tablets', 
+      'Laptops': 'computadoras',
       'Computadoras': 'computadoras',
-      'Electrodomésticos': 'electrodomesticos'
+      'Tablets': 'tablets',
+      'Audio': 'smartphones',
+      'Videojuegos': 'smartphones',
+      'Masculinos': 'perfumes',
+      'Femeninos': 'perfumes',
+      'Electrodomésticos': 'electrodomesticos',
+      'Electrónica': 'smartphones',
+      'Auriculares': 'smartphones',
+      'Smartwatches': 'smartphones',
+      'Cámaras': 'smartphones',
+      'Refrigeradores': 'electrodomesticos',
+      'Lavadoras': 'electrodomesticos',
+      'Microondas': 'electrodomesticos',
+      'Aspiradoras': 'electrodomesticos',
+      'Unisex': 'perfumes',
+      'Nicho': 'perfumes'
     };
 
     // Verificar/crear categorías principales
