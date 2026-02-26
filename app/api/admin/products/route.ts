@@ -3,27 +3,22 @@ import crypto from "crypto"
 
 import { prisma } from "@/lib/db"
 import { requireAdminId } from "@/lib/admin-session"
+import type { Prisma } from "@prisma/client"
 
 export async function GET(req: Request) {
   try {
-    console.log('🔍 GET /api/admin/products - Starting request')
-    
     const adminId = await requireAdminId()
-    console.log('👤 Admin ID:', adminId)
-    
-    if (!adminId) {
-      console.log('❌ Unauthorized - No admin ID')
-      return NextResponse.json({ error: "Unauthorized" }, { status: 401 })
-    }
+    if (!adminId) return NextResponse.json({ error: "Unauthorized" }, { status: 401 })
 
     const { searchParams } = new URL(req.url)
     const search = (searchParams.get("search") ?? "").trim()
     const categoryKey = (searchParams.get("category") ?? "").trim()
+    const noImage = searchParams.get("noImage") === "true"
     const page = Math.max(1, parseInt(searchParams.get("page") ?? "1", 10))
     const pageSize = Math.min(100, Math.max(1, parseInt(searchParams.get("pageSize") ?? "100", 10)))
     const skip = (page - 1) * pageSize
 
-    const where = {
+    const baseWhere: Prisma.ProductWhereInput = {
       ...(categoryKey ? { categoryKey } : {}),
       ...(search
         ? {
@@ -36,7 +31,19 @@ export async function GET(req: Request) {
         : {}),
     }
 
-    const [products, total] = await Promise.all([
+    // Products "without image" have /placeholder-*.jpg paths, not empty strings.
+    // Filter: image does not start with "http"
+    const noImageCondition: Prisma.ProductWhereInput = {
+      NOT: { image: { startsWith: "http" } },
+    }
+
+    const where: Prisma.ProductWhereInput = noImage
+      ? { AND: [baseWhere, noImageCondition] }
+      : baseWhere
+
+    const whereWithoutImage: Prisma.ProductWhereInput = { AND: [baseWhere, noImageCondition] }
+
+    const [products, total, totalWithoutImage] = await Promise.all([
       prisma.product.findMany({
         where,
         orderBy: { updatedAt: "desc" },
@@ -55,17 +62,25 @@ export async function GET(req: Request) {
           reviews: true,
           inStock: true,
           updatedAt: true,
-        }
+        },
       }),
       prisma.product.count({ where }),
+      prisma.product.count({ where: whereWithoutImage }),
     ])
 
-    return NextResponse.json({ products, total, page, pageSize, totalPages: Math.ceil(total / pageSize) })
+    return NextResponse.json({
+      products,
+      total,
+      totalWithoutImage,
+      page,
+      pageSize,
+      totalPages: Math.ceil(total / pageSize),
+    })
   } catch (error) {
-    console.error('❌ Error in GET /api/admin/products:', error)
-    return NextResponse.json({ 
+    console.error("❌ Error in GET /api/admin/products:", error)
+    return NextResponse.json({
       error: "Failed to load products",
-      details: error instanceof Error ? error.message : 'Unknown error'
+      details: error instanceof Error ? error.message : "Unknown error",
     }, { status: 500 })
   }
 }

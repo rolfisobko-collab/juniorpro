@@ -24,6 +24,7 @@ export default function ProductDetailPage({ params }: { params: Promise<{ id: st
   const [quantity, setQuantity] = useState(1)
   const [recommendedProducts, setRecommendedProducts] = useState<UnifiedProduct[]>([])
   const [animationTrigger, setAnimationTrigger] = useState<{x: number, y: number} | false>(false)
+  const [selectedImage, setSelectedImage] = useState<string | null>(null)
   const { addItem } = useCart()
   const { toggleFavorite, isFavorite } = useFavorites()
   const { toast } = useToast()
@@ -48,6 +49,7 @@ export default function ProductDetailPage({ params }: { params: Promise<{ id: st
           name: apiProduct.name,
           price: apiProduct.price,
           image: apiProduct.image,
+          images: apiProduct.images ?? [],
           description: apiProduct.description,
           brand: apiProduct.brand,
           rating: apiProduct.rating,
@@ -60,6 +62,7 @@ export default function ProductDetailPage({ params }: { params: Promise<{ id: st
           ...(apiProduct.createdAt && { createdAt: apiProduct.createdAt }),
           ...(apiProduct.updatedAt && { updatedAt: apiProduct.updatedAt }),
         }
+        setSelectedImage(null) // reset on product load
 
         if (!cancelled) {
           setProduct(unifiedProduct)
@@ -216,41 +219,70 @@ export default function ProductDetailPage({ params }: { params: Promise<{ id: st
         {/* Grid principal del producto */}
         <div className="grid lg:grid-cols-2 gap-8 lg:gap-16 items-start">
           {/* Sección de imágenes */}
-          <div className="space-y-4">
-            <div className="relative aspect-square rounded-3xl overflow-hidden bg-gradient-to-br from-gray-100 to-gray-200 shadow-2xl group p-4">
-              <div className="absolute inset-4 bg-gradient-to-t from-black/5 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
-              <Image 
-                src={product.image || "/placeholder.svg"} 
-                alt={product.name} 
-                fill 
-                className="object-cover transition-transform duration-700 group-hover:scale-110 rounded-2xl" 
-                sizes="(max-width: 768px) 100vw, 50vw"
-                quality={95}
-                priority
-              />
-              {/* Badge de stock */}
-              <div className="absolute top-4 right-4">
-                <div className={`px-3 py-1 rounded-full text-xs font-semibold backdrop-blur-sm ${
-                  product.inStock 
-                    ? "bg-green-500/90 text-white" 
-                    : "bg-red-500/90 text-white"
-                }`}>
-                  {product.inStock ? t('In stock') : t('Out of stock')}
-                </div>
-              </div>
-            </div>
-            
-            {/* Miniaturas (opcional para futuro) */}
-            {false && ( // Desactivado temporalmente hasta que el tipo tenga la propiedad images
-              <div className="grid grid-cols-4 gap-2">
-                {[1, 2, 3, 4].map((i) => (
-                  <div key={i} className="aspect-square rounded-xl overflow-hidden bg-gray-100 border-2 border-transparent hover:border-blue-500 transition-all duration-300 cursor-pointer">
-                    <div className="w-full h-full bg-gradient-to-br from-gray-200 to-gray-300 animate-pulse" />
+          {(() => {
+            // Build gallery: deduplicated list starting with primary
+            const allImages: string[] = []
+            if (product.image) allImages.push(product.image)
+            ;(product.images ?? []).forEach(img => { if (img && !allImages.includes(img)) allImages.push(img) })
+            const displayImage = selectedImage || allImages[0] || "/placeholder.svg"
+            return (
+              <div className="space-y-4">
+                {/* Imagen principal */}
+                <div className="relative aspect-square rounded-3xl overflow-hidden bg-white shadow-2xl group p-4">
+                  <div className="absolute inset-4 bg-gradient-to-t from-black/5 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
+                  <Image 
+                    src={displayImage} 
+                    alt={product.name} 
+                    fill 
+                    className="object-contain transition-all duration-300 rounded-2xl" 
+                    sizes="(max-width: 768px) 100vw, 50vw"
+                    quality={95}
+                    priority
+                  />
+                  {/* Badge de stock */}
+                  <div className="absolute top-4 right-4">
+                    <div className={`px-3 py-1 rounded-full text-xs font-semibold backdrop-blur-sm ${
+                      product.inStock 
+                        ? "bg-green-500/90 text-white" 
+                        : "bg-red-500/90 text-white"
+                    }`}>
+                      {product.inStock ? t('In stock') : t('Out of stock')}
+                    </div>
                   </div>
-                ))}
+                </div>
+
+                {/* Miniaturas — solo si hay más de 1 imagen */}
+                {allImages.length > 1 && (
+                  <div className={`grid gap-2 ${allImages.length === 2 ? 'grid-cols-2' : allImages.length === 3 ? 'grid-cols-3' : 'grid-cols-4'}`}>
+                    {allImages.map((img, i) => (
+                      <button
+                        key={i}
+                        onClick={() => setSelectedImage(img)}
+                        className={`relative aspect-square rounded-xl overflow-hidden bg-white border-2 transition-all duration-200 cursor-pointer
+                          ${ displayImage === img
+                            ? "border-[#009FE3] ring-2 ring-[#009FE3]/30 scale-105"
+                            : "border-transparent hover:border-[#009FE3]/50"
+                          }`}
+                      >
+                        <Image
+                          src={img}
+                          alt={`${product.name} - imagen ${i + 1}`}
+                          fill
+                          className="object-contain p-1"
+                          sizes="120px"
+                        />
+                        {i === 0 && (
+                          <span className="absolute bottom-1 left-1/2 -translate-x-1/2 bg-[#009FE3] text-white text-[9px] font-bold px-1.5 py-0.5 rounded-full whitespace-nowrap">
+                            Principal
+                          </span>
+                        )}
+                      </button>
+                    ))}
+                  </div>
+                )}
               </div>
-            )}
-          </div>
+            )
+          })()}
 
           {/* Sección de información */}
           <div className="space-y-6 lg:space-y-8">

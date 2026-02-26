@@ -11,6 +11,7 @@ import { Plus, Pencil, Trash2, Search, Building, Eye, Upload, Image as ImageIcon
 import { useToast } from "@/hooks/use-toast"
 import { BrandsModal } from "@/components/brands-modal"
 import { ImageLinkModal } from "@/components/image-link-modal"
+import { ImageMultiModal } from "@/components/image-multi-modal"
 import { ImageUpload } from "@/components/image-upload"
 import Link from "next/link"
 import { useRouter } from "next/navigation"
@@ -968,10 +969,11 @@ export default function AdminProductsPage() {
                         variant="ghost" 
                         size="sm" 
                         onClick={() => {
-                          const searchQuery = encodeURIComponent(`${product.name} image`)
-                          window.open(`https://www.google.com/search?q=${searchQuery}&tbm=isch`, '_blank')
+                          const q = encodeURIComponent(`${product.name} image`)
+                          window.open(`https://www.google.com/search?q=${q}&tbm=isch`, '_blank')
+                          handleImageModal(product)
                         }}
-                        title="Buscar imagen en Google"
+                        title="Buscar imagen en Google y subir"
                       >
                         <ImageIcon className="h-4 w-4" />
                       </Button>
@@ -1052,37 +1054,32 @@ export default function AdminProductsPage() {
         onOpenChange={setIsBrandsModalOpen} 
       />
 
-      {/* Modal de subida de imagen */}
+      {/* Modal de subida de imagen - hasta 4 imágenes */}
       {imageModalProduct && (
-        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
-          <div className="bg-white rounded-lg p-6 max-w-md w-full mx-4">
-            <div className="flex items-center justify-between mb-4">
-              <h3 className="text-lg font-semibold">
-                Subir imagen: {imageModalProduct.name.substring(0, 30)}...
-              </h3>
-              <button
-                onClick={() => setImageModalProduct(null)}
-                className="text-gray-400 hover:text-gray-600"
-              >
-                ✕
-              </button>
-            </div>
-            
-            <ImageUpload 
-              value={imageModalProduct.image || ""}
-              onChange={handleImageUpdate}
-            />
-            
-            <div className="mt-4 flex justify-end">
-              <Button 
-                variant="outline" 
-                onClick={() => setImageModalProduct(null)}
-              >
-                Cancelar
-              </Button>
-            </div>
-          </div>
-        </div>
+        <ImageMultiModal
+          product={imageModalProduct}
+          onClose={() => setImageModalProduct(null)}
+          onSave={async (primaryUrl: string, allImages: string[]) => {
+            try {
+              const res = await fetch(`/api/admin/products/update-simple`, {
+                method: "PUT",
+                headers: { "Content-Type": "application/json" },
+                credentials: "include",
+                body: JSON.stringify({ id: imageModalProduct.id, image: primaryUrl, images: allImages }),
+              })
+              if (!res.ok) throw new Error("Error al guardar")
+              setProducts(prev => prev.map(p =>
+                p.id === imageModalProduct.id ? { ...p, image: primaryUrl } : p
+              ))
+              setUpdatedProductId(imageModalProduct.id)
+              setTimeout(() => setUpdatedProductId(null), 2000)
+              toast({ title: "✅ Imágenes guardadas", description: "Las imágenes se actualizaron correctamente" })
+              setImageModalProduct(null)
+            } catch {
+              toast({ title: "Error", description: "No se pudieron guardar las imágenes", variant: "destructive" })
+            }
+          }}
+        />
       )}
     </PanelLayout>
   )

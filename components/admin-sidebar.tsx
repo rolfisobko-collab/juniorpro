@@ -42,6 +42,7 @@ const menuGroups = [
     label: "Catálogo",
     items: [
       { href: "/panel/products", label: "Productos", icon: Package, permission: "products" as Permission },
+      { href: "/panel/images", label: "Imágenes masivas", icon: Images, permission: "products" as Permission },
       { href: "/panel/categories", label: "Categorías", icon: FolderTree, permission: "categories" as Permission },
     ],
   },

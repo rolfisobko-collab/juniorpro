@@ -81,25 +81,41 @@ export function HeroCarousel() {
     setCurrentIndex((prev) => (prev + 1) % slides.length)
   }
 
-  const currentSlide = slides[currentIndex]
-
   return (
     <div className="relative w-full h-[50vh] md:h-[37vh] lg:h-[40vh] overflow-hidden">
-      {/* Imágenes del carrusel - Responsive */}
+      {/* Preload all slide images */}
+      <div className="hidden" aria-hidden="true">
+        {slides.map((slide, i) => i > 0 && (
+          <div key={i}>
+            <img src={slide.desktop} alt="" fetchPriority="low" />
+            <img src={slide.mobile} alt="" fetchPriority="low" />
+          </div>
+        ))}
+      </div>
+
+      {/* Render all slides, show only current with opacity transition */}
       <div className="relative w-full h-full">
-        {/* Imagen Desktop */}
-        <img
-          src={currentSlide.desktop}
-          alt={`Slide ${currentIndex + 1}`}
-          className="absolute inset-0 w-full h-full object-contain object-center hidden md:block"
-        />
-        
-        {/* Imagen Mobile */}
-        <img
-          src={currentSlide.mobile}
-          alt={`Slide ${currentIndex + 1}`}
-          className="absolute inset-0 w-full h-full object-cover object-center md:hidden"
-        />
+        {slides.map((slide, i) => (
+          <div
+            key={i}
+            className={`absolute inset-0 transition-opacity duration-500 ${i === currentIndex ? "opacity-100" : "opacity-0 pointer-events-none"}`}
+          >
+            <img
+              src={slide.desktop}
+              alt={`Slide ${i + 1}`}
+              className="absolute inset-0 w-full h-full object-contain object-center hidden md:block"
+              fetchPriority={i === 0 ? "high" : "low"}
+              loading={i === 0 ? "eager" : "lazy"}
+            />
+            <img
+              src={slide.mobile}
+              alt={`Slide ${i + 1}`}
+              className="absolute inset-0 w-full h-full object-cover object-center md:hidden"
+              fetchPriority={i === 0 ? "high" : "low"}
+              loading={i === 0 ? "eager" : "lazy"}
+            />
+          </div>
+        ))}
       </div>
 
       {/* Controles de navegación */}

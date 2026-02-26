@@ -3,6 +3,7 @@ export interface BaseProduct {
   name: string
   price: number
   image: string
+  images?: string[]
   description: string
   brand: string
   rating: number
