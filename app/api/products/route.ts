@@ -122,6 +122,7 @@ export async function GET(req: Request) {
     const page = Math.max(1, parseInt(searchParams.get("page") || "1"))
     const limit = Math.min(100, Math.max(1, parseInt(searchParams.get("limit") || "20")))
     const category = searchParams.get("category")
+    const subcategory = (searchParams.get("subcategory") ?? "").trim()
     const minPrice = searchParams.get("minPrice")
     const maxPrice = searchParams.get("maxPrice")
     const sort = searchParams.get("sort")
@@ -132,6 +133,61 @@ export async function GET(req: Request) {
     
     if (category && category !== "all") {
       where.categoryKey = category
+    }
+
+    if (subcategory) {
+      // Products don't have a subcategory field — filter by keyword in name
+      const subcategoryKeywords: Record<string, string[]> = {
+        // electrodomesticos
+        "ventiladores": ["ventilador"],
+        "aire-acondicionado": ["aire acondicionado", "ar condicionado", "split"],
+        "televisores": ["televisor", "tv ", "smart tv", "monitor"],
+        "climatizadores": ["climatizador", "climatizacion"],
+        "sandwicheras": ["sandwichera", "sandwicheiro", "sandwich"],
+        "accesorios-cocina": ["abridor", "cuchillo", "sarten", "olla", "cafetera", "licuadora", "batidora", "mixer", "freidora", "microonda", "horno", "plancha", "jarra"],
+        "umidificadores": ["umidificador", "humidificador"],
+        "aspiradoras": ["aspiradora", "aspirador"],
+        "batidoras": ["batidora", "mixer"],
+        "bebederos": ["bebedero", "dispenser agua"],
+        "cafeteras": ["cafetera", "cafeteira"],
+        "cocinas": ["cocina", "fogon", "fogao", "fogareiro"],
+        "hornos": ["horno"],
+        "frigobares": ["frigobar", "minifri"],
+        "freidoras": ["freidora", "air fryer"],
+        "jarras-electricas": ["jarra electrica", "hervidor"],
+        "licuadoras": ["licuadora", "liquidificador"],
+        "maquinas-hielo": ["maquina de hielo", "maquina hielo"],
+        "microondas": ["microonda"],
+        "mixers": ["mixer"],
+        "ollas-electricas": ["olla electrica", "panela eletrica"],
+        "planchas": ["plancha", "ferro"],
+        "procesadores": ["procesador de alimentos", "processador"],
+        "electrodomesticos-general": ["electrodomestico"],
+        "electrodomesticos": [],
+        // electronics
+        "smartphones": ["smartphone", "celular", "iphone", "galaxy", "redmi", "poco"],
+        "laptops": ["notebook", "laptop", "macbook"],
+        "tablets": ["tablet", "ipad"],
+        "headphones": ["auricular", "headphone", "headset", "earphone", "fone"],
+        "smartwatches": ["smartwatch", "reloj inteligente", "watch"],
+        "cameras": ["camara", "camera", "webcam"],
+        "videojuegos": ["playstation", "xbox", "nintendo", "joystick", "gamepad", "control"],
+        "accesorios": ["cable", "cargador", "funda", "teclado", "mouse", "hub", "adaptador"],
+        "amazon": ["echo", "alexa", "kindle", "fire"],
+        // perfumes
+        "women": ["femeni", "mujer", "pour femme", "woman"],
+        "men": ["masculi", "hombre", "pour homme", "man"],
+        "unisex": ["unisex"],
+        "niche": ["niche", "nicho"],
+      }
+      const keywords = subcategoryKeywords[subcategory]
+      if (keywords && keywords.length > 0) {
+        where.OR = [
+          ...(where.OR || []),
+          ...keywords.map((kw: string) => ({ name: { contains: kw, mode: "insensitive" as const } })),
+        ]
+      }
+      // if keywords is empty array (e.g. "electrodomesticos" fallback), no extra filter needed
     }
 
     if (search) {

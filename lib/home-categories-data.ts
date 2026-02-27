@@ -27,7 +27,7 @@ export let homeCategories: HomeCategory[] = [
   {
     id: "3",
     name: "Tablets",
-    image: "/categories/tablets.png",
+    image: "https://i.ibb.co/gFVcWT6R/8.png",
     link: "/products?category=tablets",
     order: 3,
     active: true,
@@ -51,7 +51,7 @@ export let homeCategories: HomeCategory[] = [
   {
     id: "6",
     name: "Accesorios",
-    image: "/categories/audio.png",
+    image: "https://i.ibb.co/BVK9pvqW/9.png",
     link: "/products?category=electronics&subcategory=accesorios",
     order: 6,
     active: true,
@@ -59,7 +59,7 @@ export let homeCategories: HomeCategory[] = [
   {
     id: "7",
     name: "Televisores",
-    image: "/categories/smartphones.png",
+    image: "https://i.ibb.co/Xr3SDVLR/10.png",
     link: "/products?category=electrodomesticos&subcategory=televisores",
     order: 7,
     active: true,
@@ -67,7 +67,7 @@ export let homeCategories: HomeCategory[] = [
   {
     id: "8",
     name: "Aire Acondicionado",
-    image: "/categories/computadoras.png",
+    image: "https://i.ibb.co/sJNqBCFH/12.png",
     link: "/products?category=electrodomesticos&subcategory=aire-acondicionado",
     order: 8,
     active: true,
@@ -75,7 +75,7 @@ export let homeCategories: HomeCategory[] = [
   {
     id: "9",
     name: "Electrodomésticos",
-    image: "/categories/computadoras.png",
+    image: "https://i.ibb.co/6R3QGCsw/11.png",
     link: "/products?category=electrodomesticos",
     order: 9,
     active: true,

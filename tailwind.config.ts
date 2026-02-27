@@ -38,6 +38,7 @@ const config: Config = {
       animation: {
         "fade-in": "fadeIn 0.5s ease-in-out",
         "slide-in": "slideIn 0.3s ease-out",
+        "fade-up": "fadeUp 0.5s cubic-bezier(0.16, 1, 0.3, 1) both",
       },
       keyframes: {
         fadeIn: {
@@ -47,6 +48,10 @@ const config: Config = {
         slideIn: {
           "0%": { transform: "translateX(-100%)" },
           "100%": { transform: "translateX(0)" },
+        },
+        fadeUp: {
+          "0%": { opacity: "0", transform: "translateY(28px) scale(0.97)" },
+          "100%": { opacity: "1", transform: "translateY(0) scale(1)" },
         },
       },
     },

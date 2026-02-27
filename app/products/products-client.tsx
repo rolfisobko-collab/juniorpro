@@ -1,6 +1,6 @@
 "use client"
 
-import { useState, useEffect } from "react"
+import { useState, useEffect, useRef, useCallback } from "react"
 import { ProductCard } from "@/components/product-card"
 import { Button } from "@/components/ui/button"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
@@ -27,6 +27,8 @@ export default function ProductsClient({
   const [loading, setLoading] = useState(false)
   const [hasMore, setHasMore] = useState(true)
   const [page, setPage] = useState(1)
+  const [newProductIds, setNewProductIds] = useState<Set<string>>(new Set())
+  const animatingRef = useRef<Set<string>>(new Set())
 
   useEffect(() => {
     console.log('Initial params:', { initialCategory, initialSubcategory })
@@ -57,9 +59,19 @@ export default function ProductsClient({
       
       if (data.products) {
         if (append) {
-          setProducts(prev => [...prev, ...data.products])
+          const incoming: ProductWithCategory[] = data.products
+          const ids = new Set<string>(incoming.map((p: ProductWithCategory) => p.id))
+          animatingRef.current = ids
+          setNewProductIds(ids)
+          setProducts(prev => [...prev, ...incoming])
+          // Clear animation classes after they finish
+          setTimeout(() => {
+            animatingRef.current = new Set()
+            setNewProductIds(new Set())
+          }, 800)
         } else {
           setProducts(data.products)
+          setNewProductIds(new Set())
         }
         setHasMore(data.products.length === 50)
       }
@@ -201,31 +213,50 @@ export default function ProductsClient({
 
       {/* Productos */}
       <div className="container mx-auto px-4 py-8">
-        {loading ? (
+        {/* Initial full-page skeleton (first load / filter change) */}
+        {loading && products.length === 0 && (
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 sm:gap-6">
             {[...Array(8)].map((_, i) => (
               <div key={i} className="bg-white animate-pulse rounded-3xl h-80 w-full shadow-sm" />
             ))}
           </div>
-        ) : (
+        )}
+
+        {products.length > 0 && (
           <>
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 sm:gap-6 pb-8">
-              {products.map((product) => (
-                <ProductCard key={product.id} product={product} />
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 sm:gap-6 pb-2">
+              {products.map((product) => {
+                const isNew = newProductIds.has(product.id)
+                const batchIndex = isNew ? Array.from(newProductIds).indexOf(product.id) : 0
+                return (
+                  <div
+                    key={product.id}
+                    className={isNew ? "animate-fade-up" : ""}
+                    style={isNew ? { animationDelay: `${Math.min(batchIndex, 15) * 55}ms`, animationFillMode: "both" } : {}}
+                  >
+                    <ProductCard product={product} />
+                  </div>
+                )
+              })}
+
+              {/* Inline skeleton cards at the bottom while loading more */}
+              {loading && hasMore && [...Array(4)].map((_, i) => (
+                <div
+                  key={`skel-${i}`}
+                  className="animate-fade-up bg-white rounded-3xl overflow-hidden shadow-sm"
+                  style={{ animationDelay: `${i * 80}ms`, animationFillMode: "both" }}
+                >
+                  <div className="animate-pulse">
+                    <div className="bg-gray-100 h-52 w-full" />
+                    <div className="p-4 space-y-3">
+                      <div className="h-3 bg-gray-100 rounded-full w-3/4" />
+                      <div className="h-3 bg-gray-100 rounded-full w-1/2" />
+                      <div className="h-5 bg-gray-200 rounded-full w-1/3 mt-2" />
+                    </div>
+                  </div>
+                </div>
               ))}
             </div>
-
-            {hasMore && (
-              <div className="flex justify-center pb-8">
-                <Button
-                  onClick={loadMore}
-                  disabled={loading}
-                  className="min-w-[220px] bg-[#009FE3] hover:bg-[#007BB8] text-white rounded-full px-8 py-3 text-sm font-semibold shadow-md hover:shadow-lg transition-all duration-200"
-                >
-                  {loading ? "Cargando..." : "Ver más productos"}
-                </Button>
-              </div>
-            )}
           </>
         )}
 
