@@ -12,7 +12,7 @@ export let homeCategories: HomeCategory[] = [
     id: "1",
     name: "Smartphones",
     image: "/categories/smartphones.png",
-    link: "/products?category=smartphones",
+    link: "/products?category=electronics&subcategory=smartphones",
     order: 1,
     active: true,
   },
@@ -28,7 +28,7 @@ export let homeCategories: HomeCategory[] = [
     id: "3",
     name: "Tablets",
     image: "https://i.ibb.co/gFVcWT6R/8.png",
-    link: "/products?category=tablets",
+    link: "/products?category=electronics&subcategory=tablets",
     order: 3,
     active: true,
   },
@@ -86,7 +86,7 @@ export let homeCategories: HomeCategory[] = [
     image: "/categories/perfumes-masculinos.png",
     link: "/products?category=perfumes&subcategory=men",
     order: 10,
-    active: true,
+    active: false,
   },
   {
     id: "11",
@@ -94,7 +94,7 @@ export let homeCategories: HomeCategory[] = [
     image: "/categories/perfumes-femeninos.png",
     link: "/products?category=perfumes&subcategory=women",
     order: 11,
-    active: true,
+    active: false,
   },
 ]
 

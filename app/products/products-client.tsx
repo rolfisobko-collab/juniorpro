@@ -23,7 +23,7 @@ export default function ProductsClient({
   const [products, setProducts] = useState<ProductWithCategory[]>(initialProducts)
   const [selectedCategory, setSelectedCategory] = useState<string>(initialCategory || "all")
   const [selectedSubcategory, setSelectedSubcategory] = useState<string>(initialSubcategory || "")
-  const [sortBy, setSortBy] = useState("featured")
+  const [sortBy, setSortBy] = useState(initialSubcategory === "videojuegos" ? "price_desc" : "featured")
   const [loading, setLoading] = useState(false)
   const [hasMore, setHasMore] = useState(true)
   const [page, setPage] = useState(1)

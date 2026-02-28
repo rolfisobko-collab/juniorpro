@@ -9,13 +9,17 @@ interface HomepageProductsProps {
   limit?: number
   featured?: boolean
   category?: string
+  hasImage?: boolean
+  sortOverride?: string
 }
 
 export default function HomepageProducts({ 
   title, 
   limit = 5, 
   featured = false,
-  category 
+  category,
+  hasImage = true,
+  sortOverride,
 }: HomepageProductsProps) {
   const [products, setProducts] = useState<UnifiedProduct[]>([])
   const [loading, setLoading] = useState(true)
@@ -26,8 +30,9 @@ export default function HomepageProducts({
       try {
         const params = new URLSearchParams({
           limit: limit.toString(),
-          sort: featured ? "featured" : "latest",
+          sort: sortOverride ?? (featured ? "featured" : "latest"),
           ...(category && category !== "all" && { category }),
+          ...(hasImage && { hasImage: "true" }),
         })
         
         const response = await fetch(`/api/products?${params}`)

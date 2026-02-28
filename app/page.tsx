@@ -40,26 +40,32 @@ export default function HomePage() {
               </p>
             </div>
 
-            <div className="flex flex-wrap justify-center gap-4">
+            <div className="flex flex-wrap justify-center gap-4 max-w-6xl mx-auto">
               {homeCategories.map((category: any) => (
                 <Link
                   key={category.key || category.id}
                   href={category.link}
-                  className="group relative overflow-hidden rounded-2xl border border-gray-200 bg-white hover:border-blue-500 transition-all duration-300 hover:shadow-lg"
+                  className="group relative overflow-hidden rounded-2xl bg-white border border-gray-100 hover:border-blue-300 transition-all duration-300 hover:shadow-xl hover:-translate-y-1 w-[calc(50%-8px)] sm:w-40 md:w-44 lg:w-48"
                 >
-                  <div className="aspect-square w-48 h-48 mx-auto relative overflow-hidden">
+                  <div className="aspect-square relative overflow-hidden">
                     <Image
                       src={category.image || "/placeholder.svg"}
                       alt={category.name}
                       fill
                       className="object-cover group-hover:scale-110 transition-transform duration-500"
-                      sizes="(max-width: 768px) 50vw, (max-width: 1024px) 33vw, 16vw"
+                      sizes="(max-width: 640px) 50vw, (max-width: 1024px) 33vw, 20vw"
                       priority={category.order <= 4}
                       loading={category.order <= 4 ? "eager" : "lazy"}
                     />
-                    <div className="absolute bottom-0 left-0 right-0 p-4 text-white">
-                      <h3 className="text-lg font-bold mb-1">{category.name}</h3>
+                    {/* gradient overlay */}
+                    <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-black/10 to-transparent" />
+                    {/* label */}
+                    <div className="absolute bottom-0 left-0 right-0 p-3">
+                      <h3 className="text-sm sm:text-base font-bold text-white leading-tight drop-shadow">{category.name}</h3>
+                      <p className="text-[10px] sm:text-xs text-white/70 mt-0.5 font-medium group-hover:text-white/90 transition-colors">Ver productos →</p>
                     </div>
+                    {/* shine effect on hover */}
+                    <div className="absolute inset-0 bg-gradient-to-tr from-transparent via-white/10 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
                   </div>
                 </Link>
               ))}
@@ -67,12 +73,6 @@ export default function HomePage() {
           </div>
         </section>
       )}
-
-      <HomepageProducts 
-        title={t('Recommended for You')} 
-        limit={5}
-        featured={true}
-      />
 
       <section className="py-8 bg-gradient-to-r from-purple-50 via-blue-50 to-purple-50 border-y border-gray-200">
         <div className="container mx-auto px-4">
@@ -141,8 +141,19 @@ export default function HomePage() {
       </section>
 
       <HomepageProducts 
-        title={t('New Arrivals')} 
-        limit={5}
+        title={t('Más Vendidos')} 
+        limit={10}
+        featured={true}
+        hasImage={true}
+        sortOverride="rating_desc"
+      />
+
+      <HomepageProducts 
+        title={t('Electrodomésticos Destacados')} 
+        limit={10}
+        category="electrodomesticos"
+        hasImage={true}
+        sortOverride="price_desc"
       />
 
       {activeCTAs.length > 0 && activeCTAs[0] && (
@@ -198,8 +209,10 @@ export default function HomePage() {
       )}
 
       <HomepageProducts 
-        title={t('Best Sellers')} 
-        limit={5}
+        title={t('Recién Llegados')} 
+        limit={10}
+        hasImage={true}
+        sortOverride="latest"
       />
     </div>
   )

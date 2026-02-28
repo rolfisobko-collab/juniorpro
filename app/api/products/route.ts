@@ -123,6 +123,7 @@ export async function GET(req: Request) {
     const limit = Math.min(100, Math.max(1, parseInt(searchParams.get("limit") || "20")))
     const category = searchParams.get("category")
     const subcategory = (searchParams.get("subcategory") ?? "").trim()
+    const hasImage = searchParams.get("hasImage") === "true"
     const minPrice = searchParams.get("minPrice")
     const maxPrice = searchParams.get("maxPrice")
     const sort = searchParams.get("sort")
@@ -135,50 +136,55 @@ export async function GET(req: Request) {
       where.categoryKey = category
     }
 
+    if (hasImage) {
+      where.image = { startsWith: "http" }
+    }
+
     if (subcategory) {
       // Products don't have a subcategory field — filter by keyword in name
+      // Map subcategory slug → name keywords (supports ES+PT product names)
       const subcategoryKeywords: Record<string, string[]> = {
         // electrodomesticos
-        "ventiladores": ["ventilador"],
-        "aire-acondicionado": ["aire acondicionado", "ar condicionado", "split"],
-        "televisores": ["televisor", "tv ", "smart tv", "monitor"],
-        "climatizadores": ["climatizador", "climatizacion"],
-        "sandwicheras": ["sandwichera", "sandwicheiro", "sandwich"],
-        "accesorios-cocina": ["abridor", "cuchillo", "sarten", "olla", "cafetera", "licuadora", "batidora", "mixer", "freidora", "microonda", "horno", "plancha", "jarra"],
-        "umidificadores": ["umidificador", "humidificador"],
-        "aspiradoras": ["aspiradora", "aspirador"],
-        "batidoras": ["batidora", "mixer"],
-        "bebederos": ["bebedero", "dispenser agua"],
-        "cafeteras": ["cafetera", "cafeteira"],
-        "cocinas": ["cocina", "fogon", "fogao", "fogareiro"],
-        "hornos": ["horno"],
-        "frigobares": ["frigobar", "minifri"],
-        "freidoras": ["freidora", "air fryer"],
-        "jarras-electricas": ["jarra electrica", "hervidor"],
-        "licuadoras": ["licuadora", "liquidificador"],
-        "maquinas-hielo": ["maquina de hielo", "maquina hielo"],
-        "microondas": ["microonda"],
-        "mixers": ["mixer"],
-        "ollas-electricas": ["olla electrica", "panela eletrica"],
-        "planchas": ["plancha", "ferro"],
-        "procesadores": ["procesador de alimentos", "processador"],
-        "electrodomesticos-general": ["electrodomestico"],
-        "electrodomesticos": [],
-        // electronics
-        "smartphones": ["smartphone", "celular", "iphone", "galaxy", "redmi", "poco"],
-        "laptops": ["notebook", "laptop", "macbook"],
-        "tablets": ["tablet", "ipad"],
-        "headphones": ["auricular", "headphone", "headset", "earphone", "fone"],
-        "smartwatches": ["smartwatch", "reloj inteligente", "watch"],
-        "cameras": ["camara", "camera", "webcam"],
-        "videojuegos": ["playstation", "xbox", "nintendo", "joystick", "gamepad", "control"],
-        "accesorios": ["cable", "cargador", "funda", "teclado", "mouse", "hub", "adaptador"],
-        "amazon": ["echo", "alexa", "kindle", "fire"],
+        "ventiladores":          ["ventilador"],
+        "aire-acondicionado":    ["aire acondicionado", "ar condicionado", "split", "inverter"],
+        "televisores":           ["televisor", "smart tv", "monitor tv", "oled", "qled"],
+        "climatizadores":        ["climatizador"],
+        "sandwicheras":          ["sandwichera", "sandwicheira", "waflera"],
+        "umidificadores":        ["umidificador", "humidificador"],
+        "aspiradoras":           ["aspiradora", "aspirador"],
+        "batidoras":             ["batidora", "batideira", "mixer"],
+        "bebederos":             ["bebedero", "dispenser"],
+        "cafeteras":             ["cafetera", "cafeteira", "espresso", "nespresso"],
+        "cocinas":               ["cocina", "fogon", "fogao", "fogareiro", "anafe"],
+        "hornos":                ["horno", "forno"],
+        "frigobares":            ["frigobar", "mini fridge", "frigelete"],
+        "freidoras":             ["freidora", "air fryer", "fritadeira"],
+        "jarras-electricas":     ["jarra electrica", "jarra eletrica", "hervidor", "chaleira"],
+        "licuadoras":            ["licuadora", "liquidificador", "licuad"],
+        "maquinas-hielo":        ["maquina de hielo", "maquina hielo", "maquina gelo"],
+        "microondas":            ["microonda", "microondas"],
+        "mixers":                ["mixer", "minipimer", "hand blender"],
+        "ollas-electricas":      ["olla electrica", "panela eletrica", "olla arrocera", "panela arroz"],
+        "planchas":              ["plancha", "ferro de passar", "vaporizador ropa"],
+        "procesadores":          ["procesador de alimentos", "processador", "robot de cocina"],
+        "accesorios-cocina":     ["abridor", "exprimidor", "tostadora", "torradeira", "waflera", "sandwicheira"],
+        "electrodomesticos-general": [],
+        "electrodomesticos":     [],
+        // electronics — smartphones/tablets now use categoryKey, not name
+        "smartphones":           ["iphone", "galaxy", "redmi", "poco", "motorola", "xiaomi", "realme", "tecno", "infinix", "huawei"],
+        "laptops":               ["notebook", "laptop", "macbook", "chromebook"],
+        "tablets":               ["tablet", "ipad", "tab ", "tab_"],
+        "headphones":            ["fone", "auricular", "headphone", "headset", "earphone", "earbuds", "tws", "buds"],
+        "smartwatches":          ["smartwatch", "smart watch", "relogio inteligente", "watch"],
+        "cameras":               ["camara", "camera", "webcam", "action cam"],
+        "videojuegos":           ["playstation", "xbox", "nintendo", "joystick", "gamepad", "game playstation", "game xbox", "game nintendo", "game ps"],
+        "accesorios":            ["cable", "cargador", "carregador", "funda", "teclado", "mouse", "hub", "adaptador", "suporte"],
+        "amazon":                ["fire tv", "fire stick", "echo dot", "echo show", "alexa", "kindle"],
         // perfumes
-        "women": ["femeni", "mujer", "pour femme", "woman"],
-        "men": ["masculi", "hombre", "pour homme", "man"],
+        "women":  ["feminino", "femeni", "pour femme", "for women", "mujer"],
+        "men":    ["masculino", "masculi", "pour homme", "for men", "hombre"],
         "unisex": ["unisex"],
-        "niche": ["niche", "nicho"],
+        "niche":  ["niche", "nicho"],
       }
       const keywords = subcategoryKeywords[subcategory]
       if (keywords && keywords.length > 0) {
@@ -187,7 +193,7 @@ export async function GET(req: Request) {
           ...keywords.map((kw: string) => ({ name: { contains: kw, mode: "insensitive" as const } })),
         ]
       }
-      // if keywords is empty array (e.g. "electrodomesticos" fallback), no extra filter needed
+      // empty array = show all products in that category (no extra name filter)
     }
 
     if (search) {
