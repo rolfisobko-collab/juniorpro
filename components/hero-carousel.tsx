@@ -7,33 +7,30 @@ import Link from "next/link"
 
 const slides = [
   {
-    img: "https://iili.io/qBpfMKv.png",
+    img: "/carousel-1.png",
     href: "/products/prod_1770627714955_31_vosqjsbib",
     alt: "iPhone 17 Pro",
     bg: "#000000",
   },
   {
-    img: "https://iili.io/qBpfb0x.png",
+    img: "/carousel-2.png",
     href: "/products?category=electronics&subcategory=smartphones",
     alt: "Samsung Galaxy S26 Ultra",
     bg: "#8B8FA8",
   },
   {
-    img: "https://iili.io/qBpq2zF.png",
+    img: "/carousel-3.png",
     href: "/products?category=perfumes",
     alt: "Lattafa Perfumes",
     bg: "#1a0a0a",
   },
+  {
+    img: "/carousel-4.png",
+    href: "/",
+    alt: "Nuestros Asesores",
+    bg: "#0ea5e9",
+  },
 ]
-
-// Preload all images before anything renders
-if (typeof window !== "undefined") {
-  slides.forEach((s, i) => {
-    const img = new window.Image()
-    img.fetchPriority = i === 0 ? "high" : "auto"
-    img.src = s.img
-  })
-}
 
 export function HeroCarousel() {
   const [currentIndex, setCurrentIndex] = useState(0)

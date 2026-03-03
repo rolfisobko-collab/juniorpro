@@ -1,3 +1,5 @@
+export const revalidate = 300 // cache home 5 min
+
 import { Button } from "@/components/ui/button"
 import { defaultCTAs } from "@/lib/ctas-data"
 import { HeroCarousel } from "@/components/hero-carousel"
