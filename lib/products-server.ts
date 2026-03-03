@@ -1,3 +1,4 @@
+import { unstable_cache } from "next/cache"
 import { prisma } from "./db"
 import type { ProductWithCategory } from "./products-db"
 
@@ -38,17 +39,19 @@ export async function getProductsFromDB(filters?: {
   }
 }
 
-export async function getCategoriesFromDB(): Promise<any[]> {
-  try {
-    const categories = await prisma.category.findMany({
-      include: {
-        subcategories: true
-      },
-      orderBy: { name: 'asc' }
-    })
-    return categories
-  } catch (error) {
-    console.error("Error fetching categories from database:", error)
-    return []
-  }
-}
+export const getCategoriesFromDB = unstable_cache(
+  async (): Promise<any[]> => {
+    try {
+      const categories = await prisma.category.findMany({
+        include: { subcategories: true },
+        orderBy: { name: 'asc' }
+      })
+      return categories
+    } catch (error) {
+      console.error("Error fetching categories from database:", error)
+      return []
+    }
+  },
+  ["categories-db"],
+  { revalidate: 600, tags: ["categories"] } // 10 min cache
+)

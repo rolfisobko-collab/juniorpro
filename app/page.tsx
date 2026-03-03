@@ -1,30 +1,16 @@
-"use client"
-
 import { Button } from "@/components/ui/button"
-import HomepageProducts from "@/components/homepage-products"
-import { carouselSlides } from "@/lib/carousel-data"
 import { defaultCTAs } from "@/lib/ctas-data"
 import { HeroCarousel } from "@/components/hero-carousel"
 import { getActiveHomeCategories } from "@/lib/home-categories-data"
+import { HomeBestSellers, HomeAppliances, HomeNewArrivals } from "@/components/homepage-products-static"
 import Link from "next/link"
 import Image from "next/image"
 import { ArrowRight, ShieldCheck, Truck, Zap, Package, Award } from "lucide-react"
-import { useTranslation } from "@/lib/i18n/translation-provider"
 
-const getCategoryFromName = (name: string) => {
-  if (name === "Smartphones" || name === "Computadoras" || name === "Audio" || name === "Videojuegos") {
-    return "electronics"
-  } else if (name === "Perfumes Masculinos" || name === "Perfumes Femeninos") {
-    return "perfumes"
-  } else {
-    return "appliances"
-  }
-}
-
-export default function HomePage() {
-  const { t, language } = useTranslation()
+export default async function HomePage() {
   const activeCTAs = defaultCTAs.filter((cta) => cta.isActive).sort((a, b) => a.position - b.position)
   const homeCategories = getActiveHomeCategories()
+  const language = "es"
 
   return (
     <div className="min-h-screen">
@@ -34,9 +20,9 @@ export default function HomePage() {
         <section className="py-16 bg-gray-50">
           <div className="container mx-auto px-4">
             <div className="text-center mb-12">
-              <h2 className="font-serif text-3xl md:text-4xl font-bold mb-4 text-gray-800">{t('Explore by Categories')}</h2>
+              <h2 className="font-serif text-3xl md:text-4xl font-bold mb-4 text-gray-800">Explorá por Categorías</h2>
               <p className="text-gray-600 text-lg max-w-2xl mx-auto">
-                {t('Discover our wide selection of products organized by categories')}
+                Descubrí nuestra amplia selección de productos organizados por categorías
               </p>
             </div>
 
@@ -84,8 +70,8 @@ export default function HomePage() {
                 <Zap className="h-7 w-7 text-white relative z-10" />
               </div>
               <div>
-                <p className="font-bold text-sm text-gray-800">{t('Tech Premium')}</p>
-                <p className="text-xs text-gray-600">{t('Latest technology')}</p>
+                <p className="font-bold text-sm text-gray-800">Tech Premium</p>
+                <p className="text-xs text-gray-600">Última tecnología</p>
               </div>
             </div>
 
@@ -96,8 +82,8 @@ export default function HomePage() {
                 <ShieldCheck className="h-7 w-7 text-white relative z-10" />
               </div>
               <div>
-                <p className="font-bold text-sm text-gray-800">{t('Official Warranty')}</p>
-                <p className="text-xs text-gray-600">{t('Up to 30 days')}</p>
+                <p className="font-bold text-sm text-gray-800">Garantía Oficial</p>
+                <p className="text-xs text-gray-600">Hasta 30 días</p>
               </div>
             </div>
 
@@ -108,8 +94,8 @@ export default function HomePage() {
                 <Truck className="h-7 w-7 text-white relative z-10" />
               </div>
               <div>
-                <p className="font-bold text-sm text-gray-800">{t('Fast Delivery')}</p>
-                <p className="text-xs text-gray-600">{t('Same day shipping')}</p>
+                <p className="font-bold text-sm text-gray-800">Envío Rápido</p>
+                <p className="text-xs text-gray-600">Entrega el mismo día</p>
               </div>
             </div>
 
@@ -120,8 +106,8 @@ export default function HomePage() {
                 <Package className="h-7 w-7 text-white relative z-10" />
               </div>
               <div>
-                <p className="font-bold text-sm text-gray-800">{t('Secure Payment')}</p>
-                <p className="text-xs text-gray-600">{t('Card & crypto')}</p>
+                <p className="font-bold text-sm text-gray-800">Pago Seguro</p>
+                <p className="text-xs text-gray-600">Tarjeta y cripto</p>
               </div>
             </div>
 
@@ -132,29 +118,17 @@ export default function HomePage() {
                 <Award className="h-7 w-7 text-white relative z-10" />
               </div>
               <div>
-                <p className="font-bold text-sm text-gray-800">{t('Expert Support')}</p>
-                <p className="text-xs text-gray-600">{t('24/7 assistance')}</p>
+                <p className="font-bold text-sm text-gray-800">Soporte Experto</p>
+                <p className="text-xs text-gray-600">Asistencia 24/7</p>
               </div>
             </div>
           </div>
         </div>
       </section>
 
-      <HomepageProducts 
-        title={t('Más Vendidos')} 
-        limit={10}
-        featured={true}
-        hasImage={true}
-        sortOverride="rating_desc"
-      />
+      <HomeBestSellers title="Más Vendidos" />
 
-      <HomepageProducts 
-        title={t('Electrodomésticos Destacados')} 
-        limit={10}
-        category="electrodomesticos"
-        hasImage={true}
-        sortOverride="price_desc"
-      />
+      <HomeAppliances title="Electrodomésticos Destacados" />
 
       {activeCTAs.length > 0 && activeCTAs[0] && (
         <section className="py-0 relative overflow-hidden">
@@ -170,19 +144,19 @@ export default function HomePage() {
                   className="text-4xl md:text-5xl lg:text-7xl font-bold text-balance leading-tight drop-shadow-lg"
                   style={{ color: activeCTAs[0].textColor || "#ffffff" }}
                 >
-                  {language === "pt" ? activeCTAs[0].title_pt || activeCTAs[0].title : activeCTAs[0].title}
+                  {activeCTAs[0].title}
                 </h2>
                 <p
                   className="text-lg md:text-xl lg:text-2xl opacity-95 text-pretty max-w-lg drop-shadow-md"
                   style={{ color: activeCTAs[0].textColor || "#ffffff" }}
                 >
-                  {language === "pt" ? activeCTAs[0].description_pt || activeCTAs[0].description : activeCTAs[0].description}
+                  {activeCTAs[0].description}
                 </p>
                 <Button
                   size="lg"
                   className="mt-6 h-14 px-10 text-lg shadow-2xl hover:shadow-3xl hover:scale-105 transition-all duration-300 bg-gradient-to-r from-yellow-400 via-yellow-500 to-yellow-600 text-black hover:from-yellow-500 hover:via-yellow-600 hover:to-yellow-700 border-2 border-yellow-600"
                 >
-                  {language === "pt" ? activeCTAs[0].buttonText_pt || activeCTAs[0].buttonText : activeCTAs[0].buttonText}
+                  {activeCTAs[0].buttonText}
                   <ArrowRight className="ml-2 h-5 w-5 group-hover:translate-x-1 transition-transform" />
                 </Button>
               </div>
@@ -208,12 +182,7 @@ export default function HomePage() {
         </section>
       )}
 
-      <HomepageProducts 
-        title={t('Recién Llegados')} 
-        limit={10}
-        hasImage={true}
-        sortOverride="latest"
-      />
+      <HomeNewArrivals title="Recién Llegados" />
     </div>
   )
 }

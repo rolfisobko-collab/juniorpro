@@ -1,35 +1,40 @@
+import { unstable_cache } from "next/cache"
 import { prisma } from "@/lib/db"
 import { ProductCard } from "@/components/product-card"
 import { Button } from "@/components/ui/button"
 import { Search } from "lucide-react"
 import type { UnifiedProduct } from "@/lib/product-types"
 
-async function getSearchResults(q: string): Promise<UnifiedProduct[]> {
-  if (!q.trim()) return []
-  try {
-    const products = await prisma.product.findMany({
-      where: {
-        OR: [
-          { name: { contains: q, mode: "insensitive" } },
-          { brand: { contains: q, mode: "insensitive" } },
-          { description: { contains: q, mode: "insensitive" } },
-        ],
-      },
-      include: { category: { select: { key: true, name: true, slug: true, description: true } } },
-      orderBy: [{ featured: "desc" }, { rating: "desc" }],
-      take: 40,
-    })
-    return products.map(p => ({
-      ...p,
-      images: [],
-      stockQuantity: p.stockQuantity ?? 0,
-      createdAt: p.createdAt?.toISOString(),
-      updatedAt: p.updatedAt?.toISOString(),
-    })) as unknown as UnifiedProduct[]
-  } catch {
-    return []
-  }
-}
+const getSearchResults = unstable_cache(
+  async (q: string): Promise<UnifiedProduct[]> => {
+    if (!q.trim()) return []
+    try {
+      const products = await prisma.product.findMany({
+        where: {
+          OR: [
+            { name: { contains: q, mode: "insensitive" } },
+            { brand: { contains: q, mode: "insensitive" } },
+            { description: { contains: q, mode: "insensitive" } },
+          ],
+        },
+        include: { category: { select: { key: true, name: true, slug: true, description: true } } },
+        orderBy: [{ featured: "desc" }, { rating: "desc" }],
+        take: 40,
+      })
+      return products.map(p => ({
+        ...p,
+        images: [],
+        stockQuantity: p.stockQuantity ?? 0,
+        createdAt: p.createdAt?.toISOString(),
+        updatedAt: p.updatedAt?.toISOString(),
+      })) as unknown as UnifiedProduct[]
+    } catch {
+      return []
+    }
+  },
+  ["search-results"],
+  { revalidate: 120, tags: ["products"] }
+)
 
 export default async function SearchPage({
   searchParams,
