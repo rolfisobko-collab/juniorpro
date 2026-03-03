@@ -7,6 +7,7 @@ import { useTranslation } from "@/lib/i18n/translation-provider"
 
 export function HeroCarousel() {
   const [currentIndex, setCurrentIndex] = useState(0)
+  const [imagesLoaded, setImagesLoaded] = useState(false)
   const { language } = useTranslation()
 
   // Imágenes según el idioma
@@ -54,13 +55,27 @@ export function HeroCarousel() {
     }
   ]
 
+  // Preload all images immediately on mount
+  useEffect(() => {
+    const isMobile = window.innerWidth < 768
+    let loaded = 0
+    const total = slides.length
+    slides.forEach((slide) => {
+      const url = isMobile ? slide.mobile : slide.desktop
+      const img = new window.Image()
+      img.src = url
+      img.onload = img.onerror = () => {
+        loaded++
+        if (loaded >= total) setImagesLoaded(true)
+      }
+    })
+  }, [])
+
   useEffect(() => {
     if (slides.length <= 1) return
-
     const interval = setInterval(() => {
       setCurrentIndex((prev) => (prev + 1) % slides.length)
     }, 5000)
-
     return () => clearInterval(interval)
   }, [slides.length])
 
@@ -82,18 +97,8 @@ export function HeroCarousel() {
   }
 
   return (
-    <div className="relative w-full h-[50vh] md:h-[37vh] lg:h-[40vh] overflow-hidden">
-      {/* Preload all slide images */}
-      <div className="hidden" aria-hidden="true">
-        {slides.map((slide, i) => i > 0 && (
-          <div key={i}>
-            <img src={slide.desktop} alt="" fetchPriority="low" />
-            <img src={slide.mobile} alt="" fetchPriority="low" />
-          </div>
-        ))}
-      </div>
-
-      {/* Render all slides, show only current with opacity transition */}
+    <div className="relative w-full h-[50vh] md:h-[37vh] lg:h-[40vh] overflow-hidden bg-gray-100">
+      {/* All slides rendered, toggled via opacity — no layout shift */}
       <div className="relative w-full h-full">
         {slides.map((slide, i) => (
           <div
@@ -105,14 +110,16 @@ export function HeroCarousel() {
               alt={`Slide ${i + 1}`}
               className="absolute inset-0 w-full h-full object-contain object-center hidden md:block"
               fetchPriority={i === 0 ? "high" : "low"}
-              loading={i === 0 ? "eager" : "lazy"}
+              decoding={i === 0 ? "sync" : "async"}
+              loading="eager"
             />
             <img
               src={slide.mobile}
               alt={`Slide ${i + 1}`}
               className="absolute inset-0 w-full h-full object-cover object-center md:hidden"
               fetchPriority={i === 0 ? "high" : "low"}
-              loading={i === 0 ? "eager" : "lazy"}
+              decoding={i === 0 ? "sync" : "async"}
+              loading="eager"
             />
           </div>
         ))}

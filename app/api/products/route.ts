@@ -263,6 +263,10 @@ export async function GET(req: Request) {
         totalPages: Math.max(1, Math.ceil(total / limit)),
       },
       fromMock: false
+    }, {
+      headers: {
+        "Cache-Control": "public, s-maxage=60, stale-while-revalidate=120",
+      }
     })
   } catch (error) {
     console.error("Error fetching products:", error)

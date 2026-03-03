@@ -13,6 +13,24 @@ interface HomepageProductsProps {
   sortOverride?: string
 }
 
+const toUnified = (product: any): UnifiedProduct => ({
+  id: product.id,
+  name: product.name,
+  price: product.price,
+  image: product.image,
+  description: product.description,
+  brand: product.brand,
+  rating: product.rating,
+  reviews: product.reviews,
+  inStock: product.inStock,
+  featured: product.featured,
+  categoryKey: product.categoryKey,
+  category: product.category,
+  ...(product.stockQuantity !== undefined && { stockQuantity: product.stockQuantity }),
+  ...(product.createdAt && { createdAt: product.createdAt }),
+  ...(product.updatedAt && { updatedAt: product.updatedAt }),
+})
+
 export default function HomepageProducts({ 
   title, 
   limit = 5, 
@@ -21,44 +39,40 @@ export default function HomepageProducts({
   hasImage = true,
   sortOverride,
 }: HomepageProductsProps) {
-  const [products, setProducts] = useState<UnifiedProduct[]>([])
-  const [loading, setLoading] = useState(true)
+  const cacheKey = `hp_${sortOverride ?? (featured ? "featured" : "latest")}_${category ?? "all"}_${limit}`
+
+  const getCached = (): UnifiedProduct[] | null => {
+    try {
+      const raw = sessionStorage.getItem(cacheKey)
+      if (!raw) return null
+      const { data, ts } = JSON.parse(raw)
+      if (Date.now() - ts < 5 * 60 * 1000) return data
+    } catch {}
+    return null
+  }
+
+  const [products, setProducts] = useState<UnifiedProduct[]>(() => {
+    if (typeof window === "undefined") return []
+    return getCached() ?? []
+  })
+  const [loading, setLoading] = useState(products.length === 0)
 
   useEffect(() => {
+    const params = new URLSearchParams({
+      limit: limit.toString(),
+      sort: sortOverride ?? (featured ? "featured" : "latest"),
+      ...(category && category !== "all" && { category }),
+      ...(hasImage && { hasImage: "true" }),
+    })
+
     const fetchProducts = async () => {
-      setLoading(true)
       try {
-        const params = new URLSearchParams({
-          limit: limit.toString(),
-          sort: sortOverride ?? (featured ? "featured" : "latest"),
-          ...(category && category !== "all" && { category }),
-          ...(hasImage && { hasImage: "true" }),
-        })
-        
-        const response = await fetch(`/api/products?${params}`)
+        const response = await fetch(`/api/products?${params}`, { next: { revalidate: 60 } } as any)
         const data = await response.json()
-        
         if (data.products) {
-          // Convert API products to UnifiedProduct format
-          const unifiedProducts: UnifiedProduct[] = data.products.map((product: any) => ({
-            id: product.id,
-            name: product.name,
-            price: product.price,
-            image: product.image,
-            description: product.description,
-            brand: product.brand,
-            rating: product.rating,
-            reviews: product.reviews,
-            inStock: product.inStock,
-            featured: product.featured,
-            categoryKey: product.categoryKey,
-            category: product.category,
-            ...(product.stockQuantity !== undefined && { stockQuantity: product.stockQuantity }),
-            ...(product.createdAt && { createdAt: product.createdAt }),
-            ...(product.updatedAt && { updatedAt: product.updatedAt }),
-          }))
-          
-          setProducts(unifiedProducts)
+          const unified = data.products.map(toUnified)
+          setProducts(unified)
+          try { sessionStorage.setItem(cacheKey, JSON.stringify({ data: unified, ts: Date.now() })) } catch {}
         }
       } catch (error) {
         console.error("Error fetching products:", error)
@@ -68,7 +82,7 @@ export default function HomepageProducts({
     }
 
     fetchProducts()
-  }, [limit, featured, category])
+  }, [limit, featured, category, sortOverride])
 
   if (loading) {
     return (

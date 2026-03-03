@@ -14,6 +14,18 @@ export default function RootLayout({
   return (
     <html lang="es">
       <head>
+        {/* DNS prefetch + preconnect for external image CDN */}
+        <link rel="preconnect" href="https://i.ibb.co" />
+        <link rel="dns-prefetch" href="https://i.ibb.co" />
+        <link rel="preconnect" href="https://nissei.com" />
+        <link rel="dns-prefetch" href="https://nissei.com" />
+        {/* Preload first carousel slide */}
+        <link
+          rel="preload"
+          as="image"
+          href="https://i.ibb.co/Y7p9b4Tm/1.png"
+          fetchPriority="high"
+        />
         <Script
           src="https://www.gstatic.com/firebasejs/11.10.0/firebase-app.js"
           strategy="afterInteractive"
