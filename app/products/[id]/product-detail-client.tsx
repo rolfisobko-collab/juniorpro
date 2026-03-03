@@ -81,8 +81,8 @@ export default function ProductDetailClient({ product, recommendedProducts }: Pr
                 fill
                 className="object-contain transition-all duration-300 rounded-2xl"
                 sizes="(max-width: 768px) 100vw, 50vw"
-                quality={95}
                 priority
+                unoptimized={displayImage.startsWith("http")}
               />
               <div className="absolute top-4 right-4">
                 <div className={`px-3 py-1 rounded-full text-xs font-semibold backdrop-blur-sm ${product.inStock ? "bg-green-500/90 text-white" : "bg-red-500/90 text-white"}`}>
