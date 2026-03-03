@@ -51,11 +51,8 @@ export default function HomepageProducts({
     return null
   }
 
-  const [products, setProducts] = useState<UnifiedProduct[]>(() => {
-    if (typeof window === "undefined") return []
-    return getCached() ?? []
-  })
-  const [loading, setLoading] = useState(products.length === 0)
+  const [products, setProducts] = useState<UnifiedProduct[]>([])
+  const [loading, setLoading] = useState(true)
 
   useEffect(() => {
     const params = new URLSearchParams({
@@ -65,9 +62,16 @@ export default function HomepageProducts({
       ...(hasImage && { hasImage: "true" }),
     })
 
+    // Load from cache immediately (after mount, no hydration issue)
+    const cached = getCached()
+    if (cached) {
+      setProducts(cached)
+      setLoading(false)
+    }
+
     const fetchProducts = async () => {
       try {
-        const response = await fetch(`/api/products?${params}`, { next: { revalidate: 60 } } as any)
+        const response = await fetch(`/api/products?${params}`)
         const data = await response.json()
         if (data.products) {
           const unified = data.products.map(toUnified)
