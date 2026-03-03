@@ -46,23 +46,31 @@ export function HeroCarousel() {
   }, [])
 
   return (
-    <div className="relative w-full overflow-hidden" style={{ aspectRatio: "1024/360", background: slides[currentIndex].bg }}>
-      {slides.map((slide, i) => (
-        <Link
-          key={i}
-          href={slide.href}
-          className={`absolute inset-0 transition-opacity duration-500 ${i === currentIndex ? "opacity-100" : "opacity-0 pointer-events-none"}`}
-        >
-          <img
-            src={slide.img}
-            alt={slide.alt}
-            className="w-full h-full object-cover object-center"
-            fetchPriority={i === 0 ? "high" : "low"}
-            decoding={i === 0 ? "sync" : "async"}
-            loading="eager"
-          />
-        </Link>
-      ))}
+    <div className="relative w-full overflow-hidden" style={{ background: slides[currentIndex].bg }}>
+      {/* Slide 0 establece la altura natural de la imagen */}
+      <Link href={slides[0].href} className={`block w-full transition-opacity duration-500 ${currentIndex === 0 ? "opacity-100" : "opacity-0 pointer-events-none"}`}>
+        <img src={slides[0].img} alt={slides[0].alt} className="w-full h-auto block" fetchPriority="high" decoding="sync" loading="eager" />
+      </Link>
+      {/* Resto de slides superpuestos */}
+      {slides.slice(1).map((slide, idx) => {
+        const i = idx + 1
+        return (
+          <Link
+            key={i}
+            href={slide.href}
+            className={`absolute inset-0 transition-opacity duration-500 ${i === currentIndex ? "opacity-100" : "opacity-0 pointer-events-none"}`}
+          >
+            <img
+              src={slide.img}
+              alt={slide.alt}
+              className="w-full h-auto block"
+              fetchPriority="low"
+              decoding="async"
+              loading="eager"
+            />
+          </Link>
+        )
+      })}
 
       {/* Prev / Next */}
       <Button
