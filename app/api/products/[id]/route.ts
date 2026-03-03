@@ -128,7 +128,9 @@ export async function GET(_req: NextRequest, { params }: { params: Promise<{ id:
       })
 
       if (product) {
-        return NextResponse.json({ product, fromMock: false })
+        return NextResponse.json({ product, fromMock: false }, {
+          headers: { "Cache-Control": "public, s-maxage=120, stale-while-revalidate=300" }
+        })
       }
     } catch (dbError) {
       console.warn("Database not available, using mock products:", dbError)
