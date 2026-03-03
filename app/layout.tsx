@@ -17,6 +17,8 @@ export default function RootLayout({
         {/* DNS prefetch + preconnect for external image CDN */}
         <link rel="preconnect" href="https://i.ibb.co" />
         <link rel="dns-prefetch" href="https://i.ibb.co" />
+        <link rel="preconnect" href="https://images.unsplash.com" />
+        <link rel="dns-prefetch" href="https://images.unsplash.com" />
         <link rel="preconnect" href="https://nissei.com" />
         <link rel="dns-prefetch" href="https://nissei.com" />
         {/* Preload first carousel slide */}

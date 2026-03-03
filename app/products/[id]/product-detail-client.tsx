@@ -53,8 +53,9 @@ export default function ProductDetailClient({ product, recommendedProducts }: Pr
   }
 
   const allImages: string[] = []
-  if (product.image) allImages.push(product.image)
-  ;(product.images ?? []).forEach(img => { if (img && !allImages.includes(img)) allImages.push(img) })
+  if (product.image && product.image.startsWith("http")) allImages.push(product.image)
+  ;(product.images ?? []).forEach(img => { if (img && img.startsWith("http") && !allImages.includes(img)) allImages.push(img) })
+  if (allImages.length === 0 && product.image) allImages.push(product.image)
   const displayImage = selectedImage || allImages[0] || "/placeholder.svg"
 
   return (

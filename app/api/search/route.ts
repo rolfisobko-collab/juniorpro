@@ -23,7 +23,9 @@ export async function GET(req: Request) {
       orderBy: [{ featured: "desc" }, { rating: "desc" }],
     })
 
-    return NextResponse.json({ products })
+    return NextResponse.json({ products }, {
+      headers: { "Cache-Control": "public, s-maxage=30, stale-while-revalidate=60" }
+    })
   } catch (_error) {
     return NextResponse.json({ error: "Failed to search" }, { status: 500 })
   }

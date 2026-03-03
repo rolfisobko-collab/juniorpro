@@ -27,7 +27,7 @@ export let homeCategories: HomeCategory[] = [
   {
     id: "3",
     name: "Tablets",
-    image: "https://i.ibb.co/gFVcWT6R/8.png",
+    image: "https://images.unsplash.com/photo-1544244015-0df4b3ffc6b0?w=400&q=80",
     link: "/products?category=electronics&subcategory=tablets",
     order: 3,
     active: true,
@@ -51,7 +51,7 @@ export let homeCategories: HomeCategory[] = [
   {
     id: "6",
     name: "Accesorios",
-    image: "https://i.ibb.co/BVK9pvqW/9.png",
+    image: "https://images.unsplash.com/photo-1572635196237-14b3f281503f?w=400&q=80",
     link: "/products?category=electronics&subcategory=accesorios",
     order: 6,
     active: true,
@@ -59,7 +59,7 @@ export let homeCategories: HomeCategory[] = [
   {
     id: "7",
     name: "Televisores",
-    image: "https://i.ibb.co/Xr3SDVLR/10.png",
+    image: "https://images.unsplash.com/photo-1593784991095-a205069470b6?w=400&q=80",
     link: "/products?category=electrodomesticos&subcategory=televisores",
     order: 7,
     active: true,
@@ -67,7 +67,7 @@ export let homeCategories: HomeCategory[] = [
   {
     id: "8",
     name: "Aire Acondicionado",
-    image: "https://i.ibb.co/sJNqBCFH/12.png",
+    image: "https://images.unsplash.com/photo-1585771724684-38269d6639fd?w=400&q=80",
     link: "/products?category=electrodomesticos&subcategory=aire-acondicionado",
     order: 8,
     active: true,
@@ -75,7 +75,7 @@ export let homeCategories: HomeCategory[] = [
   {
     id: "9",
     name: "Electrodomésticos",
-    image: "https://i.ibb.co/6R3QGCsw/11.png",
+    image: "https://images.unsplash.com/photo-1556909114-f6e7ad7d3136?w=400&q=80",
     link: "/products?category=electrodomesticos",
     order: 9,
     active: true,
