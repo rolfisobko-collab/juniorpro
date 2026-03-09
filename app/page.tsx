@@ -131,7 +131,7 @@ export default async function HomePage() {
 
       <HomeBestSellers title="Más Vendidos" />
 
-      <BrandsShowcase />
+      {/* <BrandsShowcase /> */}
 
       <HomeAppliances title="Electrodomésticos Destacados" />
 
