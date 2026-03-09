@@ -1,6 +1,6 @@
 "use client"
 
-import { useEffect, useState } from "react"
+import { useEffect, useRef, useState } from "react"
 import Link from "next/link"
 
 interface Brand {
@@ -13,9 +13,10 @@ interface Brand {
 
 export function BrandsShowcase() {
   const [brands, setBrands] = useState<Brand[]>([])
+  const trackRef = useRef<HTMLDivElement>(null)
 
   useEffect(() => {
-    const cached = sessionStorage.getItem("brands_showcase_v2")
+    const cached = sessionStorage.getItem("brands_showcase_v3")
     if (cached) {
       try {
         const { data, ts } = JSON.parse(cached)
@@ -25,48 +26,58 @@ export function BrandsShowcase() {
     fetch("/api/brands")
       .then(r => r.json())
       .then(d => {
-        // Solo marcas con imagen cargada
         const list = (d.brands ?? []).filter((b: Brand) => b.image && b.image.trim() !== "")
         setBrands(list)
-        try { sessionStorage.setItem("brands_showcase_v2", JSON.stringify({ data: list, ts: Date.now() })) } catch {}
+        try { sessionStorage.setItem("brands_showcase_v3", JSON.stringify({ data: list, ts: Date.now() })) } catch {}
       })
   }, [])
 
   if (brands.length === 0) return null
 
+  // Duplicar para scroll infinito
+  const doubled = [...brands, ...brands]
+
   return (
-    <section className="py-10 bg-white border-b border-gray-100">
-      <div className="container mx-auto px-4">
-        <div className="flex items-center justify-between mb-6">
+    <section className="py-10 bg-white border-y border-gray-100 overflow-hidden">
+      <div className="container mx-auto px-4 mb-6">
+        <div className="flex items-center justify-between">
           <div>
             <h2 className="text-xl md:text-2xl font-bold text-gray-900">Marcas Destacadas</h2>
-            <p className="text-gray-400 text-sm mt-0.5">Encontrá productos por tu marca favorita</p>
+            <p className="text-gray-400 text-sm mt-0.5">Encontrá productos de tus marcas favoritas</p>
           </div>
           <Link
             href="/search"
-            className="text-sm font-medium text-[#009FE3] hover:text-[#007BB8] transition-colors hidden sm:block"
+            className="text-sm font-semibold text-[#009FE3] hover:text-[#007BB8] transition-colors"
           >
-            Ver todas →
+            Ver todo →
           </Link>
         </div>
+      </div>
 
-        {/* Scroll horizontal en mobile, wrap en desktop */}
-        <div className="flex gap-3 overflow-x-auto pb-2 scrollbar-none sm:flex-wrap sm:overflow-visible sm:pb-0">
-          {brands.map(brand => (
+      {/* Marquee container — fade edges */}
+      <div className="relative">
+        <div className="absolute left-0 top-0 bottom-0 w-16 z-10 pointer-events-none bg-gradient-to-r from-white to-transparent" />
+        <div className="absolute right-0 top-0 bottom-0 w-16 z-10 pointer-events-none bg-gradient-to-l from-white to-transparent" />
+
+        <div
+          ref={trackRef}
+          className="flex gap-4 w-max animate-marquee hover:[animation-play-state:paused]"
+          style={{ animationDuration: `${Math.max(20, brands.length * 3)}s` }}
+        >
+          {doubled.map((brand, i) => (
             <Link
-              key={brand.id}
+              key={`${brand.id}-${i}`}
               href={`/search?brand=${encodeURIComponent(brand.name)}`}
-              className="group flex-shrink-0 flex flex-col items-center gap-2 p-3 w-[90px] sm:w-[100px] rounded-2xl border border-gray-100 bg-white hover:border-[#009FE3]/40 hover:shadow-md hover:-translate-y-0.5 transition-all duration-200"
+              className="group flex-shrink-0 flex flex-col items-center gap-2 p-4 w-[110px] rounded-2xl border border-gray-100 bg-white hover:border-[#009FE3]/50 hover:shadow-lg hover:-translate-y-1 transition-all duration-200"
             >
-              <div className="w-14 h-14 rounded-xl bg-gray-50 flex items-center justify-center overflow-hidden">
+              <div className="w-16 h-16 rounded-xl bg-gray-50 flex items-center justify-center overflow-hidden">
                 <img
                   src={brand.image!}
                   alt={brand.name}
-                  className="w-full h-full object-contain p-1.5 group-hover:scale-110 transition-transform duration-300"
+                  className="w-full h-full object-contain p-2 group-hover:scale-110 transition-transform duration-300"
                   onError={e => {
-                    // Si la imagen rompe, ocultar toda la card
                     const card = (e.target as HTMLElement).closest("a")
-                    if (card) card.style.display = "none"
+                    if (card) (card as HTMLElement).style.display = "none"
                   }}
                 />
               </div>
@@ -76,14 +87,8 @@ export function BrandsShowcase() {
             </Link>
           ))}
         </div>
-
-        <Link
-          href="/search"
-          className="mt-4 text-sm font-medium text-[#009FE3] hover:text-[#007BB8] transition-colors sm:hidden block text-center"
-        >
-          Ver todas las marcas →
-        </Link>
       </div>
+
     </section>
   )
 }
