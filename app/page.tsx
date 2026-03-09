@@ -19,8 +19,6 @@ export default async function HomePage() {
     <div className="min-h-screen">
       <HeroCarousel />
 
-      <BrandsShowcase />
-
       {homeCategories.length > 0 && (
         <section className="py-16 bg-gray-50">
           <div className="container mx-auto px-4">
@@ -132,6 +130,8 @@ export default async function HomePage() {
       </section>
 
       <HomeBestSellers title="Más Vendidos" />
+
+      <BrandsShowcase />
 
       <HomeAppliances title="Electrodomésticos Destacados" />
 
