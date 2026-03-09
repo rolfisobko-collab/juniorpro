@@ -28,6 +28,7 @@ import {
   Phone,
   TrendingUp,
   Truck,
+  Tag,
 } from "lucide-react"
 
 const menuGroups = [
@@ -43,7 +44,9 @@ const menuGroups = [
     items: [
       { href: "/panel/products", label: "Productos", icon: Package, permission: "products" as Permission },
       { href: "/panel/images", label: "Imágenes masivas", icon: Images, permission: "products" as Permission },
+      { href: "/panel/images/brands", label: "Imágenes de marcas", icon: Images, permission: "products" as Permission },
       { href: "/panel/categories", label: "Categorías", icon: FolderTree, permission: "categories" as Permission },
+      { href: "/panel/brands", label: "Marcas", icon: Tag, permission: "products" as Permission },
     ],
   },
   {

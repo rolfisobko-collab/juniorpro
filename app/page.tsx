@@ -5,6 +5,7 @@ import { defaultCTAs } from "@/lib/ctas-data"
 import { HeroCarousel } from "@/components/hero-carousel"
 import { getActiveHomeCategories } from "@/lib/home-categories-data"
 import { HomeBestSellers, HomeAppliances, HomeNewArrivals } from "@/components/homepage-products-static"
+import { BrandsShowcase } from "@/components/brands-showcase"
 import Link from "next/link"
 import Image from "next/image"
 import { ArrowRight, ShieldCheck, Truck, Zap, Package, Award } from "lucide-react"
@@ -17,6 +18,8 @@ export default async function HomePage() {
   return (
     <div className="min-h-screen">
       <HeroCarousel />
+
+      <BrandsShowcase />
 
       {homeCategories.length > 0 && (
         <section className="py-16 bg-gray-50">
