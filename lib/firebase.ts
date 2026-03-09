@@ -3,12 +3,12 @@ import { getAuth, GoogleAuthProvider, signInWithPopup, signOut, User as Firebase
 
 // Your web app's Firebase configuration
 const firebaseConfig = {
-  apiKey: "AIzaSyDcb0rzOG1ziJZvlCCvdlkGDrRXBsVzhrk",
-  authDomain: "techzone-a00ec.firebaseapp.com",
-  projectId: "techzone-a00ec",
-  storageBucket: "techzone-a00ec.firebasestorage.app",
-  messagingSenderId: "84398060243",
-  appId: "1:84398060243:web:4d8991a6fcce129b105a26"
+  apiKey: "AIzaSyCIlk75d-KacbWovfp9CqIRg6kHrqOPEa0",
+  authDomain: "techzonecde.firebaseapp.com",
+  projectId: "techzonecde",
+  storageBucket: "techzonecde.firebasestorage.app",
+  messagingSenderId: "1078130997384",
+  appId: "1:1078130997384:web:d1d75cb24b3af10d3fc73d"
 }
 
 // Initialize Firebase
