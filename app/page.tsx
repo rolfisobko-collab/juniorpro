@@ -34,22 +34,27 @@ export default async function HomePage() {
                 <Link
                   key={category.key || category.id}
                   href={category.link}
-                  className="group flex flex-col items-center rounded-2xl bg-white border border-gray-100 hover:border-blue-200 hover:shadow-xl hover:-translate-y-1 transition-all duration-300 w-[calc(50%-8px)] sm:w-40 md:w-44 lg:w-48 overflow-hidden"
+                  className="group relative overflow-hidden rounded-2xl bg-white border border-gray-100 hover:border-blue-300 transition-all duration-300 hover:shadow-xl hover:-translate-y-1 w-[calc(50%-8px)] sm:w-40 md:w-44 lg:w-48"
                 >
-                  <div className="w-full aspect-square bg-white flex items-center justify-center p-4 overflow-hidden">
+                  <div className="aspect-square relative overflow-hidden">
                     <Image
                       src={category.image || "/placeholder.svg"}
                       alt={category.name}
                       fill
-                      className="object-contain group-hover:scale-105 transition-transform duration-500 p-4"
+                      className="object-cover group-hover:scale-110 transition-transform duration-500"
                       sizes="(max-width: 640px) 50vw, (max-width: 1024px) 33vw, 20vw"
                       priority={category.order <= 4}
                       loading={category.order <= 4 ? "eager" : "lazy"}
                     />
-                  </div>
-                  <div className="w-full px-3 py-3 border-t border-gray-50 bg-white">
-                    <h3 className="text-sm font-bold text-gray-800 text-center leading-tight">{category.name}</h3>
-                    <p className="text-[10px] text-[#009FE3] mt-0.5 font-medium text-center group-hover:text-[#007BB8] transition-colors">Ver productos →</p>
+                    {/* gradient overlay */}
+                    <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-black/10 to-transparent" />
+                    {/* label */}
+                    <div className="absolute bottom-0 left-0 right-0 p-3">
+                      <h3 className="text-sm sm:text-base font-bold text-white leading-tight drop-shadow">{category.name}</h3>
+                      <p className="text-[10px] sm:text-xs text-white/70 mt-0.5 font-medium group-hover:text-white/90 transition-colors">Ver productos →</p>
+                    </div>
+                    {/* shine effect on hover */}
+                    <div className="absolute inset-0 bg-gradient-to-tr from-transparent via-white/10 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
                   </div>
                 </Link>
               ))}
