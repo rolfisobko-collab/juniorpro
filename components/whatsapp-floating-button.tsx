@@ -1,7 +1,8 @@
 "use client"
 
 import { useState, useEffect } from "react"
-import { X, MessageCircle, Phone } from "lucide-react"
+import { X, MessageCircle, Phone, LinkIcon } from "lucide-react"
+import Link from "next/link"
 import { WhatsAppIcon } from "@/components/ui/whatsapp-icon"
 
 export default function WhatsAppFloatingButton() {
@@ -97,6 +98,20 @@ export default function WhatsAppFloatingButton() {
           </div>
         ))}
       </div>
+
+      {/* Botón flotante de Links */}
+      <Link
+        href="/links"
+        className="relative w-12 h-12 rounded-full flex items-center justify-center shadow-xl transition-all duration-300 hover:scale-110 group"
+        style={{ background: "linear-gradient(135deg, #009FE3, #0070a0)" }}
+        title="Nuestras redes y contacto"
+      >
+        <LinkIcon className="w-5 h-5 text-white" />
+        <div className="absolute right-full mr-3 px-3 py-1.5 bg-gray-900 text-white text-xs rounded-lg opacity-0 group-hover:opacity-100 transition-opacity duration-200 whitespace-nowrap pointer-events-none">
+          Redes y Contacto
+          <div className="absolute top-1/2 -right-1 -translate-y-1/2 w-2 h-2 bg-gray-900 rotate-45" />
+        </div>
+      </Link>
 
       {/* Botón principal flotante */}
       <button

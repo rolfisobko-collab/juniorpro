@@ -119,7 +119,7 @@ export function Header() {
               </Button>
               
               <LanguageCurrencySelector />
-              
+
               <Link href="/favorites">
                 <Button
                   variant="ghost"
@@ -425,6 +425,7 @@ export function Header() {
                     </span>
                   )}
                 </Link>
+
               </div>
             </div>
           </div>

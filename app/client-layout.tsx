@@ -22,6 +22,7 @@ export default function ClientLayout({
 }>) {
   const pathname = usePathname()
   const isPanelRoute = pathname?.startsWith("/panel")
+  const isLinksRoute = pathname === "/links"
   const isAuthRoute =
     pathname?.startsWith("/(auth)") ||
     pathname === "/login" ||
@@ -45,10 +46,10 @@ export default function ClientLayout({
             <FavoritesProvider>
               <CurrencyProvider>
                 <ScrollToTop />
-                {!isPanelRoute && !isAuthRoute && !isNotFoundPage && <Header />}
+                {!isPanelRoute && !isAuthRoute && !isNotFoundPage && !isLinksRoute && <Header />}
                 {children}
-                {!isPanelRoute && !isAuthRoute && !isNotFoundPage && <Footer />}
-                {!isPanelRoute && !isAuthRoute && !isNotFoundPage && <WhatsAppFloatingButton />}
+                {!isPanelRoute && !isAuthRoute && !isNotFoundPage && !isLinksRoute && <Footer />}
+                {!isPanelRoute && !isAuthRoute && !isNotFoundPage && !isLinksRoute && <WhatsAppFloatingButton />}
                 <Toaster />
               </CurrencyProvider>
             </FavoritesProvider>
