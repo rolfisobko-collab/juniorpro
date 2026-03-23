@@ -57,7 +57,7 @@ export default function LinksPage() {
       <div className="fixed top-[-10%] left-[-10%] w-96 h-96 rounded-full opacity-20 blur-3xl pointer-events-none" style={{ background: "radial-gradient(circle, #009FE3, transparent)" }} />
       <div className="fixed bottom-[-10%] right-[-10%] w-96 h-96 rounded-full opacity-15 blur-3xl pointer-events-none" style={{ background: "radial-gradient(circle, #6366f1, transparent)" }} />
 
-      <div className="w-full max-w-md mx-auto px-5 py-10 flex flex-col items-center">
+      <div className="w-full max-w-md mx-auto px-5 py-10 flex flex-col items-center" style={{ animation: "linksPageIn 0.5s ease-out both" }}>
 
         {/* Header — Logo grande */}
         <div className="flex flex-col items-center mb-6 text-center">
@@ -68,6 +68,7 @@ export default function LinksPage() {
             height={320}
             className="object-contain drop-shadow-2xl"
             priority
+            style={{ animation: "logoIn 0.6s cubic-bezier(0.34,1.56,0.64,1) 0.1s both" }}
           />
           <div className="flex items-center gap-1.5 mt-2 text-xs text-white/40 bg-white/5 px-3 py-1.5 rounded-full border border-white/10">
             <MapPin className="w-3 h-3" />

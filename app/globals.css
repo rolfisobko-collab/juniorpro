@@ -75,6 +75,21 @@
   --sidebar-ring: oklch(0.439 0 0);
 }
 
+@keyframes marquee {
+  0%   { transform: translateX(0); }
+  100% { transform: translateX(-50%); }
+}
+
+@keyframes linksPageIn {
+  from { opacity: 0; transform: translateY(16px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+@keyframes logoIn {
+  from { opacity: 0; transform: scale(0.7); }
+  to   { opacity: 1; transform: scale(1); }
+}
+
 @theme inline {
   /* Updated font variables for modern tech branding */
   --font-sans: "Inter", "Inter Fallback", system-ui, -apple-system, sans-serif;
