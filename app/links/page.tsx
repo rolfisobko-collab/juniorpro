@@ -197,16 +197,6 @@ export default function LinksPage() {
               <p className="text-[10px] font-bold text-white/30 uppercase tracking-widest">Contacto</p>
               <div className="h-px flex-1 bg-white/10" />
             </div>
-            <a href={`mailto:${contact.email}`}
-              className="group flex items-center gap-3 w-full px-4 py-3.5 rounded-2xl transition-all duration-200 hover:scale-[1.02]"
-              style={{ background: "rgba(255,255,255,0.07)", border: "1px solid rgba(255,255,255,0.08)" }}
-            >
-              <div className="w-10 h-10 rounded-xl flex items-center justify-center flex-shrink-0" style={{ background: "rgba(0,159,227,0.2)" }}>
-                <Mail className="w-5 h-5" style={{ color: "#009FE3" }} />
-              </div>
-              <span className="flex-1 text-sm font-medium text-white">{contact.email}</span>
-              <ChevronRight className="w-4 h-4 text-white/30 group-hover:text-white/70 transition-colors flex-shrink-0" />
-            </a>
             <a href={`tel:${contact.phone.replace(/\s/g, "")}`}
               className="group flex items-center gap-3 w-full px-4 py-3.5 rounded-2xl transition-all duration-200 hover:scale-[1.02]"
               style={{ background: "rgba(255,255,255,0.07)", border: "1px solid rgba(255,255,255,0.08)" }}
