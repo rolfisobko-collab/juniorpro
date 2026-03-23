@@ -1,10 +1,9 @@
 "use client"
 
 import type React from "react"
-import { useEffect, useState } from "react"
 import Link from "next/link"
 import Image from "next/image"
-import { MapPin, Clock, Mail, Phone, ShoppingBag, ChevronRight } from "lucide-react"
+import { MapPin, Clock, Phone, ShoppingBag, ChevronRight } from "lucide-react"
 import { WhatsAppIcon } from "@/components/ui/whatsapp-icon"
 
 const whatsappContacts = [
@@ -15,11 +14,6 @@ const whatsappContacts = [
   { name: "Karen Mendoza", role: "Vendedora", phone: "+595986664625" },
 ]
 
-interface SocialLink { platform: string; url: string; enabled: boolean }
-interface ContactInfo {
-  address: string; city: string; country: string; phone: string
-  email: string; weekdays: string; saturday: string; socialLinks: SocialLink[]
-}
 
 const platformConfig: Record<string, { label: string; gradient: string; icon: React.ReactNode }> = {
   instagram: {
@@ -42,41 +36,16 @@ const platformConfig: Record<string, { label: string; gradient: string; icon: Re
   },
 }
 
+const contact = {
+  address: "Shopping Hwu 1 Salón 212",
+  city: "Ciudad del Este",
+  country: "Alto Paraná, Paraguay",
+  phone: "+595 0993 506124",
+  weekdays: "Lun - Sáb: 6:30 - 15:30",
+  saturday: "Domingo: Cerrado",
+}
+
 export default function LinksPage() {
-  const [contact, setContact] = useState<ContactInfo>({
-    address: "Shopping Hwu 1 Salón 212",
-    city: "Ciudad del Este",
-    country: "Alto Paraná, Paraguay",
-    phone: "+595 0993 506124",
-    email: "contacto@techzone.com",
-    weekdays: "Lun - Sáb: 6:30 - 15:30",
-    saturday: "Domingo: Cerrado",
-    socialLinks: [
-      { platform: "instagram", url: "https://www.instagram.com/techzone_store.cde/", enabled: true },
-      { platform: "tiktok", url: "https://www.tiktok.com/@junioralcaraz07", enabled: true },
-    ],
-  })
-
-  useEffect(() => {
-    fetch("/api/contact-info")
-      .then(r => r.json())
-      .then(d => {
-        if (!d?.id) return
-        const dbSocials: SocialLink[] = d.socialLinks ?? []
-        setContact({
-          address: d.address, city: d.city, country: d.country,
-          phone: d.phone, email: d.email,
-          weekdays: d.weekdays, saturday: d.saturday,
-          socialLinks: dbSocials.length > 0 ? dbSocials : [
-            { platform: "instagram", url: "https://www.instagram.com/techzone_store.cde/", enabled: true },
-            { platform: "tiktok", url: "https://www.tiktok.com/@junioralcaraz07", enabled: true },
-          ],
-        })
-      })
-      .catch(() => {})
-  }, [])
-
-  const activeSocials = contact.socialLinks.filter(s => s.enabled && platformConfig[s.platform.toLowerCase()])
 
   return (
     <div className="min-h-screen relative flex flex-col items-center overflow-x-hidden" style={{ paddingTop: 0 }}>
