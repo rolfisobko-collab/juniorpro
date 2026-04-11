@@ -9,17 +9,10 @@ import { AEXConfig } from './aex.types'
  * Obtiene la configuración de AEX desde variables de entorno
  */
 export function getAEXConfig(): AEXConfig {
-  const sandbox = true // Las credenciales funcionan en sandbox
+  const sandbox = process.env.AEX_SANDBOX !== 'false'
   const clavePublica = process.env.AEX_CLAVE_PUBLICA
   const clavePrivada = process.env.AEX_CLAVE_PRIVADA
   const codigoSesion = process.env.AEX_CODIGO_SESION || '12345'
-
-  console.log('🔧 AEX Config:', { 
-    sandbox, 
-    clavePublica: clavePublica?.substring(0, 10) + '...', 
-    clavePrivada: clavePrivada?.substring(0, 10) + '...',
-    codigoSesion
-  })
 
   if (!clavePublica || !clavePrivada) {
     throw new Error('Faltan variables de entorno de AEX: AEX_CLAVE_PUBLICA, AEX_CLAVE_PRIVADA')
@@ -30,9 +23,9 @@ export function getAEXConfig(): AEXConfig {
     clave_publica: clavePublica,
     clave_privada: clavePrivada,
     codigo_sesion: codigoSesion,
-    base_url: sandbox 
-      ? 'https://sandbox.aex.com.py/api/v1/'
-      : 'https://www.aex.com.py/api/v1/',
+    base_url: sandbox
+      ? 'https://sandbox.aex.com.py/api/v1'
+      : 'https://aex.com.py/api/v1',
   }
 }
 

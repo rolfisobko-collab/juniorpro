@@ -3,7 +3,7 @@ import { NextResponse, type NextRequest } from "next/server"
 import { prisma } from "@/lib/db"
 import { requireAdminId } from "@/lib/admin-session"
 
-export async function PUT(req: NextRequest, { params }: { params: Promise<{ id: string }> }) {
+async function handleStatusUpdate(req: NextRequest, { params }: { params: Promise<{ id: string }> }) {
   try {
     const adminId = await requireAdminId()
     if (!adminId) return NextResponse.json({ error: "Unauthorized" }, { status: 401 })
@@ -36,3 +36,5 @@ export async function PUT(req: NextRequest, { params }: { params: Promise<{ id: 
     return NextResponse.json({ error: "Failed to update status" }, { status: 500 })
   }
 }
+
+export { handleStatusUpdate as PUT, handleStatusUpdate as PATCH }

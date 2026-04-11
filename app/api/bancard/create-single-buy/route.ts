@@ -2,26 +2,33 @@ import { NextResponse } from "next/server"
 import crypto from "crypto"
 
 // Configuración de Bancard (valores de ejemplo - necesitarás credenciales reales)
-const BANCARD_PUBLIC_KEY = process.env.BANCARD_PUBLIC_KEY || "LjR7eHh2aW5vZ2xpZ2F0amF2YXNjcmlwdG9sb25n"
-const BANCARD_PRIVATE_KEY = process.env.BANCARD_PRIVATE_KEY || "9j8k7m6n5b4v3c2x1z0a9s8d7f6g5h4j"
+const BANCARD_PUBLIC_KEY = process.env.BANCARD_PUBLIC_KEY
+const BANCARD_PRIVATE_KEY = process.env.BANCARD_PRIVATE_KEY
 const BANCARD_SANDBOX = process.env.BANCARD_SANDBOX !== "false"
 
-const BANCARD_BASE_URL = BANCARD_SANDBOX 
-  ? "https://vpos.infonet.com.py" 
+const BANCARD_BASE_URL = BANCARD_SANDBOX
+  ? "https://vpos.infonet.com.py"
   : "https://vpos.infonet.com.py"
 
 export async function POST(request: Request) {
   try {
-    const { amount, currency = "PYG", description, shop_process_id } = await request.json()
-
-    if (!amount || !shop_process_id) {
+    if (!BANCARD_PUBLIC_KEY || !BANCARD_PRIVATE_KEY) {
       return NextResponse.json({
         success: false,
-        error: "Se requieren amount y shop_process_id"
+        error: "Credenciales de Bancard no configuradas"
+      }, { status: 500 })
+    }
+
+    const { amount, currency = "PYG", description } = await request.json()
+    const shop_process_id = Date.now()
+
+    if (!amount) {
+      return NextResponse.json({
+        success: false,
+        error: "Se requiere amount"
       }, { status: 400 })
     }
 
-    // Generar token de seguridad para Bancard
     const token = crypto
       .createHash('md5')
       .update(`${BANCARD_PRIVATE_KEY}${shop_process_id}${amount}${currency}`)
@@ -36,7 +43,7 @@ export async function POST(request: Request) {
     })
 
     const requestBody = {
-      public_key: BANCARD_PUBLIC_KEY,
+      public_key: BANCARD_PUBLIC_KEY as string,
       operation: {
         token: token,
         shop_process_id: shop_process_id,
@@ -86,19 +93,6 @@ export async function POST(request: Request) {
   } catch (error) {
     console.error('Error generando process_id Bancard:', error)
     
-    // Para desarrollo, devolver un process_id de ejemplo
-    if (BANCARD_SANDBOX) {
-      console.log('🔧 Usando process_id de ejemplo para sandbox')
-      return NextResponse.json({
-        success: true,
-        process_id: "EXAMPLE_PROCESS_ID_" + Date.now(),
-        shop_process_id: "SHOP_" + Date.now(),
-        amount: 100000,
-        currency: "PYG",
-        sandbox: true
-      })
-    }
-
     return NextResponse.json({
       success: false,
       error: error instanceof Error ? error.message : 'Error desconocido'

@@ -81,6 +81,7 @@ export default function CheckoutPage() {
   })
   const [bancardProcessId, setBancardProcessId] = useState<string | null>(null)
   const [paymentLoading, setPaymentLoading] = useState(false)
+  const [orderId, setOrderId] = useState<string | null>(null)
   const [isLocationModalOpen, setIsLocationModalOpen] = useState(false)
   const [isConvenirModalOpen, setIsConvenirModalOpen] = useState(false)
   
@@ -146,15 +147,16 @@ export default function CheckoutPage() {
   }
 
   // Manejar exito del pago
-  const handlePaymentSuccess = (response: any) => {
+  const handlePaymentSuccess = async (response: any) => {
     toast({
       title: "Pago exitoso!",
       description: "Tu compra ha sido procesada correctamente"
     })
-    
-    setTimeout(() => {
-      router.push('/checkout/success')
-    }, 2000)
+    const order = await createOrder({ paymentMethod: "bancard", paymentStatus: "paid" })
+    if (order) {
+      clearCart()
+      setCurrentStep(3)
+    }
   }
 
   // Manejar error en el pago
@@ -276,12 +278,12 @@ export default function CheckoutPage() {
     {
       id: "aex",
       name: "Envio AEX",
-      description: "Próximamente disponible",
-      cost: null,
+      description: "Envío a domicilio a todo el Paraguay",
+      cost: shippingData.method === "aex" ? shippingData.cost : null,
       icon: Truck,
-      time: "Próximamente",
-      requiresAddress: false,
-      disabled: true
+      time: "2-3 días hábiles",
+      requiresAddress: true,
+      disabled: false
     },
     {
       id: "convenir",
@@ -295,28 +297,18 @@ export default function CheckoutPage() {
   ]
 
   const handleNextStep = async () => {
-    console.log('🔘 Next step clicked, current step:', currentStep)
-    
-    if (currentStep < 3) {
-      // Saltar el paso de pago (paso 2) y pasar directamente a confirmacion (paso 3)
-      if (currentStep === 1) {
-        console.log('📦 Creating order...')
-        // Crear la orden en la base de datos
-        const order = await createOrder()
-        if (order) {
-          console.log('✅ Order created, moving to step 3')
-          setCurrentStep(3) // Saltar del paso 1 (envio) al paso 3 (confirmacion)
-        } else {
-          console.log('❌ Order creation failed')
-        }
-      } else {
-        console.log('➡️ Moving to step:', currentStep + 1)
-        setCurrentStep(currentStep + 1)
+    if (currentStep === 1) {
+      // Generar process_id de Bancard al avanzar al paso de pago
+      const processId = await generateBancardProcessId()
+      if (processId) {
+        setCurrentStep(2)
       }
+    } else if (currentStep < 3) {
+      setCurrentStep(currentStep + 1)
     }
   }
 
-  const createOrder = async () => {
+  const createOrder = async (paymentOverride?: { paymentMethod: string; paymentStatus: string }) => {
     try {
       console.log('📦 Creating order with data:', {
         itemCount: items.length,
@@ -339,8 +331,8 @@ export default function CheckoutPage() {
         tax: total * 0.1,
         total: total + (shippingData.cost || 0) + (total * 0.1),
         status: "pending",
-        paymentMethod: "pending",
-        paymentStatus: "pending"
+        paymentMethod: paymentOverride?.paymentMethod || "pending",
+        paymentStatus: paymentOverride?.paymentStatus || "pending"
       }
 
       console.log('📤 Sending order data to /api/orders...')
@@ -363,8 +355,9 @@ export default function CheckoutPage() {
 
       const order = await response.json()
       console.log('✅ Order created successfully:', order)
-      
-      // NO limpiar el carrito todavía - esperar a que el usuario vea la confirmación
+      if (order?.order?.id) {
+        setOrderId(order.order.id)
+      }
       return order
     } catch (error) {
       console.error('❌ Error creating order:', error)
@@ -379,12 +372,7 @@ export default function CheckoutPage() {
 
   const handlePreviousStep = () => {
     if (currentStep > 1) {
-      // Saltar el paso de pago (paso 2) al volver
-      if (currentStep === 3) {
-        setCurrentStep(1) // Volver del paso 3 (confirmacion) al paso 1 (envio)
-      } else {
-        setCurrentStep(currentStep - 1)
-      }
+      setCurrentStep(currentStep - 1)
     }
   }
 
@@ -697,6 +685,65 @@ export default function CheckoutPage() {
         </Card>
       )}
 
+      {/* Step 2: Payment */}
+      {currentStep === 2 && (
+        <Card className="border-0 shadow-md bg-gradient-to-br from-white via-purple-50/30 to-white">
+          <CardHeader className="bg-gradient-to-r from-purple-600 to-purple-700 text-white rounded-t-lg">
+            <CardTitle className="flex items-center gap-3 text-xl md:text-2xl">
+              <CreditCard className="w-6 h-6" />
+              Pago Seguro
+            </CardTitle>
+          </CardHeader>
+          <CardContent className="p-6 md:p-8">
+            <div className="mb-6 p-4 bg-purple-50 rounded-xl border border-purple-200">
+              <div className="flex items-center justify-between">
+                <span className="text-gray-700 font-medium">Total a pagar:</span>
+                <span className="text-2xl font-bold text-purple-700">
+                  {formatPrice(total + (shippingData.cost || 0) + total * 0.1)}
+                </span>
+              </div>
+            </div>
+
+            {paymentLoading ? (
+              <div className="flex flex-col items-center justify-center py-12 gap-4">
+                <Loader2 className="w-10 h-10 text-purple-600 animate-spin" />
+                <p className="text-gray-600">Preparando pago seguro...</p>
+              </div>
+            ) : bancardProcessId ? (
+              <div>
+                <div className="flex items-center gap-2 mb-4 text-sm text-gray-500">
+                  <Lock className="w-4 h-4 text-green-500" />
+                  <span>Pago procesado de forma segura por Bancard</span>
+                </div>
+                <BancardCheckout
+                  processId={bancardProcessId}
+                  amount={total + (shippingData.cost || 0) + total * 0.1}
+                  onSuccess={handlePaymentSuccess}
+                  onError={handlePaymentError}
+                  onCancel={() => setCurrentStep(1)}
+                />
+              </div>
+            ) : (
+              <div className="flex flex-col items-center justify-center py-12 gap-4">
+                <p className="text-red-600">No se pudo iniciar el proceso de pago. Intentá de nuevo.</p>
+                <Button onClick={() => handleNextStep()} variant="outline">Reintentar</Button>
+              </div>
+            )}
+
+            <div className="flex justify-start pt-6 border-t border-gray-200 mt-6">
+              <Button
+                variant="outline"
+                onClick={handlePreviousStep}
+                className="h-12 px-6 border-2 hover:bg-gray-50"
+              >
+                <ChevronLeft className="h-4 w-4 mr-2" />
+                Volver al envío
+              </Button>
+            </div>
+          </CardContent>
+        </Card>
+      )}
+
       {/* Step 3: Order Success */}
       {currentStep === 3 && (
         <div className="max-w-4xl mx-auto">
@@ -724,7 +771,7 @@ export default function CheckoutPage() {
                       <div className="flex justify-between items-center py-3 border-b border-gray-200">
                         <span className="text-gray-600 font-medium">Numero de Orden</span>
                         <span className="font-bold text-green-600 bg-green-50 px-3 py-1 rounded-full text-sm">
-                          #ORD-2024-{Math.random().toString(36).substring(2, 11).toUpperCase()}
+                          #{orderId}
                         </span>
                       </div>
                       <div className="flex justify-between items-center py-3 border-b border-gray-200">

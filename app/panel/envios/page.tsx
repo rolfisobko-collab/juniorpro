@@ -34,30 +34,28 @@ export default function EnviosPage() {
   const [trackingResult, setTrackingResult] = useState<any>(null)
   const [trackingLoading, setTrackingLoading] = useState(false)
 
-  // Cargar pedidos de envío
+  // Cargar pedidos desde la DB vía API admin
   useEffect(() => {
     const loadOrders = async () => {
       try {
-        // Simular carga de pedidos desde localStorage
-        const storedOrders = localStorage.getItem("tz_demo_orders")
-        if (storedOrders) {
-          const ordersData = JSON.parse(storedOrders)
-          const shippingOrders = ordersData.map((order: any) => ({
-            id: order.id,
-            customerName: `${order.customerInfo?.firstName || ''} ${order.customerInfo?.lastName || ''}`.trim(),
-            address: order.shippingAddress?.address || '',
-            city: order.shippingAddress?.city || '',
-            department: order.shippingAddress?.state || '',
-            service: order.shipping?.serviceName || 'Estándar',
-            weight: 1.5, // Peso estimado
-            cost: order.shipping?.cost || 15000,
-            status: "processing", // Estado simulado
-            trackingNumber: `CP${order.id.slice(-8)}`,
-            createdAt: order.createdAt,
-            estimatedDelivery: new Date(Date.now() + 3 * 24 * 60 * 60 * 1000).toISOString()
-          }))
-          setOrders(shippingOrders)
-        }
+        const res = await fetch("/api/admin/orders", { credentials: "include" })
+        if (!res.ok) throw new Error("Error cargando órdenes")
+        const data = await res.json()
+        const dbOrders = (data.orders || []).map((order: any) => ({
+          id: order.id,
+          customerName: order.contactEmail || "Cliente",
+          address: order.shippingAddress || "",
+          city: order.shippingCity || "",
+          department: order.shippingState || "",
+          service: order.shippingMethod || "Estándar",
+          weight: 0,
+          cost: order.total || 0,
+          status: order.status as ShippingOrder["status"],
+          trackingNumber: undefined,
+          createdAt: order.createdAt,
+          estimatedDelivery: undefined,
+        }))
+        setOrders(dbOrders)
       } catch (error) {
         console.error("Error loading orders:", error)
       } finally {
@@ -102,11 +100,21 @@ export default function EnviosPage() {
     }
   }
 
-  // Función para actualizar estado
-  const updateOrderStatus = (orderId: string, newStatus: ShippingOrder['status']) => {
-    setOrders(prev => prev.map(order => 
-      order.id === orderId ? { ...order, status: newStatus } : order
-    ))
+  // Función para actualizar estado vía API
+  const updateOrderStatus = async (orderId: string, newStatus: ShippingOrder['status']) => {
+    try {
+      await fetch(`/api/admin/orders/${orderId}/status`, {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        credentials: "include",
+        body: JSON.stringify({ status: newStatus }),
+      })
+      setOrders(prev => prev.map(order =>
+        order.id === orderId ? { ...order, status: newStatus } : order
+      ))
+    } catch (error) {
+      console.error("Error actualizando estado:", error)
+    }
   }
 
   // Formatear moneda
