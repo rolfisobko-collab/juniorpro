@@ -6,12 +6,12 @@ import { jwtVerify } from "jose"
 async function getUserFromRequest(): Promise<{ id: string; name: string } | null> {
   try {
     const cookieStore = await cookies()
-    const token = cookieStore.get("auth-token")?.value
+    const token = cookieStore.get("tz_access")?.value
     if (!token) return null
     const secret = new TextEncoder().encode(process.env.JWT_SECRET || "fallback-secret")
     const { payload } = await jwtVerify(token, secret)
-    if (!payload.userId || !payload.name) return null
-    return { id: payload.userId as string, name: payload.name as string }
+    if (!payload.sub) return null
+    return { id: payload.sub as string, name: (payload.name as string) || "" }
   } catch {
     return null
   }

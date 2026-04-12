@@ -3,6 +3,7 @@ import { Inter } from "next/font/google"
 import Script from "next/script"
 import ClientLayout from "./client-layout"
 import { warmupCache } from "@/lib/cache-warmup"
+import { getServerLang } from "@/lib/i18n/get-server-lang"
 import "./globals.css"
 
 const inter = Inter({ subsets: ["latin"], variable: "--font-sans" })
@@ -10,13 +11,14 @@ const inter = Inter({ subsets: ["latin"], variable: "--font-sans" })
 // Fire warm-up in background — doesn't block rendering
 warmupCache().catch(() => {})
 
-export default function RootLayout({
+export default async function RootLayout({
   children,
 }: Readonly<{
   children: React.ReactNode
 }>) {
+  const lang = await getServerLang()
   return (
-    <html lang="es">
+    <html lang={lang}>
       <head>
         {/* DNS prefetch + preconnect for external image CDN */}
         <link rel="preconnect" href="https://iili.io" />

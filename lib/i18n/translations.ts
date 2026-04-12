@@ -129,7 +129,7 @@ export const translations = {
     'Refund': 'Reembolsar',
     'Review': 'Reseña',
     'Reviews': 'Reseñas',
-    'Rating': 'Calificación',
+    'Rating': 'Puntuaciones',
     'Stars': 'Estrellas',
     'Comment': 'Comentario',
     'Comments': 'Comentarios',
