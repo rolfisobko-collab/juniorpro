@@ -41,8 +41,8 @@ export function TranslationProvider({ children }: { children: ReactNode }) {
   }
 
   const t = (key: string): string => {
-    const translation = translations[language][key as TranslationKey]
-    return translation || key
+    const translation = (translations[language] as any)[key]
+    return translation || (translations.es as any)[key] || key
   }
 
   const contextValue = {
