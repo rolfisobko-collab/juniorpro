@@ -1,5 +1,8 @@
 import { NextRequest, NextResponse } from "next/server"
-import { memoryStorage, type ExchangeRate } from "@/lib/memory-storage"
+
+interface ExchangeRate {
+  id: string; currency: string; rate: number; isActive: boolean; updatedAt: string
+}
 
 // Mock data for when database is not available
 const MOCK_RATES: ExchangeRate[] = [
@@ -11,31 +14,26 @@ const MOCK_RATES: ExchangeRate[] = [
 
 export async function GET() {
   try {
-    // If we have in-memory rates, use them
-    const memoryRates = memoryStorage.getRates()
-    console.log("Memory rates:", memoryRates)
-    if (memoryRates.length > 0) {
-      return NextResponse.json({ rates: memoryRates })
+    const { prisma } = await import("@/lib/db")
+    let rates = await prisma.exchangeRate.findMany({ orderBy: { currency: "asc" } })
+
+    if (rates.length === 0) {
+      await Promise.all(
+        MOCK_RATES.map((r) =>
+          prisma.exchangeRate.upsert({
+            where: { id: r.id },
+            update: {},
+            create: { id: r.id, currency: r.currency, rate: r.rate, isActive: r.isActive },
+          })
+        )
+      )
+      rates = await prisma.exchangeRate.findMany({ orderBy: { currency: "asc" } })
     }
 
-    // Try to get from database first
-    try {
-      const { prisma } = await import("@/lib/db")
-      const rates = await prisma.exchangeRate.findMany({
-        orderBy: { currency: "asc" }
-      })
-      return NextResponse.json({ rates })
-    } catch (dbError) {
-      // Fallback to mock data if database is not available
-      console.warn("Database not available, using mock exchange rates:", dbError)
-      return NextResponse.json({ rates: MOCK_RATES })
-    }
+    return NextResponse.json({ rates })
   } catch (error) {
     console.error("Error fetching exchange rates:", error)
-    return NextResponse.json(
-      { error: "Error fetching exchange rates" },
-      { status: 500 }
-    )
+    return NextResponse.json({ rates: MOCK_RATES })
   }
 }
 
@@ -44,39 +42,20 @@ export async function PUT(request: NextRequest) {
     const { rates } = await request.json()
 
     if (!Array.isArray(rates)) {
-      return NextResponse.json(
-        { error: "Invalid rates data" },
-        { status: 400 }
-      )
+      return NextResponse.json({ error: "Invalid rates data" }, { status: 400 })
     }
 
-    // Try to update in database first
-    try {
-      const { prisma } = await import("@/lib/db")
-      
-      // Update each rate
-      for (const rate of rates) {
-        await prisma.exchangeRate.update({
-          where: { id: rate.id },
-          data: {
-            rate: rate.rate,
-            isActive: rate.isActive,
-          }
-        })
-      }
-      
-      return NextResponse.json({ success: true })
-    } catch (dbError) {
-      // Fallback: store in memory
-      console.warn("Database not available, storing in memory:", dbError)
-      memoryStorage.setRates(rates)
-      return NextResponse.json({ success: true, message: "Rates updated in memory" })
+    const { prisma } = await import("@/lib/db")
+    for (const rate of rates) {
+      await prisma.exchangeRate.update({
+        where: { id: rate.id },
+        data: { rate: rate.rate, isActive: rate.isActive },
+      })
     }
+
+    return NextResponse.json({ success: true })
   } catch (error) {
     console.error("Error updating exchange rates:", error)
-    return NextResponse.json(
-      { error: "Error updating exchange rates" },
-      { status: 500 }
-    )
+    return NextResponse.json({ error: "Error updating exchange rates" }, { status: 500 })
   }
 }

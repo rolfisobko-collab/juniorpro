@@ -18,9 +18,10 @@ import { useState } from "react"
 
 interface ProductCardProps {
   product: UnifiedProduct
+  priority?: boolean
 }
 
-export function ProductCard({ product }: ProductCardProps) {
+export function ProductCard({ product, priority = false }: ProductCardProps) {
   const { t } = useTranslation()
   const { addItem } = useCart()
   const { toggleFavorite, isFavorite } = useFavorites()
@@ -59,55 +60,75 @@ export function ProductCard({ product }: ProductCardProps) {
 
   return (
     <Link href={`/products/${product.id}`}>
-      <div className="group relative bg-white rounded-2xl border border-gray-100 hover:border-blue-200 hover:shadow-md hover:shadow-blue-100/50 transition-all duration-300 overflow-hidden">
+      <div className="group relative bg-white rounded-2xl border border-gray-100/80 hover:border-[#009FE3]/30 hover:shadow-[0_8px_30px_rgba(0,159,227,0.12)] transition-all duration-300 overflow-hidden cursor-pointer">
 
         {/* Imagen */}
-        <div className="relative aspect-square overflow-hidden bg-white border-b border-gray-100">
+        <div className="relative aspect-square overflow-hidden bg-gradient-to-br from-gray-50 to-white">
           <Image
             src={product.image || "/placeholder.svg"}
             alt={product.name}
-            className="absolute inset-4 w-[calc(100%-2rem)] h-[calc(100%-2rem)] object-contain transition-transform duration-500 group-hover:scale-105"
+            className="absolute inset-3 w-[calc(100%-1.5rem)] h-[calc(100%-1.5rem)] object-contain transition-transform duration-500 group-hover:scale-[1.07]"
             fallback="/placeholder.svg"
-            loading="lazy"
+            loading={priority ? "eager" : "lazy"}
+            fetchPriority={priority ? "high" : "auto"}
           />
-
-          {/* Logo marca */}
-          <div className="absolute -top-1 left-1 z-10">
-            <img src="/logo-optimized.png" alt="logo" className="w-14 h-14 object-contain opacity-80" />
-          </div>
 
           {/* Favorito */}
           <button
             onClick={handleToggleFavorite}
-            className="absolute top-2 right-2 h-8 w-8 rounded-full bg-white shadow-sm border border-gray-100 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity duration-200 hover:scale-110"
+            className={`absolute top-2 right-2 h-7 w-7 rounded-full shadow-md border flex items-center justify-center transition-all duration-200 hover:scale-110 z-10
+              ${isFavorite(product.id)
+                ? "bg-red-50 border-red-200 opacity-100"
+                : "bg-white border-gray-100 opacity-0 group-hover:opacity-100"}`}
           >
-            <Heart className={`h-4 w-4 ${isFavorite(product.id) ? "fill-red-500 text-red-500" : "text-gray-400"}`} />
+            <Heart className={`h-3.5 w-3.5 ${isFavorite(product.id) ? "fill-red-500 text-red-500" : "text-gray-400"}`} />
           </button>
 
-          {/* Agotado */}
-          {!product.inStock && (
-            <div className="absolute inset-0 bg-white/80 flex items-center justify-center">
-              <span className="text-xs font-bold text-gray-500 uppercase tracking-widest">Agotado</span>
+          {/* Badge destacado */}
+          {product.featured && (
+            <div className="absolute top-2 left-2 z-10">
+              <span className="text-[10px] font-bold bg-amber-400 text-amber-900 px-1.5 py-0.5 rounded-md">TOP</span>
             </div>
           )}
+
+          {/* Agotado overlay */}
+          {!product.inStock && (
+            <div className="absolute inset-0 bg-white/75 backdrop-blur-[1px] flex items-center justify-center z-20">
+              <span className="text-[11px] font-bold text-gray-400 uppercase tracking-[0.15em] bg-white/90 px-3 py-1 rounded-full border border-gray-200">Agotado</span>
+            </div>
+          )}
+
         </div>
 
+        {/* Botón add to cart — aparece en hover, FUERA del overflow-hidden */}
+        {product.inStock && (
+          <div className="absolute bottom-[4.5rem] left-0 right-0 flex justify-center transition-all duration-200 z-20 opacity-0 group-hover:opacity-100 translate-y-1 group-hover:translate-y-0 pointer-events-none group-hover:pointer-events-auto">
+            <button
+              onClick={handleAddToCart}
+              className="flex items-center gap-1.5 bg-[#009FE3] hover:bg-[#0088c7] text-white text-xs font-semibold px-3 py-1.5 rounded-lg shadow-lg shadow-[#009FE3]/30 transition-colors"
+            >
+              <ShoppingCart className="h-3.5 w-3.5" />
+              Agregar
+            </button>
+          </div>
+        )}
+
         {/* Info */}
-        <div className="p-3">
+        <div className="p-3 pt-2.5">
           {product.brand && (
-            <p className="text-xs text-[#009FE3] font-semibold uppercase tracking-wide mb-0.5 truncate">{product.brand}</p>
+            <p className="text-[10px] text-[#009FE3] font-bold uppercase tracking-wider mb-0.5 truncate">{product.brand}</p>
           )}
-          <h3 className="text-sm font-semibold text-gray-800 line-clamp-2 leading-snug mb-2">
+          <h3 className="text-[13px] font-semibold text-gray-800 line-clamp-2 leading-snug mb-2.5 min-h-[2.4em]">
             {product.name}
           </h3>
           <div className="flex items-center justify-between gap-2">
-            <p className="text-base font-bold text-gray-900">{formatPrice(product.price)}</p>
+            <p className="text-[15px] font-bold text-gray-900 leading-none">{formatPrice(product.price)}</p>
             <button
               onClick={handleAddToCart}
               disabled={!product.inStock}
-              className="h-8 w-8 rounded-full bg-[#009FE3] hover:bg-[#007BB8] text-white flex items-center justify-center transition-colors duration-200 disabled:opacity-40 disabled:cursor-not-allowed flex-shrink-0"
+              className="h-7 w-7 rounded-lg bg-[#009FE3] hover:bg-[#0088c7] text-white flex items-center justify-center transition-colors duration-200 disabled:opacity-30 disabled:cursor-not-allowed flex-shrink-0 shadow-sm md:hidden"
             >
-              <ShoppingCart className="h-4 w-4" />
+              <ShoppingCart className="h-3.5 w-3.5" />
             </button>
           </div>
         </div>

@@ -61,6 +61,7 @@ export async function POST(req: NextRequest) {
       shippingAddress: body.shippingAddress || "Retiro en local",
       shippingCity: body.shippingCity || "",
       shippingDepartment: body.shippingDepartment || "",
+      contactPhone: body.contactPhone || "",
       subtotal: body.subtotal || 0,
       tax: body.tax || 0,
       total: body.total || 0,
@@ -81,7 +82,7 @@ export async function POST(req: NextRequest) {
         shippingZipCode: "0000",
         shippingMethod: orderData.shippingMethod,
         contactEmail: user.email,
-        contactPhone: "+595 999 999 999",
+        contactPhone: orderData.contactPhone || user.email,
         createdAt: new Date(),
         updatedAt: new Date(),
         items: {

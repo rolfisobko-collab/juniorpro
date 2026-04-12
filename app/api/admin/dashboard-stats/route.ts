@@ -72,7 +72,7 @@ export async function GET() {
 
       // Órdenes completadas
       prisma.order.count({
-        where: { status: "completed" }
+        where: { status: "delivered" }
       }),
 
       // Total de categorías
@@ -85,6 +85,8 @@ export async function GET() {
     ])
 
     // Calcular estadísticas adicionales
+    const processingOrders = await prisma.order.count({ where: { status: "processing" } })
+
     const totalRevenue = await prisma.order.aggregate({
       _sum: { total: true },
       where: { status: { in: ["completed", "processing"] } }
@@ -100,6 +102,7 @@ export async function GET() {
       totalOrders,
       totalUsers,
       pendingOrders,
+      processingOrders,
       lowStockProducts,
       outOfStockProducts,
       totalCategories,

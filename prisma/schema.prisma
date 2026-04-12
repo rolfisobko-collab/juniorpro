@@ -57,6 +57,7 @@ model Product {
   cartItems CartItem[]
   favorites Favorite[]
   orderItems OrderItem[]
+  productReviews Review[]
 
   @@index([categoryKey])
 }
@@ -77,6 +78,24 @@ model User {
   favorites     Favorite[]
   addresses     UserAddress[]
   orders        Order[]
+  reviews       Review[]
+}
+
+model Review {
+  id        String   @id @default(cuid())
+  productId String
+  userId    String
+  rating    Int      // 1-5
+  comment   String?
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  product Product @relation(fields: [productId], references: [id], onDelete: Cascade)
+  user    User    @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([productId, userId])
+  @@index([productId])
+  @@index([userId])
 }
 
 model UserAddress {
@@ -108,6 +127,12 @@ model Order {
   shippingMethod  String
   contactEmail    String
   contactPhone    String
+  paymentMethod   String?
+  paymentStatus   String?
+  trackingNumber  String?  // Número de tracking AEX
+  aexShipmentId   String?  // ID del envío en AEX
+  boxName         String?  // Nombre de la caja usada
+  shippingCost    Float?   // Costo de envío calculado
   createdAt      DateTime @default(now())
   updatedAt      DateTime @updatedAt
 
@@ -117,6 +142,21 @@ model Order {
 
   @@index([userId])
   @@index([status])
+}
+
+model BoxStandard {
+  id          String   @id @default(cuid())
+  name        String   // "Caja S", "Caja M", etc.
+  lengthCm    Float    // Largo exterior en cm
+  widthCm     Float    // Ancho exterior en cm
+  heightCm    Float    // Alto exterior en cm
+  paddingCm   Float    @default(3)   // Relleno por lado en cm
+  maxWeightKg Float    // Peso máximo del contenido en kg
+  boxWeightKg Float    @default(0.3) // Peso de la caja vacía en kg
+  isActive    Boolean  @default(true)
+  sortOrder   Int      @default(0)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
 }
 
 model OrderItem {

@@ -10,8 +10,12 @@ export async function GET() {
 
     const orders = await prisma.order.findMany({
       orderBy: { createdAt: "desc" },
-      include: { items: true },
-      take: 200,
+      include: {
+        items: { include: { product: { select: { id: true, name: true, image: true } } } },
+        user: { select: { id: true, name: true, email: true } },
+        statusHistory: { orderBy: { createdAt: "desc" }, take: 10 },
+      },
+      take: 300,
     })
 
     return NextResponse.json({ orders })

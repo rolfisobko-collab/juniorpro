@@ -9,7 +9,7 @@ import { Switch } from "@/components/ui/switch"
 import { Badge } from "@/components/ui/badge"
 import { Alert, AlertDescription } from "@/components/ui/alert"
 import { PanelLayout } from "@/components/panel-layout"
-import { RefreshCw, Save, ExternalLink, TrendingUp, AlertCircle } from "lucide-react"
+import { RefreshCw, Save, AlertCircle } from "lucide-react"
 import { useToast } from "@/hooks/use-toast"
 
 interface ExchangeRate {
@@ -139,6 +139,13 @@ export default function ExchangeRatesPage() {
     return CURRENCIES.find(c => c.code === code) || { code, name: code, flag: "🏳️" }
   }
 
+  const formatRate = (rate: number, currency: string) => {
+    if (currency === "PYG") return `₲ ${rate.toLocaleString("es-PY", { maximumFractionDigits: 0 })}`
+    if (currency === "ARS") return `$ ${rate.toLocaleString("es-PY", { maximumFractionDigits: 0 })}`
+    if (currency === "BRL") return `R$ ${rate.toLocaleString("es-PY", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`
+    return rate.toFixed(4)
+  }
+
   if (loading) {
     return (
       <PanelLayout>
@@ -159,43 +166,31 @@ export default function ExchangeRatesPage() {
           </p>
         </div>
 
-        <div className="mb-6">
-          <Alert>
-            <TrendingUp className="h-4 w-4" />
-            <AlertDescription>
-              Las tasas se muestran en relación al Dólar Estadounidense (USD). 
-              Puedes actualizarlas automáticamente desde una API externa o modificarlas manualmente.
-            </AlertDescription>
-          </Alert>
+        <div className="mb-6 p-4 bg-amber-50 border border-amber-200 rounded-xl flex gap-3 text-sm text-amber-800">
+          <AlertCircle className="h-4 w-4 flex-shrink-0 mt-0.5" />
+          <div>
+            <p className="font-semibold">Los valores se ingresan manualmente</p>
+            <p className="text-amber-700 mt-0.5">No hay conexión automática a una API de cotizaciones. Actualizá los valores según el tipo de cambio del día y guardá. Se usan para convertir precios en USD a cada moneda en la tienda y para calcular el monto en Guaraníes que se envía a Bancard.</p>
+          </div>
         </div>
 
-        <div className="flex gap-4 mb-6">
-          <Button
-            onClick={updateFromAPI}
-            disabled={updating}
-            className="flex items-center gap-2"
-          >
-            <RefreshCw className={`h-4 w-4 ${updating ? "animate-spin" : ""}`} />
-            {updating ? "Actualizando..." : "Actualizar desde API"}
-          </Button>
+        <div className="flex gap-3 mb-6">
           <Button
             onClick={saveRates}
             disabled={saving}
-            variant="outline"
-            className="flex items-center gap-2"
+            className="flex items-center gap-2 bg-[#009FE3] hover:bg-[#0088c7]"
           >
             <Save className="h-4 w-4" />
-            {saving ? "Guardando..." : "Guardar Cambios"}
+            {saving ? "Guardando..." : "Guardar cambios"}
           </Button>
           <Button
+            onClick={fetchRates}
+            disabled={loading}
             variant="outline"
-            asChild
             className="flex items-center gap-2"
           >
-            <a href="https://www.exchangerate-api.com" target="_blank" rel="noopener noreferrer">
-              <ExternalLink className="h-4 w-4" />
-              Fuente de API
-            </a>
+            <RefreshCw className={`h-4 w-4 ${loading ? "animate-spin" : ""}`} />
+            Recargar
           </Button>
         </div>
 
@@ -262,12 +257,12 @@ export default function ExchangeRatesPage() {
                   </div>
                   
                   {!isUSD && (
-                    <div className="text-sm text-muted-foreground bg-muted/30 p-3 rounded-lg">
-                      <p>
-                        1 USD = {rate.rate.toFixed(4)} {rate.currency}
+                    <div className="text-sm text-gray-500 bg-gray-50 p-3 rounded-xl border border-gray-100">
+                      <p className="font-medium text-gray-700">
+                        1 USD = {formatRate(rate.rate, rate.currency)}
                       </p>
-                      <p>
-                        1 {rate.currency} = {(1 / rate.rate).toFixed(4)} USD
+                      <p className="mt-0.5">
+                        1 {rate.currency} = USD {(1 / rate.rate).toLocaleString("en-US", { minimumFractionDigits: 6, maximumFractionDigits: 6 })}
                       </p>
                     </div>
                   )}

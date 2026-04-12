@@ -1,13 +1,31 @@
-import { getAuth, createUserWithEmailAndPassword, signInWithEmailAndPassword, sendEmailVerification, sendPasswordResetEmail } from "firebase/auth"
+import { getAuth, createUserWithEmailAndPassword, signInWithEmailAndPassword, sendEmailVerification, sendPasswordResetEmail, fetchSignInMethodsForEmail } from "firebase/auth"
 import { auth } from "./firebase"
+
+const getActionCodeSettings = () => ({
+  url: typeof window !== 'undefined'
+    ? `${window.location.origin}/login`
+    : 'https://techzonecde.com/login',
+  handleCodeInApp: false,
+})
 
 export async function registerWithEmail(email: string, password: string, name: string) {
   try {
+    // Verificar si el email ya está en uso (incluso con Google)
+    const methods = await fetchSignInMethodsForEmail(auth, email)
+    if (methods.length > 0) {
+      const isGoogle = methods.includes('google.com')
+      return {
+        success: false,
+        error: isGoogle
+          ? "Este email ya está registrado con Google. Usá el botón 'Continuar con Google'."
+          : "Este email ya está en uso. Iniciá sesión o recuperá tu contraseña."
+      }
+    }
+
     const userCredential = await createUserWithEmailAndPassword(auth, email, password)
     const user = userCredential.user
     
-    // Enviar email de verificación automático de Firebase
-    await sendEmailVerification(user)
+    await sendEmailVerification(user, getActionCodeSettings())
     
     return {
       success: true,
@@ -86,7 +104,7 @@ export async function loginWithEmail(email: string, password: string) {
 
 export async function resetPassword(email: string) {
   try {
-    await sendPasswordResetEmail(auth, email)
+    await sendPasswordResetEmail(auth, email, getActionCodeSettings())
     return { success: true }
   } catch (error: any) {
     console.error("Firebase reset password error:", error)

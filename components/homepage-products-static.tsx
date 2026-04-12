@@ -2,6 +2,8 @@ import { unstable_cache } from "next/cache"
 import { prisma } from "@/lib/db"
 import { ProductCard } from "@/components/product-card"
 import type { UnifiedProduct } from "@/lib/product-types"
+import Link from "next/link"
+import { ArrowRight } from "lucide-react"
 
 async function fetchSection(opts: { category?: string; featured?: boolean; sort: string; limit: number }) {
   try {
@@ -49,16 +51,35 @@ const getNewArrivals = unstable_cache(
   ["home-new-arrivals"], { revalidate: 300, tags: ["products"] }
 )
 
-function Section({ title, products }: { title: string; products: UnifiedProduct[] }) {
+function Section({ title, eyebrow, href, bg = "white", products }: {
+  title: string
+  eyebrow: string
+  href: string
+  bg?: "white" | "gray"
+  products: UnifiedProduct[]
+}) {
   if (!products.length) return null
   return (
-    <section className="py-16">
+    <section className={`py-14 ${bg === "gray" ? "bg-[#f8f9fc]" : "bg-white"}`}>
       <div className="container mx-auto px-4">
-        <h2 className="font-serif text-3xl md:text-4xl font-bold mb-8">{title}</h2>
+        <div className="flex items-end justify-between mb-8">
+          <div>
+            <p className="text-xs font-bold text-[#009FE3] uppercase tracking-[0.2em] mb-1.5">{eyebrow}</p>
+            <h2 className="text-2xl md:text-3xl font-bold text-gray-900 tracking-tight">{title}</h2>
+          </div>
+          <Link href={href} className="hidden sm:flex items-center gap-1 text-sm text-gray-500 hover:text-[#009FE3] transition-colors font-medium">
+            Ver todo <ArrowRight className="h-4 w-4" />
+          </Link>
+        </div>
         <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-3 md:gap-4">
-          {products.map((product) => (
-            <ProductCard key={product.id} product={product} />
+          {products.map((product, i) => (
+            <ProductCard key={product.id} product={product} priority={i < 6} />
           ))}
+        </div>
+        <div className="mt-6 sm:hidden text-center">
+          <Link href={href} className="inline-flex items-center gap-1.5 text-sm font-semibold text-[#009FE3]">
+            Ver todos <ArrowRight className="h-4 w-4" />
+          </Link>
         </div>
       </div>
     </section>
@@ -67,15 +88,15 @@ function Section({ title, products }: { title: string; products: UnifiedProduct[
 
 export async function HomeBestSellers({ title }: { title: string }) {
   const products = await getBestSellers()
-  return <Section title={title} products={products} />
+  return <Section title={title} eyebrow="Destacados" href="/products?featured=true" bg="gray" products={products} />
 }
 
 export async function HomeAppliances({ title }: { title: string }) {
   const products = await getAppliances()
-  return <Section title={title} products={products} />
+  return <Section title={title} eyebrow="Categoría" href="/products?category=electrodomesticos" bg="white" products={products} />
 }
 
 export async function HomeNewArrivals({ title }: { title: string }) {
   const products = await getNewArrivals()
-  return <Section title={title} products={products} />
+  return <Section title={title} eyebrow="Novedades" href="/products?sort=latest" bg="gray" products={products} />
 }

@@ -36,6 +36,8 @@ export function TranslationProvider({ children }: { children: ReactNode }) {
   const setLanguage = (lang: Language) => {
     setLanguageState(lang)
     localStorage.setItem(STORAGE_KEY, lang)
+    // También guardar en cookie para que server components puedan leerlo
+    document.cookie = `tz_language=${lang};path=/;max-age=31536000;SameSite=Lax`
   }
 
   const t = (key: string): string => {

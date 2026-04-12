@@ -1,4 +1,5 @@
-import { useState, useEffect } from "react"
+import { useState } from "react"
+import { selectBox, BoxStandard, CartItemDimensions } from "@/lib/box-selector"
 
 interface AEXShippingRequest {
   products: Array<{
@@ -50,21 +51,65 @@ export function useAEXShipping() {
     try {
       console.log('🚚 Calculando envío AEX:', request)
 
-      // Intentar API real primero
+      // Cargar cajas estándar y seleccionar la óptima
+      let selectedBoxName: string | null = null
+      let paquetes: any[]
+
+      try {
+        const boxesRes = await fetch('/api/admin/boxes')
+        const boxes: BoxStandard[] = await boxesRes.json()
+
+        const cartItems: CartItemDimensions[] = request.products.map(p => ({
+          productId: p.id,
+          quantity: p.quantity,
+          weightKg: p.weight,
+          lengthCm: p.length,
+          widthCm: p.width,
+          heightCm: p.height,
+        }))
+
+        const selection = selectBox(cartItems, boxes)
+
+        if (selection) {
+          selectedBoxName = selection.box.name
+          console.log(`📦 Caja seleccionada: ${selection.box.name} — ${selection.utilizationPct}% uso`)
+          paquetes = [{
+            descripcion: 'Pedido TechZone',
+            cantidad: 1,
+            peso: selection.totalShipmentWeightKg,
+            largo: selection.box.lengthCm,
+            ancho: selection.box.widthCm,
+            alto: selection.box.heightCm,
+            valor_declarado: request.products.reduce((sum, p) => sum + (p.valorDeclarado || 0) * p.quantity, 0),
+          }]
+        } else {
+          console.warn('⚠️ Ninguna caja alcanza, usando dimensiones estimadas')
+          const totalWeight = request.products.reduce((sum, p) => sum + p.weight * p.quantity, 0)
+          paquetes = [{
+            descripcion: 'Pedido TechZone',
+            cantidad: 1,
+            peso: totalWeight,
+            largo: 60, ancho: 50, alto: 40,
+            valor_declarado: request.products.reduce((sum, p) => sum + (p.valorDeclarado || 0) * p.quantity, 0),
+          }]
+        }
+      } catch {
+        console.warn('⚠️ Error cargando cajas, usando fallback')
+        const totalWeight = request.products.reduce((sum, p) => sum + p.weight * p.quantity, 0)
+        paquetes = [{
+          descripcion: 'Pedido TechZone',
+          cantidad: 1,
+          peso: totalWeight,
+          largo: 40, ancho: 30, alto: 20,
+        }]
+      }
+
+      // Llamada a AEX
       const aexRequest = {
         datos_envio: {
           origen: request.origin?.city || "Asunción",
           destino: `${request.destination.city}, ${request.destination.department}`,
-          paquetes: request.products.map(product => ({
-            peso: product.weight,
-            largo: product.length,
-            ancho: product.width,
-            alto: product.height,
-            valor_declarado: product.valorDeclarado,
-            descripcion_aduana: product.descripcionAduana,
-            categoria_arancelaria: product.categoriaArancelaria,
-            pais_origen: product.paisOrigen
-          }))
+          paquetes,
         }
       }
 

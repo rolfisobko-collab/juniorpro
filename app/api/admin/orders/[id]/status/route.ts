@@ -2,6 +2,7 @@ import { NextResponse, type NextRequest } from "next/server"
 
 import { prisma } from "@/lib/db"
 import { requireAdminId } from "@/lib/admin-session"
+import { sendOrderStatusEmail } from "@/lib/email-service"
 
 async function handleStatusUpdate(req: NextRequest, { params }: { params: Promise<{ id: string }> }) {
   try {
@@ -10,7 +11,7 @@ async function handleStatusUpdate(req: NextRequest, { params }: { params: Promis
 
     const { id } = await params
 
-    const body = (await req.json()) as { status?: string; note?: string }
+    const body = (await req.json()) as { status?: string; note?: string; trackingNumber?: string }
     const status = body.status
 
     if (!status || typeof status !== "string") {
@@ -20,7 +21,10 @@ async function handleStatusUpdate(req: NextRequest, { params }: { params: Promis
     const order = await prisma.order.findUnique({ where: { id } })
     if (!order) return NextResponse.json({ error: "Not found" }, { status: 404 })
 
-    const updated = await prisma.order.update({ where: { id: order.id }, data: { status } })
+    const updateData: any = { status }
+    if (body.trackingNumber) updateData.trackingNumber = body.trackingNumber
+
+    const updated = await prisma.order.update({ where: { id: order.id }, data: updateData })
 
     await prisma.orderStatusHistory.create({
       data: {
@@ -30,6 +34,18 @@ async function handleStatusUpdate(req: NextRequest, { params }: { params: Promis
         adminUserId: adminId,
       },
     })
+
+    // Enviar email de notificación al cliente (no bloquea la respuesta)
+    const contactEmail = order.contactEmail
+    if (contactEmail && contactEmail !== "cliente@web.com") {
+      sendOrderStatusEmail({
+        to: contactEmail,
+        orderId: order.id,
+        status,
+        trackingNumber: body.trackingNumber || (updated as any).trackingNumber || undefined,
+        note: body.note,
+      }).catch(err => console.error("Email notification error:", err))
+    }
 
     return NextResponse.json({ order: updated })
   } catch (_error) {

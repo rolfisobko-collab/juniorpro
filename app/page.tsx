@@ -1,61 +1,58 @@
-export const revalidate = 300 // cache home 5 min
+export const dynamic = "auto" // cookies() hace la página dinámica automáticamente
 
 import { Button } from "@/components/ui/button"
 import { defaultCTAs } from "@/lib/ctas-data"
 import { HeroCarousel } from "@/components/hero-carousel"
 import { getActiveHomeCategories } from "@/lib/home-categories-data"
 import { HomeBestSellers, HomeAppliances, HomeNewArrivals } from "@/components/homepage-products-static"
-import { BrandsShowcase } from "@/components/brands-showcase"
 import Link from "next/link"
 import Image from "next/image"
-import { ArrowRight, ShieldCheck, Truck, Zap, Package, Award } from "lucide-react"
+import { ArrowRight, ShieldCheck, Truck, Zap, Award } from "lucide-react"
+import { getServerT } from "@/lib/i18n/get-server-lang"
 
 export default async function HomePage() {
+  const { t, lang } = await getServerT()
   const activeCTAs = defaultCTAs.filter((cta) => cta.isActive).sort((a, b) => a.position - b.position)
   const homeCategories = getActiveHomeCategories()
-  const language = "es"
 
   return (
     <div className="min-h-screen">
       <HeroCarousel />
 
+      {/* Categorías */}
       {homeCategories.length > 0 && (
-        <section className="py-16 bg-gray-50">
+        <section className="py-14 bg-white">
           <div className="container mx-auto px-4">
-            <div className="text-center mb-12">
-              <h2 className="font-serif text-3xl md:text-4xl font-bold mb-4 text-gray-800">Explorá por Categorías</h2>
-              <p className="text-gray-600 text-lg max-w-2xl mx-auto">
-                Descubrí nuestra amplia selección de productos organizados por categorías
-              </p>
+            <div className="flex items-end justify-between mb-8">
+              <div>
+                <p className="text-xs font-bold text-[#009FE3] uppercase tracking-[0.2em] mb-1.5">{t('Explore by Categories')}</p>
+                <h2 className="text-2xl md:text-3xl font-bold text-gray-900 tracking-tight">{t('Explore by Categories')}</h2>
+              </div>
+              <Link href="/products" className="hidden sm:flex items-center gap-1 text-sm text-gray-500 hover:text-[#009FE3] transition-colors">
+                {t('View more')} <ArrowRight className="h-4 w-4" />
+              </Link>
             </div>
 
-            <div className="flex flex-wrap justify-center gap-4 max-w-6xl mx-auto">
+            <div className="flex flex-wrap justify-center gap-3">
               {homeCategories.map((category: any) => (
                 <Link
                   key={category.key || category.id}
                   href={category.link}
-                  className="group relative overflow-hidden rounded-2xl bg-white border border-gray-100 hover:border-blue-300 transition-all duration-300 hover:shadow-xl hover:-translate-y-1 w-[calc(50%-8px)] sm:w-40 md:w-44 lg:w-48"
+                  className="group flex flex-col items-center gap-2.5 w-24 sm:w-28 md:w-[7.5rem]"
                 >
-                  <div className="aspect-square relative overflow-hidden">
+                  <div className="relative w-full aspect-square rounded-2xl overflow-hidden bg-gray-50 ring-2 ring-transparent group-hover:ring-[#009FE3]/40 transition-all duration-300 group-hover:shadow-lg group-hover:shadow-[#009FE3]/10">
                     <Image
                       src={category.image || "/placeholder.svg"}
                       alt={category.name}
                       fill
                       className="object-cover group-hover:scale-110 transition-transform duration-500"
-                      sizes="(max-width: 640px) 50vw, (max-width: 1024px) 33vw, 20vw"
-                      priority={category.order <= 4}
-                      loading={category.order <= 4 ? "eager" : "lazy"}
+                      sizes="(max-width: 640px) 33vw, (max-width: 1024px) 20vw, 16vw"
+                      priority={category.order <= 6}
+                      loading={category.order <= 6 ? "eager" : "lazy"}
                     />
-                    {/* gradient overlay */}
-                    <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-black/10 to-transparent" />
-                    {/* label */}
-                    <div className="absolute bottom-0 left-0 right-0 p-3">
-                      <h3 className="text-sm sm:text-base font-bold text-white leading-tight drop-shadow">{category.name}</h3>
-                      <p className="text-[10px] sm:text-xs text-white/70 mt-0.5 font-medium group-hover:text-white/90 transition-colors">Ver productos →</p>
-                    </div>
-                    {/* shine effect on hover */}
-                    <div className="absolute inset-0 bg-gradient-to-tr from-transparent via-white/10 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
+                    <div className="absolute inset-0 bg-gradient-to-t from-black/50 via-transparent to-transparent" />
                   </div>
+                  <p className="text-xs sm:text-[13px] font-semibold text-gray-700 group-hover:text-[#009FE3] text-center transition-colors leading-tight">{category.name}</p>
                 </Link>
               ))}
             </div>
@@ -63,77 +60,33 @@ export default async function HomePage() {
         </section>
       )}
 
-      <section className="py-8 bg-gradient-to-r from-purple-50 via-blue-50 to-purple-50 border-y border-gray-200">
+      {/* Features bar */}
+      <section className="py-0 bg-[#0a0f1e]">
         <div className="container mx-auto px-4">
-          <div className="grid grid-cols-2 md:grid-cols-5 gap-4 md:gap-8 max-w-5xl mx-auto">
-            <div className="flex flex-col items-center text-center gap-2">
-              <div className="h-14 w-14 rounded-xl bg-gradient-to-br from-purple-500 to-purple-600 flex items-center justify-center shadow-lg relative overflow-hidden group">
-                <div className="absolute inset-0 bg-gradient-to-tr from-transparent via-white/20 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
-                <div className="absolute top-1/2 left-1/2 w-20 h-20 bg-purple-400/20 rounded-full blur-xl transform -translate-x-1/2 -translate-y-1/2"></div>
-                <Zap className="h-7 w-7 text-white relative z-10" />
+          <div className="grid grid-cols-2 md:grid-cols-4 divide-x divide-white/5">
+            {[
+              { icon: Truck, label: t('Fast Delivery'), sub: t('Same day shipping'), accent: "#009FE3" },
+              { icon: ShieldCheck, label: t('Official Warranty'), sub: t('Up to 30 days'), accent: "#10b981" },
+              { icon: Zap, label: t('Secure Payment'), sub: "Bancard", accent: "#f59e0b" },
+              { icon: Award, label: t('Expert Support'), sub: t('24/7 assistance'), accent: "#a855f7" },
+            ].map(({ icon: Icon, label, sub, accent }) => (
+              <div key={label} className="flex items-center gap-3 px-6 py-5">
+                <div className="h-10 w-10 rounded-xl flex items-center justify-center flex-shrink-0" style={{ backgroundColor: `${accent}18` }}>
+                  <Icon className="h-5 w-5" style={{ color: accent }} />
+                </div>
+                <div>
+                  <p className="text-sm font-bold text-white leading-none">{label}</p>
+                  <p className="text-xs text-gray-500 mt-0.5">{sub}</p>
+                </div>
               </div>
-              <div>
-                <p className="font-bold text-sm text-gray-800">Tech Premium</p>
-                <p className="text-xs text-gray-600">Última tecnología</p>
-              </div>
-            </div>
-
-            <div className="flex flex-col items-center text-center gap-2">
-              <div className="h-14 w-14 rounded-xl bg-gradient-to-br from-blue-500 to-blue-600 flex items-center justify-center shadow-lg relative overflow-hidden group">
-                <div className="absolute inset-0 bg-gradient-to-tr from-transparent via-white/20 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
-                <div className="absolute top-1/2 left-1/2 w-20 h-20 bg-blue-400/20 rounded-full blur-xl transform -translate-x-1/2 -translate-y-1/2"></div>
-                <ShieldCheck className="h-7 w-7 text-white relative z-10" />
-              </div>
-              <div>
-                <p className="font-bold text-sm text-gray-800">Garantía Oficial</p>
-                <p className="text-xs text-gray-600">Hasta 30 días</p>
-              </div>
-            </div>
-
-            <div className="flex flex-col items-center text-center gap-2">
-              <div className="h-14 w-14 rounded-xl bg-gradient-to-br from-green-500 to-green-600 flex items-center justify-center shadow-lg relative overflow-hidden group">
-                <div className="absolute inset-0 bg-gradient-to-tr from-transparent via-white/20 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
-                <div className="absolute top-1/2 left-1/2 w-20 h-20 bg-green-400/20 rounded-full blur-xl transform -translate-x-1/2 -translate-y-1/2"></div>
-                <Truck className="h-7 w-7 text-white relative z-10" />
-              </div>
-              <div>
-                <p className="font-bold text-sm text-gray-800">Envío Rápido</p>
-                <p className="text-xs text-gray-600">Entrega el mismo día</p>
-              </div>
-            </div>
-
-            <div className="flex flex-col items-center text-center gap-2">
-              <div className="h-14 w-14 rounded-xl bg-gradient-to-br from-orange-500 to-orange-600 flex items-center justify-center shadow-lg relative overflow-hidden group">
-                <div className="absolute inset-0 bg-gradient-to-tr from-transparent via-white/20 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
-                <div className="absolute top-1/2 left-1/2 w-20 h-20 bg-orange-400/20 rounded-full blur-xl transform -translate-x-1/2 -translate-y-1/2"></div>
-                <Package className="h-7 w-7 text-white relative z-10" />
-              </div>
-              <div>
-                <p className="font-bold text-sm text-gray-800">Pago Seguro</p>
-                <p className="text-xs text-gray-600">Tarjeta y cripto</p>
-              </div>
-            </div>
-
-            <div className="flex flex-col items-center text-center gap-2">
-              <div className="h-14 w-14 rounded-xl bg-gradient-to-br from-pink-500 to-pink-600 flex items-center justify-center shadow-lg relative overflow-hidden group">
-                <div className="absolute inset-0 bg-gradient-to-tr from-transparent via-white/20 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
-                <div className="absolute top-1/2 left-1/2 w-20 h-20 bg-pink-400/20 rounded-full blur-xl transform -translate-x-1/2 -translate-y-1/2"></div>
-                <Award className="h-7 w-7 text-white relative z-10" />
-              </div>
-              <div>
-                <p className="font-bold text-sm text-gray-800">Soporte Experto</p>
-                <p className="text-xs text-gray-600">Asistencia 24/7</p>
-              </div>
-            </div>
+            ))}
           </div>
         </div>
       </section>
 
-      <HomeBestSellers title="Más Vendidos" />
+      <HomeBestSellers title={t('Best Sellers')} />
 
-      {/* <BrandsShowcase /> */}
-
-      <HomeAppliances title="Electrodomésticos Destacados" />
+      <HomeAppliances title={lang === 'pt' ? 'Eletrodomésticos em Destaque' : 'Electrodomésticos Destacados'} />
 
       {activeCTAs.length > 0 && activeCTAs[0] && (
         <section className="py-0 relative overflow-hidden">
@@ -149,19 +102,19 @@ export default async function HomePage() {
                   className="text-4xl md:text-5xl lg:text-7xl font-bold text-balance leading-tight drop-shadow-lg"
                   style={{ color: activeCTAs[0].textColor || "#ffffff" }}
                 >
-                  {activeCTAs[0].title}
+                  {lang === 'pt' ? (activeCTAs[0].title_pt || activeCTAs[0].title) : activeCTAs[0].title}
                 </h2>
                 <p
                   className="text-lg md:text-xl lg:text-2xl opacity-95 text-pretty max-w-lg drop-shadow-md"
                   style={{ color: activeCTAs[0].textColor || "#ffffff" }}
                 >
-                  {activeCTAs[0].description}
+                  {lang === 'pt' ? (activeCTAs[0].description_pt || activeCTAs[0].description) : activeCTAs[0].description}
                 </p>
                 <Button
                   size="lg"
                   className="mt-6 h-14 px-10 text-lg shadow-2xl hover:shadow-3xl hover:scale-105 transition-all duration-300 bg-gradient-to-r from-yellow-400 via-yellow-500 to-yellow-600 text-black hover:from-yellow-500 hover:via-yellow-600 hover:to-yellow-700 border-2 border-yellow-600"
                 >
-                  {activeCTAs[0].buttonText}
+                  {lang === 'pt' ? (activeCTAs[0].buttonText_pt || activeCTAs[0].buttonText) : activeCTAs[0].buttonText}
                   <ArrowRight className="ml-2 h-5 w-5 group-hover:translate-x-1 transition-transform" />
                 </Button>
               </div>
@@ -187,7 +140,7 @@ export default async function HomePage() {
         </section>
       )}
 
-      <HomeNewArrivals title="Recién Llegados" />
+      <HomeNewArrivals title={t('New Arrivals')} />
     </div>
   )
 }

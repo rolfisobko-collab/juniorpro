@@ -57,11 +57,11 @@ function VerifyEmailContent() {
 
   if (isLoading) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-gray-50">
+      <div className="fixed inset-0 flex items-center justify-center bg-gradient-to-br from-slate-900 via-blue-950 to-blue-900">
         <div className="text-center">
-          <Loader2 className="h-12 w-12 animate-spin text-blue-500 mx-auto mb-4" />
-          <h2 className="text-xl font-semibold text-gray-900">Verificando email...</h2>
-          <p className="text-gray-600 mt-2">Por favor espera un momento</p>
+          <Loader2 className="h-12 w-12 animate-spin text-blue-300 mx-auto mb-4" />
+          <h2 className="text-xl font-semibold text-white">Verificando email...</h2>
+          <p className="text-blue-200 mt-2">Por favor esperá un momento</p>
         </div>
       </div>
     )
@@ -69,18 +69,16 @@ function VerifyEmailContent() {
 
   if (isVerified) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-gray-50">
-        <div className="max-w-md w-full mx-4">
-          <div className="bg-white rounded-2xl shadow-xl p-8 text-center border border-gray-200">
-            <div className="h-16 w-16 rounded-full bg-green-100 flex items-center justify-center mx-auto mb-4">
-              <CheckCircle className="h-8 w-8 text-green-500" />
+      <div className="fixed inset-0 flex items-center justify-center bg-gradient-to-br from-slate-900 via-blue-950 to-blue-900">
+        <div className="w-full max-w-md mx-6">
+          <div className="bg-white/95 backdrop-blur-sm rounded-3xl shadow-2xl p-8 text-center border border-white/20">
+            <div className="w-20 h-20 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-5">
+              <CheckCircle className="h-10 w-10 text-green-600" />
             </div>
-            <h1 className="text-2xl font-bold text-gray-900 mb-3">¡Email Verificado!</h1>
-            <p className="text-gray-600 mb-6">
-              Tu cuenta ha sido verificada exitosamente. Serás redirigido automáticamente...
-            </p>
+            <h1 className="text-2xl font-bold text-gray-900 mb-2">¡Email verificado!</h1>
+            <p className="text-gray-500 text-sm mb-6">Tu cuenta ha sido activada exitosamente. Serás redirigido automáticamente...</p>
             <Link href="/">
-              <Button className="w-full h-12 bg-gradient-to-r from-green-500 to-green-600 hover:from-green-600 hover:to-green-700 text-white font-semibold rounded-xl shadow-lg hover:shadow-xl transform hover:scale-[1.02] transition-all duration-300">
+              <Button className="w-full h-12 bg-gradient-to-r from-blue-600 to-blue-700 hover:from-blue-700 hover:to-blue-800 text-white font-semibold rounded-xl shadow-lg">
                 Ir al inicio
               </Button>
             </Link>
@@ -91,22 +89,22 @@ function VerifyEmailContent() {
   }
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gray-50">
-      <div className="max-w-md w-full mx-4">
-        <div className="bg-white rounded-2xl shadow-xl p-8 text-center border border-gray-200">
-          <div className="h-16 w-16 rounded-full bg-red-100 flex items-center justify-center mx-auto mb-4">
-            <AlertCircle className="h-8 w-8 text-red-500" />
+    <div className="fixed inset-0 flex items-center justify-center bg-gradient-to-br from-slate-900 via-blue-950 to-blue-900">
+      <div className="w-full max-w-md mx-6">
+        <div className="bg-white/95 backdrop-blur-sm rounded-3xl shadow-2xl p-8 text-center border border-white/20">
+          <div className="w-20 h-20 bg-red-100 rounded-full flex items-center justify-center mx-auto mb-5">
+            <AlertCircle className="h-10 w-10 text-red-500" />
           </div>
-          <h1 className="text-2xl font-bold text-gray-900 mb-3">Error de Verificación</h1>
-          <p className="text-gray-600 mb-6">{error}</p>
+          <h1 className="text-2xl font-bold text-gray-900 mb-2">Error de verificación</h1>
+          <p className="text-gray-500 text-sm mb-6">{error}</p>
           <div className="space-y-3">
             <Link href="/login">
-              <Button className="w-full h-12 bg-gradient-to-r from-blue-500 to-blue-600 hover:from-blue-600 hover:to-blue-700 text-white font-semibold rounded-xl shadow-lg hover:shadow-xl transform hover:scale-[1.02] transition-all duration-300">
+              <Button className="w-full h-12 bg-gradient-to-r from-blue-600 to-blue-700 hover:from-blue-700 hover:to-blue-800 text-white font-semibold rounded-xl shadow-lg">
                 Ir al inicio de sesión
               </Button>
             </Link>
             <Link href="/register">
-              <Button variant="outline" className="w-full h-12 border-2 border-gray-300 hover:border-blue-500 text-gray-700 hover:text-blue-600 font-semibold rounded-xl transition-all duration-300">
+              <Button variant="outline" className="w-full h-11 border-2 border-gray-200 rounded-xl text-gray-700 hover:border-blue-400">
                 Crear una cuenta
               </Button>
             </Link>

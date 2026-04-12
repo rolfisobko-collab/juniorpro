@@ -6,6 +6,7 @@ import { useEffect } from "react"
 import { useRouter, usePathname } from "next/navigation"
 import { useAdmin } from "@/lib/admin-context"
 import { AdminSidebar } from "@/components/admin-sidebar"
+import { PanelTopbar } from "@/components/panel-topbar"
 
 export function PanelLayout({ children }: { children: React.ReactNode }) {
   const router = useRouter()
@@ -38,9 +39,12 @@ export function PanelLayout({ children }: { children: React.ReactNode }) {
   }
 
   return (
-    <div className="flex h-screen">
+    <div className="flex h-screen bg-[#f4f5f7]">
       <AdminSidebar />
-      <main className="flex-1 overflow-y-auto bg-[#fbfcfd] ml-64">{children}</main>
+      <div className="flex-1 ml-64 flex flex-col h-screen overflow-hidden">
+        <PanelTopbar />
+        <main className="flex-1 overflow-y-auto">{children}</main>
+      </div>
     </div>
   )
 }

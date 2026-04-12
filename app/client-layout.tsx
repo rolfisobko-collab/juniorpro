@@ -24,10 +24,11 @@ export default function ClientLayout({
   const isPanelRoute = pathname?.startsWith("/panel")
   const isLinksRoute = pathname === "/links"
   const isAuthRoute =
-    pathname?.startsWith("/(auth)") ||
     pathname === "/login" ||
     pathname === "/register" ||
-    pathname === "/reset-password"
+    pathname?.startsWith("/reset-password") ||
+    pathname?.startsWith("/verify") ||
+    pathname?.startsWith("/forgot-password")
   
   // Detectar si es página 404 o no encontrada
   const isNotFoundPage = 
@@ -47,7 +48,9 @@ export default function ClientLayout({
               <CurrencyProvider>
                 <ScrollToTop />
                 {!isPanelRoute && !isAuthRoute && !isNotFoundPage && !isLinksRoute && <Header />}
-                {children}
+                <div className={(!isPanelRoute && !isAuthRoute && !isNotFoundPage && !isLinksRoute) ? "pt-16 md:pt-[106px]" : ""}>
+                  {children}
+                </div>
                 {!isPanelRoute && !isAuthRoute && !isNotFoundPage && !isLinksRoute && <Footer />}
                 {!isPanelRoute && !isAuthRoute && !isNotFoundPage && !isLinksRoute && <WhatsAppFloatingButton />}
                 <Toaster />

@@ -135,7 +135,7 @@ export default function AdminCartsPage() {
                   <TableCell>
                     <div>
                       <p className="font-medium">{cart.items.length} producto(s)</p>
-                      <p className="text-sm text-muted-foreground">{cart.items[0].productName}</p>
+                      <p className="text-sm text-muted-foreground">{cart.items[0]?.productName ?? "—"}</p>
                     </div>
                   </TableCell>
                   <TableCell className="font-semibold">${cart.total.toLocaleString()}</TableCell>

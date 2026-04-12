@@ -233,7 +233,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       }
       
       // Firebase envía email automático - mostrar mensaje
-      throw new Error("VERIFY_NEEDED:Revisa tu email para verificar tu cuenta. Firebase envió el link automáticamente.")
+      throw new Error("VERIFY_NEEDED:Revisa tu email para verificar tu cuenta. Te enviamos un link de verificación.")
 
     } catch (error) {
       console.error("Register error:", error)

@@ -39,53 +39,22 @@ export default function ResetPasswordPage() {
 
   if (submitted) {
     return (
-      <div className="min-h-screen grid md:grid-cols-2">
-        {/* Left Side - Visual */}
-        <div className="hidden md:flex flex-col justify-center items-center bg-gradient-to-br from-blue-900 via-blue-800 to-blue-950 p-12 text-white relative overflow-hidden">
-          <div className="absolute inset-0 bg-[url('/grid.svg')] opacity-10"></div>
-          <div className="absolute inset-0 bg-gradient-to-t from-blue-950/50 via-transparent to-blue-900/30"></div>
-          <div className="relative z-10 max-w-md flex flex-col items-center">
-            <Link href="/" className="mb-8">
-              <img 
-                src="/logo-optimized.png" 
-                alt="TechZone" 
-                className="h-32 w-auto object-contain drop-shadow-2xl"
-                width="400"
-                height="136"
-              />
-            </Link>
-          </div>
-        </div>
-
-        {/* Right Side - Success Message */}
-        <div className="flex items-center justify-center p-8 bg-gray-50">
-          <div className="w-full max-w-md">
-            {/* Mobile Logo */}
-            <Link href="/" className="md:hidden flex items-center justify-center mb-8">
-              <img 
-                src="/logo-optimized.png" 
-                alt="TechZone" 
-                className="h-12 w-auto object-contain"
-                width="150"
-                height="51"
-              />
-            </Link>
-
-            <div className="bg-white rounded-2xl shadow-xl p-8 text-center border border-gray-200">
-              <div className="h-16 w-16 rounded-full bg-blue-100 flex items-center justify-center mx-auto mb-4">
-                <Mail className="h-8 w-8 text-blue-500" />
-              </div>
-              <h1 className="text-2xl font-bold text-gray-900 mb-3">Revisa tu email</h1>
-              <p className="text-gray-600 mb-6">
-                Te hemos enviado instrucciones para restablecer tu contraseña a <strong className="text-blue-600">{email}</strong>
-              </p>
-              <Link href="/login">
-                <Button className="w-full h-12 bg-gradient-to-r from-blue-500 via-blue-600 to-blue-700 hover:from-blue-600 hover:via-blue-700 hover:to-blue-800 text-white font-semibold rounded-xl shadow-lg hover:shadow-xl transform hover:scale-[1.02] transition-all duration-300 border border-blue-400/20">
-                  <ArrowLeft className="mr-2 h-5 w-5" />
-                  Volver al inicio de sesión
-                </Button>
-              </Link>
+      <div className="fixed inset-0 flex items-center justify-center bg-gradient-to-br from-slate-900 via-blue-950 to-blue-900">
+        <div className="w-full max-w-md mx-6">
+          <div className="bg-white/95 backdrop-blur-sm rounded-3xl shadow-2xl p-8 text-center border border-white/20">
+            <div className="w-20 h-20 bg-blue-100 rounded-full flex items-center justify-center mx-auto mb-5">
+              <Mail className="h-10 w-10 text-blue-600" />
             </div>
+            <h1 className="text-2xl font-bold text-gray-900 mb-2">Revisá tu email</h1>
+            <p className="text-gray-500 text-sm mb-1">Te enviamos instrucciones a:</p>
+            <p className="font-semibold text-gray-900 mb-5">{email}</p>
+            <p className="text-sm text-gray-500 mb-6">Hacé click en el link del email para restablecer tu contraseña.</p>
+            <Link href="/login">
+              <Button className="w-full h-12 bg-gradient-to-r from-blue-600 to-blue-700 hover:from-blue-700 hover:to-blue-800 text-white font-semibold rounded-xl shadow-lg">
+                <ArrowLeft className="mr-2 h-4 w-4" />
+                Volver al inicio de sesión
+              </Button>
+            </Link>
           </div>
         </div>
       </div>
@@ -93,83 +62,70 @@ export default function ResetPasswordPage() {
   }
 
   return (
-    <div className="min-h-screen grid md:grid-cols-2">
-      {/* Left Side - Visual */}
-      <div className="hidden md:flex flex-col justify-center items-center bg-gradient-to-br from-blue-900 via-blue-800 to-blue-950 p-12 text-white relative overflow-hidden">
-        <div className="absolute inset-0 bg-[url('/grid.svg')] opacity-10"></div>
-        <div className="absolute inset-0 bg-gradient-to-t from-blue-950/50 via-transparent to-blue-900/30"></div>
-        <div className="relative z-10 max-w-md flex flex-col items-center">
-          <Link href="/" className="mb-8">
-            <img 
-              src="/logo-optimized.png" 
-              alt="TechZone" 
-              className="h-32 w-auto object-contain drop-shadow-2xl"
-              width="400"
-              height="136"
-            />
+    <div className="fixed inset-0 flex bg-gradient-to-br from-slate-900 via-blue-950 to-blue-900 overflow-hidden">
+      {/* Panel izquierdo */}
+      <div className="hidden lg:flex lg:w-1/2 flex-col items-center justify-center relative p-12">
+        <div className="relative z-10 text-center">
+          <Link href="/">
+            <img src="/logo-optimized.png" alt="TechZone" className="h-24 w-auto object-contain drop-shadow-2xl mx-auto mb-8" />
           </Link>
+          <h2 className="text-3xl font-bold text-white mb-3">Recuperá tu acceso</h2>
+          <p className="text-blue-200 text-lg max-w-xs mx-auto">Te enviamos un link para que puedas crear una nueva contraseña</p>
         </div>
       </div>
 
-      {/* Right Side - Form */}
-      <div className="flex items-center justify-center p-8 bg-gray-50">
+      {/* Panel derecho */}
+      <div className="w-full lg:w-1/2 flex items-center justify-center p-6">
         <div className="w-full max-w-md">
-          {/* Mobile Logo */}
-          <Link href="/" className="md:hidden flex items-center justify-center mb-8">
-            <img 
-              src="/logo-optimized.png" 
-              alt="TechZone" 
-              className="h-12 w-auto object-contain"
-              width="150"
-              height="51"
-            />
+          <Link href="/" className="flex justify-center mb-8 lg:hidden">
+            <img src="/logo-optimized.png" alt="TechZone" className="h-14 w-auto object-contain drop-shadow-lg" />
           </Link>
 
-          <div className="text-center mb-8">
-            <h1 className="text-3xl font-bold text-gray-900 mb-2">Recuperar Contraseña</h1>
-            <p className="text-gray-600">
-              Ingresa tu email y te enviaremos instrucciones para restablecer tu contraseña
-            </p>
-          </div>
+          <div className="bg-white/95 backdrop-blur-sm rounded-3xl shadow-2xl p-8 border border-white/20">
+            <div className="mb-6">
+              <h1 className="text-2xl font-bold text-gray-900 mb-1">Recuperar contraseña</h1>
+              <p className="text-sm text-gray-500">Ingresá tu email y te enviamos el link de recuperación</p>
+            </div>
 
-          <form onSubmit={handleSubmit} className="space-y-4">
             {error && (
-              <div className="mb-6 p-3 bg-red-50 border border-red-200 rounded-lg">
+              <div className="mb-4 p-3.5 bg-red-50 border border-red-200 rounded-xl flex items-start gap-2">
+                <svg className="w-4 h-4 text-red-500 mt-0.5 flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}><path strokeLinecap="round" strokeLinejoin="round" d="M12 9v2m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>
                 <p className="text-red-600 text-sm">{error}</p>
               </div>
             )}
 
-            <div className="space-y-2">
-              <Label htmlFor="email" className="text-sm font-medium text-gray-700">
-                Correo Electrónico
-              </Label>
-              <div className="relative">
-                <Mail className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-gray-400" />
-                <Input
-                  id="email"
-                  type="email"
-                  placeholder="tu@email.com"
-                  value={email}
-                  onChange={(e) => setEmail(e.target.value)}
-                  className="pl-10 h-11 border-gray-300 focus:border-blue-500"
-                  required
-                />
+            <form onSubmit={handleSubmit} className="space-y-4">
+              <div className="space-y-1.5">
+                <Label htmlFor="email" className="text-sm font-semibold text-gray-700">Correo electrónico</Label>
+                <div className="relative">
+                  <Mail className="absolute left-3.5 top-1/2 h-4 w-4 -translate-y-1/2 text-gray-400" />
+                  <Input id="email" type="email" placeholder="tu@email.com" value={email}
+                    onChange={(e) => setEmail(e.target.value)}
+                    className="pl-10 h-12 border-gray-200 bg-gray-50 focus:bg-white focus:border-blue-500 focus:ring-2 focus:ring-blue-500/15 rounded-xl transition-all" required />
+                </div>
               </div>
+
+              <Button type="submit"
+                className="w-full h-12 bg-gradient-to-r from-blue-600 to-blue-700 hover:from-blue-700 hover:to-blue-800 text-white font-semibold rounded-xl shadow-lg hover:shadow-xl transition-all duration-200"
+                disabled={isLoading}>
+                {isLoading ? (
+                  <span className="flex items-center gap-2"><svg className="animate-spin h-4 w-4" fill="none" viewBox="0 0 24 24"><circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"/><path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v8z"/></svg>Enviando...</span>
+                ) : "Enviar instrucciones"}
+              </Button>
+            </form>
+
+            <div className="mt-5 text-center">
+              <Link href="/login" className="inline-flex items-center gap-1.5 text-sm text-blue-600 hover:text-blue-700 font-medium transition-colors">
+                <ArrowLeft className="h-4 w-4" />
+                Volver al inicio de sesión
+              </Link>
             </div>
+          </div>
 
-            <Button
-              type="submit"
-              className="w-full h-12 bg-gradient-to-r from-blue-500 via-blue-600 to-blue-700 hover:from-blue-600 hover:via-blue-700 hover:to-blue-800 text-white font-semibold rounded-xl shadow-lg hover:shadow-xl transform hover:scale-[1.02] transition-all duration-300 border border-blue-400/20"
-              disabled={isLoading}
-            >
-              {isLoading ? "Enviando..." : "Enviar Instrucciones"}
-            </Button>
-          </form>
-
-          <div className="mt-6 text-center">
-            <Link href="/login" className="text-blue-500 hover:text-blue-600 font-medium inline-flex items-center gap-2">
-              <ArrowLeft className="h-4 w-4" />
-              Volver al inicio de sesión
+          <div className="mt-5 text-center">
+            <Link href="/" className="inline-flex items-center gap-1.5 text-sm text-blue-300/70 hover:text-blue-200 transition-colors">
+              <svg className="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z" /><polyline points="9 22 9 12 15 12 15 22" /></svg>
+              Volver al inicio
             </Link>
           </div>
         </div>

@@ -86,31 +86,16 @@ function VerifyEmailContent() {
 
   if (isVerified) {
     return (
-      <div className="min-h-screen grid md:grid-cols-2">
-        {/* Left Side - Visual */}
-        <div className="hidden md:flex flex-col justify-center items-center bg-gradient-to-br from-green-900 via-green-800 to-green-950 p-12 text-white relative overflow-hidden">
-          <div className="absolute inset-0 bg-[url('/grid.svg')] opacity-10"></div>
-          <div className="relative z-10 max-w-md flex flex-col items-center">
-            <CheckCircle className="w-24 h-24 mb-8 text-green-300" />
-            <h1 className="text-4xl font-bold mb-4">¡Verificado!</h1>
-            <p className="text-xl text-green-100">Tu cuenta ha sido verificada exitosamente</p>
-          </div>
-        </div>
-
-        {/* Right Side - Success Message */}
-        <div className="flex items-center justify-center p-8 bg-gray-50">
-          <div className="w-full max-w-md text-center">
-            <div className="md:hidden mb-8">
-              <CheckCircle className="w-16 h-16 mx-auto mb-4 text-green-600" />
+      <div className="fixed inset-0 flex items-center justify-center bg-gradient-to-br from-slate-900 via-blue-950 to-blue-900">
+        <div className="w-full max-w-md mx-6">
+          <div className="bg-white/95 backdrop-blur-sm rounded-3xl shadow-2xl p-8 text-center border border-white/20">
+            <div className="w-20 h-20 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-5">
+              <CheckCircle className="h-10 w-10 text-green-600" />
             </div>
-            <h1 className="text-3xl font-bold text-gray-900 mb-4">¡Email Verificado!</h1>
-            <p className="text-gray-600 mb-8">
-              Tu cuenta ha sido verificada exitosamente. Serás redirigido automáticamente...
-            </p>
-            <Button 
-              onClick={() => router.push("/")}
-              className="w-full"
-            >
+            <h1 className="text-2xl font-bold text-gray-900 mb-2">¡Email verificado!</h1>
+            <p className="text-gray-500 text-sm mb-6">Tu cuenta fue activada. Serás redirigido automáticamente...</p>
+            <Button onClick={() => router.push("/")}
+              className="w-full h-12 bg-gradient-to-r from-blue-600 to-blue-700 hover:from-blue-700 hover:to-blue-800 text-white font-semibold rounded-xl shadow-lg">
               Ir al inicio
             </Button>
           </div>
@@ -120,68 +105,39 @@ function VerifyEmailContent() {
   }
 
   return (
-    <div className="min-h-screen grid md:grid-cols-2">
-      {/* Left Side - Visual */}
-      <div className="hidden md:flex flex-col justify-center items-center bg-gradient-to-br from-blue-900 via-blue-800 to-blue-950 p-12 text-white relative overflow-hidden">
-        <div className="absolute inset-0 bg-[url('/grid.svg')] opacity-10"></div>
-        <div className="absolute inset-0 bg-gradient-to-t from-blue-950/50 via-transparent to-blue-900/30"></div>
-        <div className="relative z-10 max-w-md flex flex-col items-center">
-          <Link href="/" className="mb-8">
-            <img 
-              src="/logo-optimized.png" 
-              alt="TechZone" 
-              className="h-32 w-auto object-contain drop-shadow-2xl"
-              width="400"
-              height="136"
-            />
+    <div className="fixed inset-0 flex bg-gradient-to-br from-slate-900 via-blue-950 to-blue-900 overflow-hidden">
+      {/* Panel izquierdo */}
+      <div className="hidden lg:flex lg:w-1/2 flex-col items-center justify-center p-12">
+        <div className="relative z-10 text-center">
+          <Link href="/">
+            <img src="/logo-optimized.png" alt="TechZone" className="h-24 w-auto object-contain drop-shadow-2xl mx-auto mb-8" />
           </Link>
-          <Mail className="w-24 h-24 mb-8 text-blue-300" />
-          <h1 className="text-4xl font-bold mb-4">Verifica tu Email</h1>
-          <p className="text-xl text-blue-100">Te enviamos un código de 6 dígitos</p>
+          <div className="w-20 h-20 bg-blue-400/20 rounded-full flex items-center justify-center mx-auto mb-6">
+            <Mail className="w-10 h-10 text-blue-300" />
+          </div>
+          <h2 className="text-3xl font-bold text-white mb-3">Verificá tu email</h2>
+          <p className="text-blue-200 text-lg max-w-xs mx-auto">Te enviamos un código de 6 dígitos a tu correo</p>
         </div>
       </div>
 
-      {/* Right Side - Verification Form */}
-      <div className="flex items-center justify-center p-8 bg-gray-50">
+      {/* Panel derecho */}
+      <div className="w-full lg:w-1/2 flex items-center justify-center p-6">
         <div className="w-full max-w-md">
-          {/* Mobile Logo */}
-          <Link href="/" className="md:hidden flex items-center justify-center mb-8">
-            <img 
-              src="/logo-optimized.png" 
-              alt="TechZone" 
-              className="h-12 w-auto object-contain"
-              width="150"
-              height="51"
-            />
+          <Link href="/" className="flex justify-center mb-8 lg:hidden">
+            <img src="/logo-optimized.png" alt="TechZone" className="h-14 w-auto object-contain drop-shadow-lg" />
           </Link>
 
-          {/* Back Button */}
-          <Link 
-            href="/login"
-            className="inline-flex items-center text-sm text-gray-600 hover:text-gray-900 mb-6"
-          >
-            <ArrowLeft className="w-4 h-4 mr-2" />
-            Volver al login
-          </Link>
-
-          <div className="bg-white rounded-xl shadow-lg p-8">
-            <div className="md:hidden text-center mb-6">
-              <Mail className="w-16 h-16 mx-auto mb-4 text-blue-600" />
-              <h1 className="text-2xl font-bold text-gray-900 mb-2">Verifica tu Email</h1>
-            </div>
-
+          <div className="bg-white/95 backdrop-blur-sm rounded-3xl shadow-2xl p-8 border border-white/20">
             <div className="mb-6">
-              <p className="text-gray-600">
-                Enviamos un código de verificación a:<br />
-                <span className="font-semibold text-gray-900">{email}</span>
+              <h1 className="text-2xl font-bold text-gray-900 mb-1">Verificá tu email</h1>
+              <p className="text-sm text-gray-500">
+                Enviamos un código a <span className="font-semibold text-gray-800">{email}</span>
               </p>
             </div>
 
-            <form onSubmit={handleSubmit} className="space-y-6">
-              <div>
-                <Label htmlFor="code" className="block text-sm font-medium text-gray-700 mb-2">
-                  Código de verificación
-                </Label>
+            <form onSubmit={handleSubmit} className="space-y-4">
+              <div className="space-y-1.5">
+                <Label htmlFor="code" className="text-sm font-semibold text-gray-700">Código de verificación</Label>
                 <Input
                   id="code"
                   type="text"
@@ -189,45 +145,47 @@ function VerifyEmailContent() {
                   value={code}
                   onChange={(e) => setCode(e.target.value.replace(/\D/g, ""))}
                   placeholder="000000"
-                  className="text-center text-2xl font-mono"
+                  className="text-center text-2xl font-mono h-14 border-gray-200 bg-gray-50 focus:bg-white focus:border-blue-500 focus:ring-2 focus:ring-blue-500/15 rounded-xl tracking-[0.5em] transition-all"
                   required
                 />
               </div>
 
               {error && (
-                <div className="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded-lg text-sm">
-                  {error}
+                <div className="p-3.5 bg-red-50 border border-red-200 rounded-xl flex items-start gap-2">
+                  <svg className="w-4 h-4 text-red-500 mt-0.5 flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}><path strokeLinecap="round" strokeLinejoin="round" d="M12 9v2m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>
+                  <p className="text-red-600 text-sm">{error}</p>
                 </div>
               )}
 
               {resendMessage && (
-                <div className="bg-green-50 border border-green-200 text-green-700 px-4 py-3 rounded-lg text-sm">
-                  {resendMessage}
+                <div className="p-3.5 bg-green-50 border border-green-200 rounded-xl">
+                  <p className="text-green-700 text-sm">{resendMessage}</p>
                 </div>
               )}
 
-              <Button 
-                type="submit" 
-                className="w-full"
-                disabled={isLoading || code.length !== 6}
-              >
-                {isLoading ? "Verificando..." : "Verificar Email"}
+              <Button type="submit"
+                className="w-full h-12 bg-gradient-to-r from-blue-600 to-blue-700 hover:from-blue-700 hover:to-blue-800 text-white font-semibold rounded-xl shadow-lg hover:shadow-xl transition-all duration-200"
+                disabled={isLoading || code.length !== 6}>
+                {isLoading ? (
+                  <span className="flex items-center gap-2"><svg className="animate-spin h-4 w-4" fill="none" viewBox="0 0 24 24"><circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"/><path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v8z"/></svg>Verificando...</span>
+                ) : "Verificar email"}
               </Button>
             </form>
 
-            <div className="mt-6 text-center">
-              <p className="text-sm text-gray-600 mb-2">
-                ¿No recibiste el código?
-              </p>
-              <Button
-                variant="outline"
-                onClick={handleResend}
-                disabled={isLoading}
-                className="text-sm"
-              >
+            <div className="mt-5 text-center">
+              <p className="text-sm text-gray-500 mb-2">¿No recibiste el código?</p>
+              <button onClick={handleResend} disabled={isLoading}
+                className="text-sm text-blue-600 hover:text-blue-700 font-semibold transition-colors disabled:opacity-50">
                 {isLoading ? "Enviando..." : "Reenviar código"}
-              </Button>
+              </button>
             </div>
+          </div>
+
+          <div className="mt-5 text-center">
+            <Link href="/login" className="inline-flex items-center gap-1.5 text-sm text-blue-300/70 hover:text-blue-200 transition-colors">
+              <ArrowLeft className="h-4 w-4" />
+              Volver al login
+            </Link>
           </div>
         </div>
       </div>
