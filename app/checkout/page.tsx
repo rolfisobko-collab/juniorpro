@@ -21,7 +21,7 @@ export default function CheckoutPage() {
   const router = useRouter()
   const { toast } = useToast()
   const { items, total, itemCount, clearCart } = useCart()
-  const { formatPrice } = useCurrency()
+  const { formatPrice, convertPrice, exchangeRates } = useCurrency()
   
   // Redirigir si el carrito esta vacio o si no esta logueado
   useEffect(() => {
@@ -110,7 +110,9 @@ export default function CheckoutPage() {
   const generateBancardProcessId = async () => {
     try {
       setPaymentLoading(true)
-      const totalAmount = total + (shippingData.cost || 0)
+      const totalUSD = total + (shippingData.cost || 0)
+      // Bancard siempre recibe PYG entero (sin decimales)
+      const totalPYG = Math.round(totalUSD * (exchangeRates.PYG || 7350))
       
       const response = await fetch('/api/bancard/create-single-buy', {
         method: 'POST',
@@ -118,7 +120,8 @@ export default function CheckoutPage() {
           'Content-Type': 'application/json',
         },
         body: JSON.stringify({
-          amount: totalAmount,
+          amount: totalPYG,
+          currency: 'PYG',
           description: `Compra JuniorWeb - ${itemCount} productos`,
           return_url: `${window.location.origin}/checkout/success`,
           cancel_url: `${window.location.origin}/checkout/cancel`
