@@ -77,7 +77,10 @@ export async function POST(request: Request) {
     }
 
     if (data.status !== "success") {
-      throw new Error('Error en Bancard: ' + (data.messages || 'Error desconocido'))
+      const msg = Array.isArray(data.messages)
+        ? data.messages.map((m: any) => m.dsc || m.key).join(', ')
+        : (data.messages || 'Error desconocido')
+      throw new Error('Error en Bancard: ' + msg)
     }
 
     console.log('✅ Process_id generado:', data.process_id)

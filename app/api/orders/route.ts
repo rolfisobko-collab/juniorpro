@@ -88,8 +88,8 @@ export async function POST(req: NextRequest) {
         items: {
           create: orderData.items.map((item: any) => ({
             productId: item.productId,
-            name: `Producto ${item.productId}`,
-            image: "/placeholder.jpg",
+            name: item.name || `Producto ${item.productId}`,
+            image: item.image || "/placeholder.jpg",
             price: item.price,
             quantity: item.quantity,
           })),
