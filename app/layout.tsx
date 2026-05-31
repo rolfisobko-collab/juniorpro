@@ -35,6 +35,18 @@ export default async function RootLayout({
           fetchPriority="high"
         />
         <Script
+          src="https://www.googletagmanager.com/gtag/js?id=G-J290XBN46Y"
+          strategy="afterInteractive"
+        />
+        <Script id="google-analytics" strategy="afterInteractive">
+          {`
+            window.dataLayer = window.dataLayer || [];
+            function gtag(){dataLayer.push(arguments);}
+            gtag('js', new Date());
+            gtag('config', 'G-J290XBN46Y');
+          `}
+        </Script>
+        <Script
           src="https://www.gstatic.com/firebasejs/11.10.0/firebase-app.js"
           strategy="afterInteractive"
         />
