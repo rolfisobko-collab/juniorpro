@@ -14,7 +14,7 @@ const slides = [
   },
   {
     img: "/carousel-2.png",
-    href: "/products?category=electronics&subcategory=smartphones",
+    href: "/products?category=electronics&subcategory=smartfone",
     alt: "Samsung Galaxy S26 Ultra",
     bg: "#8B8FA8",
   },

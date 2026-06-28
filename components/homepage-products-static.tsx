@@ -53,7 +53,7 @@ const getBestSellers = unstable_cache(
 )
 
 const getAppliances = unstable_cache(
-  () => fetchSection({ category: "electrodomesticos", sort: "price_desc", limit: 10 }),
+  () => fetchSection({ category: "appliances", sort: "price_desc", limit: 10 }),
   ["home-appliances"], { revalidate: 300, tags: ["products"] }
 )
 
@@ -104,7 +104,7 @@ export async function HomeBestSellers({ title }: { title: string }) {
 
 export async function HomeAppliances({ title }: { title: string }) {
   const products = await getAppliances()
-  return <Section title={title} eyebrow="Categoría" href="/products?category=electrodomesticos" bg="white" products={products} />
+  return <Section title={title} eyebrow="Categoría" href="/products?category=appliances" bg="white" products={products} />
 }
 
 export async function HomeNewArrivals({ title }: { title: string }) {

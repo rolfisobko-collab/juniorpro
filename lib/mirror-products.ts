@@ -76,6 +76,50 @@ const CATEGORY_META: Record<string, { name: string; slug: string; description: s
 
 const APPLIANCE_SUBGROUPS = new Set(["AIRFRAYER", "ASPIRADOR", "CAFETEIRA", "PLANCHAS"])
 
+const CATEGORY_ALIASES: Record<string, string> = {
+  electrodomesticos: "appliances",
+  electrodomestico: "appliances",
+  appliances: "appliances",
+  computadoras: "electronics",
+  informatica: "electronics",
+  electronica: "electronics",
+  electronicos: "electronics",
+  electronics: "electronics",
+  celulares: "electronics",
+  smartphones: "electronics",
+}
+
+const SUBCATEGORY_ALIASES: Record<string, string> = {
+  smartphones: "smartfone",
+  smartphone: "smartfone",
+  celulares: "smartfone",
+  laptops: "notebook",
+  notebooks: "notebook",
+  computadoras: "notebook",
+  tablets: "tablet",
+  smartwatchs: "smartwatch",
+  smartwatches: "smartwatch",
+  auriculares: "audios",
+  headphones: "audios",
+  audio: "audios",
+  videojuegos: "videogame",
+  freidoras: "airfrayer",
+  "air-fryer": "airfrayer",
+  airfryer: "airfrayer",
+  aspiradoras: "aspirador",
+  cafeteras: "cafeteira",
+}
+
+export function normalizeMirrorCategory(value?: string | null) {
+  const key = normalizeSubcategory(value)
+  return CATEGORY_ALIASES[key] || key
+}
+
+export function normalizeMirrorSubcategory(value?: string | null) {
+  const key = normalizeSubcategory(value)
+  return SUBCATEGORY_ALIASES[key] || key
+}
+
 export function isMirrorCatalogEnabled() {
   return process.env.PRODUCT_SOURCE === "mirror" && Boolean(process.env.TECHZONE_DB_HOST)
 }
@@ -121,11 +165,11 @@ function categoryKeyFromRow(row: Pick<MirrorProductRow, "grp_descricao" | "sgr_d
   const subgroup = clean(row.sgr_descricao).toUpperCase()
   const name = `${row.prd_descricao || ""} ${row.prd_nomelongo || ""}`.toUpperCase()
 
+  if (APPLIANCE_SUBGROUPS.has(subgroup)) return "appliances"
+  if (name.includes("CAFETEIRA") || name.includes("AIRFRY") || name.includes("ASPIRADOR") || name.includes("PLANCHA")) return "appliances"
   if (group.includes("PERFUME")) return "perfumes"
   if (group.includes("BRINQUEDO")) return "toys"
   if (group.includes("VAPER")) return "vapers"
-  if (APPLIANCE_SUBGROUPS.has(subgroup)) return "appliances"
-  if (name.includes("CAFETEIRA") || name.includes("AIRFRY") || name.includes("ASPIRADOR") || name.includes("PLANCHA")) return "appliances"
   if (group.includes("ELECTRONICO")) return "electronics"
   return "general"
 }
@@ -288,18 +332,20 @@ function buildWhere(filters: MirrorFilters) {
     params.push(term, term, term, term, term, term, term, term)
   }
 
-  if (filters.category && filters.category !== "all") {
-    if (filters.category === "perfumes") where.push("g.grp_descricao LIKE '%PERFUME%'")
-    if (filters.category === "toys") where.push("g.grp_descricao LIKE '%BRINQUEDO%'")
-    if (filters.category === "vapers") where.push("g.grp_descricao LIKE '%VAPER%'")
-    if (filters.category === "electronics") where.push("g.grp_descricao LIKE '%ELECTRONICO%'")
-    if (filters.category === "appliances") where.push("sg.sgr_descricao IN ('AIRFRAYER','ASPIRADOR','CAFETEIRA','PLANCHAS')")
-    if (filters.category === "general") where.push("g.grp_descricao LIKE '%GERAL%'")
+  const category = normalizeMirrorCategory(filters.category)
+  if (category && category !== "all") {
+    if (category === "perfumes") where.push("g.grp_descricao LIKE '%PERFUME%'")
+    if (category === "toys") where.push("g.grp_descricao LIKE '%BRINQUEDO%'")
+    if (category === "vapers") where.push("g.grp_descricao LIKE '%VAPER%'")
+    if (category === "electronics") where.push("g.grp_descricao LIKE '%ELECTRONICO%'")
+    if (category === "appliances") where.push("sg.sgr_descricao IN ('AIRFRAYER','ASPIRADOR','CAFETEIRA','PLANCHAS')")
+    if (category === "general") where.push("g.grp_descricao LIKE '%GERAL%'")
   }
 
   if (filters.subcategory) {
+    const subcategory = normalizeMirrorSubcategory(filters.subcategory)
     where.push("LOWER(REPLACE(sg.sgr_descricao, ' ', '-')) = ?")
-    params.push(filters.subcategory.toLowerCase())
+    params.push(subcategory.toLowerCase())
   }
 
   if (filters.minPrice) {

@@ -1,5 +1,6 @@
 import { unstable_cache } from "next/cache"
 import { prisma } from "@/lib/db"
+import { getMirrorCategories, getMirrorProducts, isMirrorCatalogEnabled } from "@/lib/mirror-products"
 import { ProductCard } from "@/components/product-card"
 import { Button } from "@/components/ui/button"
 import { Search, Tag } from "lucide-react"
@@ -15,6 +16,18 @@ const getSearchResults = unstable_cache(
     const hasCategory = category && category.trim().length > 0
     if (!hasQ && !hasBrand && !hasCategory) return []
     try {
+      if (isMirrorCatalogEnabled()) {
+        const result = await getMirrorProducts({
+          search: hasQ ? q : brand,
+          category,
+          limit: 100,
+          page: 1,
+        })
+        return result.products
+          .filter((product: any) => !hasBrand || String(product.brand).toLowerCase() === String(brand).toLowerCase())
+          .slice(0, 80) as unknown as UnifiedProduct[]
+      }
+
       const where: any = {}
       if (hasBrand) where.brand = { equals: brand, mode: "insensitive" }
       if (hasCategory) where.categoryKey = category
@@ -42,19 +55,27 @@ const getSearchResults = unstable_cache(
       return []
     }
   },
-  ["search-results"],
+  ["search-results-mirror-v2"],
   { revalidate: 120, tags: ["products"] }
 )
 
 const getActiveBrands = unstable_cache(
-  async () => prisma.brand.findMany({ where: { active: true }, orderBy: { name: "asc" }, select: { id: true, name: true, slug: true, image: true } }),
-  ["brands-search-filter"],
+  async () => {
+    if (isMirrorCatalogEnabled()) return []
+    return prisma.brand.findMany({ where: { active: true }, orderBy: { name: "asc" }, select: { id: true, name: true, slug: true, image: true } })
+  },
+  ["brands-search-filter-mirror-v2"],
   { revalidate: 300, tags: ["brands"] }
 )
 
 const getActiveCategories = unstable_cache(
-  async () => prisma.category.findMany({ orderBy: { name: "asc" }, select: { key: true, name: true } }),
-  ["categories-search-filter"],
+  async () => {
+    if (isMirrorCatalogEnabled()) {
+      return (await getMirrorCategories()).map(category => ({ key: category.key, name: category.name }))
+    }
+    return prisma.category.findMany({ orderBy: { name: "asc" }, select: { key: true, name: true } })
+  },
+  ["categories-search-filter-mirror-v2"],
   { revalidate: 300, tags: ["categories"] }
 )
 
@@ -166,7 +187,7 @@ export default async function SearchPage({
               </p>
               <div className="flex gap-4 justify-center flex-wrap">
                 <Button asChild variant="outline"><Link href="/products?category=electronics">{lang === 'pt' ? 'Eletrônicos' : 'Electrónica'}</Link></Button>
-                <Button asChild variant="outline"><Link href="/products?category=electrodomesticos">{lang === 'pt' ? 'Eletrodomésticos' : 'Electrodomésticos'}</Link></Button>
+                <Button asChild variant="outline"><Link href="/products?category=appliances">{lang === 'pt' ? 'Eletrodomésticos' : 'Electrodomésticos'}</Link></Button>
               </div>
             </div>
           )}

@@ -67,7 +67,7 @@ export default async function HomePage() {
             {[
               { icon: Truck, label: t('Fast Delivery'), sub: t('Same day shipping'), accent: "#009FE3" },
               { icon: ShieldCheck, label: t('Official Warranty'), sub: t('Up to 30 days'), accent: "#10b981" },
-              { icon: Zap, label: t('Secure Payment'), sub: "Bancard", accent: "#f59e0b" },
+              { icon: Zap, label: "Pedido simple", sub: "Pago a coordinar", accent: "#f59e0b" },
               { icon: Award, label: t('Expert Support'), sub: t('24/7 assistance'), accent: "#a855f7" },
             ].map(({ icon: Icon, label, sub, accent }) => (
               <div key={label} className="flex items-center gap-3 px-6 py-5">

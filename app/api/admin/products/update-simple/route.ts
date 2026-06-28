@@ -1,9 +1,13 @@
 import { NextResponse } from "next/server"
 import { prisma } from "@/lib/db"
+import { requireAdminId } from "@/lib/admin-session"
 import { isMirrorCatalogEnabled, saveMirrorImageOverride } from "@/lib/mirror-products"
 
 export async function PUT(req: Request) {
   try {
+    const adminId = await requireAdminId()
+    if (!adminId) return NextResponse.json({ error: "Unauthorized" }, { status: 401 })
+
     const body = await req.json()
     const id = body.id // Obtener ID del body en lugar de la URL
     

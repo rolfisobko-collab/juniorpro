@@ -165,20 +165,45 @@ export default function BulkImagesPage() {
     const entry = entries[index]
     if (!entry) return
     try {
+      setEntries(prev => {
+        const next = [...prev]
+        next[index] = { ...next[index], status: "searching" }
+        return next
+      })
+
+      const importRes = await fetch("/api/admin/images/import-url", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        credentials: "include",
+        body: JSON.stringify({ imageUrl, folder: "juniorweb/products" }),
+      })
+      const importData = await importRes.json()
+      if (!importRes.ok || !importData.url) throw new Error(importData.error || "No se pudo importar la imagen")
+      const cloudinaryUrl = importData.url as string
+
       const res = await fetch("/api/admin/products/update-simple", {
         method: "PUT",
         headers: { "Content-Type": "application/json" },
         credentials: "include",
-        body: JSON.stringify({ id: entry.product.id, image: imageUrl }),
+        body: JSON.stringify({ id: entry.product.id, image: cloudinaryUrl }),
       })
       if (!res.ok) throw new Error()
       setEntries(prev => {
         const next = [...prev]
-        next[index] = { ...next[index], status: "saved", selected: imageUrl }
+        next[index] = { ...next[index], status: "saved", selected: cloudinaryUrl }
         return next
       })
-    } catch {
-      toast({ title: "Error al guardar", variant: "destructive" })
+    } catch (error) {
+      setEntries(prev => {
+        const next = [...prev]
+        next[index] = { ...next[index], status: "error" }
+        return next
+      })
+      toast({
+        title: "Error al guardar",
+        description: error instanceof Error ? error.message : "No se pudo copiar la imagen a Cloudinary",
+        variant: "destructive",
+      })
     }
   }, [entries, toast])
 
