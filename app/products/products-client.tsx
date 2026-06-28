@@ -147,15 +147,15 @@ export default function ProductsClient({
         </div>
 
         {/* Categorías */}
-        <div className="container mx-auto px-4 pb-0">
-          <div className="flex items-center gap-2 overflow-x-auto pb-0 scrollbar-hide">
+        <div className="container mx-auto px-4 pb-4">
+          <div className="flex flex-wrap items-center gap-2">
             <button
               onClick={() => { setSelectedCategory("all"); setSelectedSubcategory("") }}
               disabled={loading}
-              className={`flex-shrink-0 px-4 py-2.5 rounded-t-xl text-sm font-semibold transition-all duration-200 border-b-2 ${
+              className={`px-4 py-2.5 rounded-full text-sm font-semibold transition-all duration-200 border ${
                 selectedCategory === "all"
-                  ? "border-[#009FE3] text-[#009FE3] bg-blue-50"
-                  : "border-transparent text-gray-500 hover:text-gray-800 hover:bg-gray-50"
+                  ? "border-[#009FE3] text-[#009FE3] bg-blue-50 shadow-sm"
+                  : "border-gray-200 text-gray-500 hover:text-gray-800 hover:bg-gray-50"
               }`}
             >
               Todos
@@ -165,10 +165,10 @@ export default function ProductsClient({
                 key={category.key}
                 onClick={() => { setSelectedCategory(category.key); setSelectedSubcategory("") }}
                 disabled={loading}
-                className={`flex-shrink-0 px-4 py-2.5 rounded-t-xl text-sm font-semibold transition-all duration-200 border-b-2 ${
+                className={`px-4 py-2.5 rounded-full text-sm font-semibold transition-all duration-200 border ${
                   selectedCategory === category.key
-                    ? "border-[#009FE3] text-[#009FE3] bg-blue-50"
-                    : "border-transparent text-gray-500 hover:text-gray-800 hover:bg-gray-50"
+                    ? "border-[#009FE3] text-[#009FE3] bg-blue-50 shadow-sm"
+                    : "border-gray-200 text-gray-500 hover:text-gray-800 hover:bg-gray-50"
                 }`}
               >
                 {category.name}
@@ -182,10 +182,10 @@ export default function ProductsClient({
       {subcategories.length > 0 && (
         <div className="bg-white border-b border-gray-100">
           <div className="container mx-auto px-4 py-3">
-            <div className="flex items-center gap-2 overflow-x-auto scrollbar-hide">
+            <div className="flex flex-wrap items-center gap-2">
               <button
                 onClick={() => setSelectedSubcategory("")}
-                className={`flex-shrink-0 px-3 py-1.5 rounded-full text-xs font-medium transition-all duration-200 ${
+                className={`px-3 py-1.5 rounded-full text-xs font-medium transition-all duration-200 ${
                   selectedSubcategory === ""
                     ? "bg-[#009FE3] text-white shadow-sm"
                     : "bg-gray-100 text-gray-600 hover:bg-gray-200"
@@ -197,7 +197,7 @@ export default function ProductsClient({
                 <button
                   key={sub.slug}
                   onClick={() => setSelectedSubcategory(sub.slug === selectedSubcategory ? "" : sub.slug)}
-                  className={`flex-shrink-0 px-3 py-1.5 rounded-full text-xs font-medium transition-all duration-200 ${
+                  className={`px-3 py-1.5 rounded-full text-xs font-medium transition-all duration-200 ${
                     selectedSubcategory === sub.slug
                       ? "bg-[#009FE3] text-white shadow-sm"
                       : "bg-gray-100 text-gray-600 hover:bg-gray-200"
