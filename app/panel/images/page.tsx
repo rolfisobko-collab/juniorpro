@@ -9,6 +9,7 @@ import { Search, CheckCircle, SkipForward, AlertCircle, Loader2, ImageOff, Zap, 
 
 interface Product {
   id: string
+  codigo?: string
   name: string
   brand: string
   categoryKey: string
@@ -91,7 +92,7 @@ export default function BulkImagesPage() {
       if (data.totalWithoutImage !== undefined) setTotalWithoutImage(data.totalWithoutImage)
 
       const newProducts: Product[] = (data.products ?? []).map((p: any) => ({
-        id: p.id, name: p.name, brand: p.brand ?? "", categoryKey: p.categoryKey ?? "", image: p.image ?? ""
+        id: p.id, codigo: p.codigo, name: p.name, brand: p.brand ?? "", categoryKey: p.categoryKey ?? "", image: p.image ?? ""
       }))
 
       const newEntries: ProductEntry[] = newProducts.map(p => ({
@@ -345,7 +346,9 @@ export default function BulkImagesPage() {
                     {/* Info */}
                     <div className="flex-1 min-w-0">
                       <p className="text-xs font-medium truncate">{entry.product.name}</p>
-                      <p className="text-[10px] text-gray-400 truncate">{entry.product.brand}</p>
+                      <p className="text-[10px] text-gray-400 truncate">
+                        {entry.product.codigo ? `Cod. ${entry.product.codigo} · ` : ""}{entry.product.brand}
+                      </p>
                     </div>
                     {/* Status icon */}
                     <div className="flex-shrink-0">
@@ -390,7 +393,9 @@ export default function BulkImagesPage() {
                   <div className="flex items-start justify-between gap-4">
                     <div>
                       <h2 className="font-bold text-lg leading-tight">{currentEntry.product.name}</h2>
-                      <p className="text-sm text-muted-foreground">{currentEntry.product.brand}</p>
+                      <p className="text-sm text-muted-foreground">
+                        {currentEntry.product.codigo ? `Codigo ${currentEntry.product.codigo} · ` : ""}{currentEntry.product.brand}
+                      </p>
                     </div>
                     <div className="flex gap-2 flex-shrink-0">
                       <Button

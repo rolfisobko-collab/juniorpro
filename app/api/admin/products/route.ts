@@ -4,6 +4,7 @@ import crypto from "crypto"
 import { prisma } from "@/lib/db"
 import { requireAdminId } from "@/lib/admin-session"
 import type { Prisma } from "@prisma/client"
+import { getMirrorProducts, isMirrorCatalogEnabled } from "@/lib/mirror-products"
 
 export async function GET(req: Request) {
   try {
@@ -17,6 +18,37 @@ export async function GET(req: Request) {
     const page = Math.max(1, parseInt(searchParams.get("page") ?? "1", 10))
     const pageSize = Math.min(100, Math.max(1, parseInt(searchParams.get("pageSize") ?? "100", 10)))
     const skip = (page - 1) * pageSize
+
+    if (isMirrorCatalogEnabled()) {
+      const allProducts: any[] = []
+      let mirrorPage = 1
+      let mirrorTotalPages = 1
+
+      do {
+        const result = await getMirrorProducts({
+          page: mirrorPage,
+          limit: 100,
+          search,
+          category: categoryKey || undefined,
+        })
+        allProducts.push(...result.products)
+        mirrorTotalPages = Math.max(1, Math.ceil(result.total / result.limit))
+        mirrorPage++
+      } while (mirrorPage <= mirrorTotalPages)
+
+      const withoutImage = allProducts.filter(product => !product.image || !String(product.image).startsWith("http"))
+      const filtered = noImage ? withoutImage : allProducts
+
+      return NextResponse.json({
+        products: filtered.slice(skip, skip + pageSize),
+        total: filtered.length,
+        totalWithoutImage: withoutImage.length,
+        page,
+        pageSize,
+        totalPages: Math.max(1, Math.ceil(filtered.length / pageSize)),
+        source: "techzone_mirror",
+      })
+    }
 
     const baseWhere: Prisma.ProductWhereInput = {
       ...(categoryKey ? { categoryKey } : {}),

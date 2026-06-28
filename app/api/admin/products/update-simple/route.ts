@@ -1,5 +1,6 @@
 import { NextResponse } from "next/server"
 import { prisma } from "@/lib/db"
+import { isMirrorCatalogEnabled, saveMirrorImageOverride } from "@/lib/mirror-products"
 
 export async function PUT(req: Request) {
   try {
@@ -7,6 +8,23 @@ export async function PUT(req: Request) {
     const id = body.id // Obtener ID del body en lugar de la URL
     
     if (!id) return NextResponse.json({ error: "Missing product ID" }, { status: 400 })
+
+    if (isMirrorCatalogEnabled() && String(id).startsWith("mirror-")) {
+      if (!body.image || typeof body.image !== "string") {
+        return NextResponse.json({ error: "Mirror products only support image updates from this panel" }, { status: 400 })
+      }
+
+      const saved = await saveMirrorImageOverride(String(id), body.image)
+      return NextResponse.json({
+        product: {
+          id,
+          codigo: saved.productCode,
+          image: saved.imageUrl,
+          images: [saved.imageUrl],
+        },
+        source: "techzone_mirror",
+      })
+    }
     
     console.log('🔄 UPDATE SIMPLE - Updating product:', id, body)
 

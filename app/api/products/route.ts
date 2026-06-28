@@ -1,5 +1,6 @@
 import { NextResponse } from "next/server"
 import { prisma } from "@/lib/db"
+import { getMirrorProducts, isMirrorCatalogEnabled } from "@/lib/mirror-products"
 
 // Mock products for when database is not available
 const MOCK_PRODUCTS = [
@@ -128,6 +129,35 @@ export async function GET(req: Request) {
     const maxPrice = searchParams.get("maxPrice")
     const sort = searchParams.get("sort")
     const search = (searchParams.get("search") ?? "").trim()
+
+    if (isMirrorCatalogEnabled()) {
+      const result = await getMirrorProducts({
+        page,
+        limit,
+        category,
+        subcategory,
+        search,
+        minPrice,
+        maxPrice,
+        sort,
+      })
+
+      return NextResponse.json({
+        products: result.products,
+        pagination: {
+          page,
+          limit,
+          total: result.total,
+          totalPages: Math.max(1, Math.ceil(result.total / limit)),
+        },
+        source: "techzone_mirror",
+        fromMock: false,
+      }, {
+        headers: {
+          "Cache-Control": "public, s-maxage=60, stale-while-revalidate=120",
+        }
+      })
+    }
 
     // Build where clause
     const where: any = {}

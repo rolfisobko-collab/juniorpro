@@ -3,6 +3,7 @@ export const revalidate = 300
 import { unstable_cache } from "next/cache"
 import { getCategoriesFromDB } from "@/lib/products-server"
 import { prisma } from "@/lib/db"
+import { getMirrorProducts, isMirrorCatalogEnabled } from "@/lib/mirror-products"
 import ProductsClient from "./products-client"
 
 const keywordMap: Record<string, string[]> = {
@@ -19,6 +20,16 @@ const keywordMap: Record<string, string[]> = {
 const getInitialProducts = unstable_cache(
   async (category?: string, subcategory?: string) => {
     try {
+      if (isMirrorCatalogEnabled()) {
+        const result = await getMirrorProducts({
+          category,
+          subcategory,
+          limit: 50,
+          page: 1,
+        })
+        return result.products
+      }
+
       const where: any = {}
       if (category && category !== "all") where.categoryKey = category
       if (subcategory) {

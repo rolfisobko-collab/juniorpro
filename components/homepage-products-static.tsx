@@ -1,5 +1,6 @@
 import { unstable_cache } from "next/cache"
 import { prisma } from "@/lib/db"
+import { getMirrorProducts, isMirrorCatalogEnabled } from "@/lib/mirror-products"
 import { ProductCard } from "@/components/product-card"
 import type { UnifiedProduct } from "@/lib/product-types"
 import Link from "next/link"
@@ -7,6 +8,16 @@ import { ArrowRight } from "lucide-react"
 
 async function fetchSection(opts: { category?: string; featured?: boolean; sort: string; limit: number }) {
   try {
+    if (isMirrorCatalogEnabled()) {
+      const result = await getMirrorProducts({
+        category: opts.category === "electrodomesticos" ? "appliances" : opts.category,
+        sort: opts.sort,
+        limit: opts.limit,
+        page: 1,
+      })
+      return result.products as unknown as UnifiedProduct[]
+    }
+
     const where: any = { image: { startsWith: "http" } }
     if (opts.category) where.categoryKey = opts.category
     if (opts.featured) where.featured = true

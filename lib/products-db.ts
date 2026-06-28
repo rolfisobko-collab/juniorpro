@@ -1,4 +1,5 @@
 import { prisma } from './db'
+import { getMirrorProducts, isMirrorCatalogEnabled } from './mirror-products'
 
 export interface ProductWithCategory {
   id: string
@@ -25,6 +26,11 @@ export interface ProductWithCategory {
 
 export async function getFeaturedProducts(limit: number = 5): Promise<ProductWithCategory[]> {
   try {
+    if (isMirrorCatalogEnabled()) {
+      const result = await getMirrorProducts({ limit, page: 1 })
+      return result.products
+    }
+
     const products = await prisma.product.findMany({
       where: { featured: true, inStock: true },
       include: { category: true },
@@ -40,6 +46,11 @@ export async function getFeaturedProducts(limit: number = 5): Promise<ProductWit
 
 export async function getLatestProducts(limit: number = 5): Promise<ProductWithCategory[]> {
   try {
+    if (isMirrorCatalogEnabled()) {
+      const result = await getMirrorProducts({ limit, page: 1, sort: "latest" })
+      return result.products
+    }
+
     const products = await prisma.product.findMany({
       where: { inStock: true },
       include: { category: true },
@@ -55,6 +66,11 @@ export async function getLatestProducts(limit: number = 5): Promise<ProductWithC
 
 export async function getBestSellerProducts(limit: number = 5): Promise<ProductWithCategory[]> {
   try {
+    if (isMirrorCatalogEnabled()) {
+      const result = await getMirrorProducts({ limit, page: 1 })
+      return result.products
+    }
+
     // Get products with most order items
     const products = await prisma.product.findMany({
       where: { inStock: true },
@@ -80,6 +96,11 @@ export async function getBestSellerProducts(limit: number = 5): Promise<ProductW
 
 export async function getRecommendedProducts(limit: number = 5): Promise<ProductWithCategory[]> {
   try {
+    if (isMirrorCatalogEnabled()) {
+      const result = await getMirrorProducts({ limit, page: 1 })
+      return result.products
+    }
+
     // For now, return random products. In a real app, this would be based on user preferences
     const products = await prisma.product.findMany({
       where: { inStock: true },
@@ -98,6 +119,11 @@ export async function getRecommendedProducts(limit: number = 5): Promise<Product
 
 export async function getAllProducts(limit?: number): Promise<ProductWithCategory[]> {
   try {
+    if (isMirrorCatalogEnabled()) {
+      const result = await getMirrorProducts({ limit: limit || 100, page: 1 })
+      return result.products
+    }
+
     const products = await prisma.product.findMany({
       where: { inStock: true },
       include: { category: true },

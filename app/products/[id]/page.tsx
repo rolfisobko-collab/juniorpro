@@ -2,11 +2,16 @@ import { notFound } from "next/navigation"
 import { unstable_cache } from "next/cache"
 import { prisma } from "@/lib/db"
 import type { UnifiedProduct } from "@/lib/product-types"
+import { getMirrorProductById, getMirrorProducts, isMirrorCatalogEnabled } from "@/lib/mirror-products"
 import ProductDetailClient from "./product-detail-client"
 
 const getProduct = unstable_cache(
   async (id: string): Promise<UnifiedProduct | null> => {
     try {
+      if (isMirrorCatalogEnabled() && id.startsWith("mirror-")) {
+        return await getMirrorProductById(id) as unknown as UnifiedProduct | null
+      }
+
       const product = await prisma.product.findUnique({
         where: { id },
         include: { category: true },
@@ -30,6 +35,16 @@ const getProduct = unstable_cache(
 const getRecommended = unstable_cache(
   async (id: string, categoryKey: string): Promise<UnifiedProduct[]> => {
     try {
+      if (isMirrorCatalogEnabled()) {
+        const result = await getMirrorProducts({
+          category: categoryKey,
+          excludeId: id,
+          limit: 4,
+          page: 1,
+        })
+        return result.products as unknown as UnifiedProduct[]
+      }
+
       const products = await prisma.product.findMany({
         where: { categoryKey, id: { not: id }, image: { startsWith: "http" } },
         take: 4,

@@ -1,6 +1,7 @@
 import { unstable_cache } from "next/cache"
 import { prisma } from "./db"
 import type { ProductWithCategory } from "./products-db"
+import { getMirrorCategories, getMirrorProducts, isMirrorCatalogEnabled } from "./mirror-products"
 
 export async function getProductsFromDB(filters?: {
   category?: string
@@ -10,6 +11,15 @@ export async function getProductsFromDB(filters?: {
   offset?: number
 }): Promise<ProductWithCategory[]> {
   try {
+    if (isMirrorCatalogEnabled()) {
+      const result = await getMirrorProducts({
+        category: filters?.category,
+        limit: filters?.limit,
+        page: filters?.offset && filters?.limit ? Math.floor(filters.offset / filters.limit) + 1 : 1,
+      })
+      return result.products
+    }
+
     const where: any = {}
     
     if (filters?.category) {
@@ -42,6 +52,10 @@ export async function getProductsFromDB(filters?: {
 export const getCategoriesFromDB = unstable_cache(
   async (): Promise<any[]> => {
     try {
+      if (isMirrorCatalogEnabled()) {
+        return await getMirrorCategories()
+      }
+
       const categories = await prisma.category.findMany({
         include: { subcategories: true },
         orderBy: { name: 'asc' }

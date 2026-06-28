@@ -1,4 +1,5 @@
 import { NextResponse, type NextRequest } from "next/server"
+import { getMirrorProductById, isMirrorCatalogEnabled } from "@/lib/mirror-products"
 
 // Mock products
 const MOCK_PRODUCTS = [
@@ -117,6 +118,15 @@ const MOCK_PRODUCTS = [
 export async function GET(_req: NextRequest, { params }: { params: Promise<{ id: string }> }) {
   try {
     const { id } = await params
+
+    if (isMirrorCatalogEnabled() && id.startsWith("mirror-")) {
+      const product = await getMirrorProductById(id)
+      if (product) {
+        return NextResponse.json({ product, source: "techzone_mirror", fromMock: false }, {
+          headers: { "Cache-Control": "public, s-maxage=120, stale-while-revalidate=300" }
+        })
+      }
+    }
 
     // Try to get from database first
     try {
