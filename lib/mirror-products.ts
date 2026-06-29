@@ -111,11 +111,13 @@ const SUBCATEGORY_ALIASES: Record<string, string> = {
 }
 
 export function normalizeMirrorCategory(value?: string | null) {
+  if (!value) return ""
   const key = normalizeSubcategory(value)
   return CATEGORY_ALIASES[key] || key
 }
 
 export function normalizeMirrorSubcategory(value?: string | null) {
+  if (!value) return ""
   const key = normalizeSubcategory(value)
   return SUBCATEGORY_ALIASES[key] || key
 }
