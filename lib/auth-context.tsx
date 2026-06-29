@@ -232,8 +232,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         setUser(result.user)
       }
       
-      // Firebase envía email automático - mostrar mensaje
-      throw new Error("VERIFY_NEEDED:Revisa tu email para verificar tu cuenta. Te enviamos un link de verificación.")
+      // El email de verificacion no bloquea la compra; la operadora confirma los datos del pedido.
+      return
 
     } catch (error) {
       console.error("Register error:", error)

@@ -25,7 +25,11 @@ export async function registerWithEmail(email: string, password: string, name: s
     const userCredential = await createUserWithEmailAndPassword(auth, email, password)
     const user = userCredential.user
     
-    await sendEmailVerification(user, getActionCodeSettings())
+    try {
+      await sendEmailVerification(user, getActionCodeSettings())
+    } catch (verificationError) {
+      console.warn("Firebase verification email could not be sent. Continuing without blocking login.", verificationError)
+    }
     
     return {
       success: true,
@@ -35,7 +39,7 @@ export async function registerWithEmail(email: string, password: string, name: s
         name: name,
         avatar: user.photoURL || undefined
       },
-      needsVerification: true
+      needsVerification: false
     }
   } catch (error: any) {
     console.error("Firebase register error:", error)
@@ -74,7 +78,7 @@ export async function loginWithEmail(email: string, password: string) {
         name: user.displayName || "",
         avatar: user.photoURL || undefined
       },
-      needsVerification: !user.emailVerified
+      needsVerification: false
     }
   } catch (error: any) {
     console.error("Firebase login error:", error)
