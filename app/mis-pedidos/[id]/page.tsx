@@ -44,12 +44,12 @@ const STATUS_CONFIG: Record<string, { label: string; color: string; icon: any; s
   pending:    { label: "Pendiente",    color: "bg-yellow-100 text-yellow-700 border-yellow-200", icon: Clock,        step: 0 },
   confirmed:  { label: "Confirmado",   color: "bg-blue-100 text-blue-700 border-blue-200",       icon: CheckCircle,  step: 1 },
   processing: { label: "Preparando",   color: "bg-purple-100 text-purple-700 border-purple-200", icon: Package,      step: 2 },
-  shipped:    { label: "Despachado",   color: "bg-orange-100 text-orange-700 border-orange-200", icon: Truck,        step: 3 },
-  delivered:  { label: "Entregado",    color: "bg-green-100 text-green-700 border-green-200",    icon: CheckCircle,  step: 4 },
+  shipped:    { label: "Enviado",      color: "bg-orange-100 text-orange-700 border-orange-200", icon: Truck,        step: 3 },
+  delivered:  { label: "Finalizado",   color: "bg-green-100 text-green-700 border-green-200",    icon: CheckCircle,  step: 4 },
   cancelled:  { label: "Cancelado",    color: "bg-red-100 text-red-700 border-red-200",          icon: Clock,        step: -1 },
 }
 
-const STEPS = ["Confirmado", "Preparando", "Despachado", "Entregado"]
+const STEPS = ["Confirmado", "Preparando", "Enviado", "Finalizado"]
 
 export default function OrderTrackingPage() {
   const { id } = useParams<{ id: string }>()
@@ -116,7 +116,7 @@ export default function OrderTrackingPage() {
         {/* Timeline de estado */}
         {!isCancelled && (
           <div className="bg-white rounded-2xl shadow-sm border border-gray-200 p-6 mb-4">
-            <h2 className="text-sm font-semibold text-gray-500 uppercase tracking-wide mb-5">Estado del envío</h2>
+            <h2 className="text-sm font-semibold text-gray-500 uppercase tracking-wide mb-5">Estado del pedido</h2>
             <div className="flex items-start">
               {STEPS.map((step, idx) => {
                 const done = currentStep > idx
@@ -156,10 +156,10 @@ export default function OrderTrackingPage() {
           </div>
         )}
 
-        {/* Tracking AEX */}
+        {/* Seguimiento */}
         {order.trackingNumber && (
           <div className="bg-white rounded-2xl shadow-sm border border-gray-200 p-6 mb-4">
-            <h2 className="text-sm font-semibold text-gray-500 uppercase tracking-wide mb-3">Número de seguimiento AEX</h2>
+            <h2 className="text-sm font-semibold text-gray-500 uppercase tracking-wide mb-3">Numero de seguimiento</h2>
             <div className="flex items-center gap-3">
               <code className="flex-1 bg-gray-50 border border-gray-200 rounded-xl px-4 py-3 text-gray-900 font-mono text-lg tracking-widest">
                 {order.trackingNumber}
@@ -173,7 +173,7 @@ export default function OrderTrackingPage() {
                 </Button>
               </a>
             </div>
-            <p className="text-xs text-gray-400 mt-2">Podés rastrear tu paquete directamente en el sitio de AEX</p>
+            <p className="text-xs text-gray-400 mt-2">La operadora te indica donde consultar el envio si corresponde.</p>
           </div>
         )}
 
@@ -200,7 +200,7 @@ export default function OrderTrackingPage() {
             <div className="mt-4 pt-4 border-t border-gray-100 space-y-1">
               {order.shippingCost !== undefined && order.shippingCost > 0 && (
                 <div className="flex justify-between text-sm text-gray-600">
-                  <span>Envío {order.boxName ? `(${order.boxName})` : ""}</span>
+                  <span>Envio {order.boxName ? `(${order.boxName})` : ""}</span>
                   <span>Gs. {order.shippingCost.toLocaleString("es-PY")}</span>
                 </div>
               )}
@@ -224,7 +224,7 @@ export default function OrderTrackingPage() {
               <div className="flex gap-2">
                 <Truck className="h-4 w-4 text-gray-400 mt-0.5 flex-shrink-0" />
                 <div>
-                  <p className="font-medium text-gray-900">{order.shippingMethod === "aex" ? "Envío AEX" : order.shippingMethod === "local" ? "Retiro en local" : "A convenir"}</p>
+                  <p className="font-medium text-gray-900">{order.shippingMethod === "local" || order.shippingMethod === "retiro-local" ? "Retiro en local" : "Envio a coordinar"}</p>
                   {order.boxName && <p className="text-gray-500">Caja: {order.boxName}</p>}
                 </div>
               </div>

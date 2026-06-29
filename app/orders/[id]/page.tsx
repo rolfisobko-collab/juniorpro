@@ -26,6 +26,23 @@ interface Order {
   items: OrderItem[]
 }
 
+function getStatusText(status: string) {
+  switch (status) {
+    case "pending":
+      return "Pedido recibido"
+    case "processing":
+      return "Preparando"
+    case "shipped":
+      return "Enviado"
+    case "delivered":
+      return "Finalizado"
+    case "cancelled":
+      return "Cancelado"
+    default:
+      return "Pedido recibido"
+  }
+}
+
 export default function OrderDetailPage({ params }: { params: Promise<{ id: string }> }) {
   const { id } = use(params)
   const { user } = useAuth()
@@ -126,7 +143,7 @@ export default function OrderDetailPage({ params }: { params: Promise<{ id: stri
                   </div>
                   <div>
                     <p className="text-sm text-muted-foreground">Estado</p>
-                    <p className="font-semibold">{order.status}</p>
+                    <p className="font-semibold">{getStatusText(order.status)}</p>
                   </div>
                 </div>
 

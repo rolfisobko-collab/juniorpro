@@ -98,16 +98,18 @@ export default function OrdersPage() {
 
   const getStatusText = (status: string) => {
     switch (status) {
+      case "pending":
+        return "Pedido recibido"
       case "processing":
-        return "Procesando"
+        return "Preparando"
       case "shipped":
         return "Enviado"
       case "delivered":
-        return "Entregado"
+        return "Finalizado"
       case "cancelled":
         return "Cancelado"
       default:
-        return status
+        return "Pedido recibido"
     }
   }
 
@@ -128,7 +130,7 @@ export default function OrdersPage() {
                     <Package className="h-8 w-8 text-muted-foreground" />
                   </div>
                 </div>
-                <h2 className="text-xl font-semibold mb-2">No tienes pedidos aún</h2>
+                <h2 className="text-xl font-semibold mb-2">No tienes pedidos aun</h2>
                 <p className="text-muted-foreground mb-6">Comienza a explorar nuestros productos premium</p>
                 <Link href="/products">
                   <Button>Explorar Productos</Button>
@@ -145,7 +147,7 @@ export default function OrdersPage() {
                         <div className="flex items-center gap-3">
                           {getStatusIcon(order.status)}
                           <div>
-                            <p className="font-semibold text-lg">{order.id}</p>
+                            <p className="font-semibold text-lg">#{order.id.slice(-8).toUpperCase()}</p>
                             <p className="text-sm text-muted-foreground">
                               {new Date(order.createdAt).toLocaleDateString("es-ES", {
                                 year: "numeric",
