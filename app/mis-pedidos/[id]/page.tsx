@@ -185,7 +185,14 @@ export default function OrderTrackingPage() {
               {order.items.map(item => (
                 <div key={item.id} className="flex items-center gap-3">
                   <div className="w-12 h-12 bg-gray-100 rounded-xl overflow-hidden flex-shrink-0">
-                    <img src={item.image || "/placeholder.jpg"} alt={item.name} className="w-full h-full object-cover" />
+                    <img
+                      src={item.image || "/placeholder.svg"}
+                      alt={item.name}
+                      className="w-full h-full object-cover"
+                      onError={(event) => {
+                        event.currentTarget.src = "/placeholder.svg"
+                      }}
+                    />
                   </div>
                   <div className="flex-1 min-w-0">
                     <p className="text-sm font-medium text-gray-900 truncate">{item.name}</p>

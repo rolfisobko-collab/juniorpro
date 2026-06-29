@@ -328,8 +328,28 @@ function OrderDrawer({
             <div className="space-y-2">
               {order.items.map((item) => (
                 <div key={item.id} className="flex items-center gap-3 rounded-xl bg-gray-50 p-3">
-                  <div className="h-11 w-11 flex-shrink-0 overflow-hidden rounded-lg bg-gray-200">
-                    {(item.product?.image || item.image) && <img src={item.product?.image || item.image} alt={item.name} className="h-full w-full object-cover" />}
+                  <div className="relative h-11 w-11 flex-shrink-0 overflow-hidden rounded-lg bg-gray-100">
+                    {(item.product?.image || item.image) ? (
+                      <>
+                        <img
+                          src={item.product?.image || item.image}
+                          alt={item.name}
+                          className="h-full w-full object-cover"
+                          onError={(event) => {
+                            event.currentTarget.style.display = "none"
+                            event.currentTarget.nextElementSibling?.classList.remove("hidden")
+                            event.currentTarget.nextElementSibling?.classList.add("flex")
+                          }}
+                        />
+                        <div className="hidden h-full w-full items-center justify-center text-gray-400">
+                          <Package className="h-4 w-4" />
+                        </div>
+                      </>
+                    ) : (
+                      <div className="flex h-full w-full items-center justify-center text-gray-400">
+                        <Package className="h-4 w-4" />
+                      </div>
+                    )}
                   </div>
                   <div className="min-w-0 flex-1">
                     <p className="truncate text-sm font-medium text-gray-900">{item.product?.name || item.name}</p>

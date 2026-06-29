@@ -3,7 +3,7 @@
 import { useEffect, useState } from "react"
 import { useRouter } from "next/navigation"
 import Link from "next/link"
-import Image from "next/image"
+import { Image } from "@/components/ui/image"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent } from "@/components/ui/card"
 import { useAuth } from "@/lib/auth-context"
@@ -167,12 +167,11 @@ export default function OrdersPage() {
                       <div className="space-y-3">
                         {order.items.map((item) => (
                           <div key={item.id} className="flex gap-4">
-                            <div className="relative h-16 w-16 rounded-lg overflow-hidden bg-muted flex-shrink-0">
+                            <div className="h-16 w-16 rounded-lg overflow-hidden bg-muted flex-shrink-0">
                               <Image
                                 src={item.image || "/placeholder.svg"}
                                 alt={item.name}
-                                fill
-                                className="object-cover"
+                                className="h-full w-full object-cover"
                               />
                             </div>
                             <div className="flex-1">
