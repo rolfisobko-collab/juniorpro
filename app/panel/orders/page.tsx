@@ -7,6 +7,7 @@ import {
   ArrowRight,
   ChevronRight,
   Copy,
+  Info,
   Mail,
   MapPin,
   MessageCircle,
@@ -20,6 +21,7 @@ import {
 
 interface OrderItem {
   id: string
+  productId: string
   name: string
   image: string
   price: number
@@ -352,7 +354,17 @@ function OrderDrawer({
                     )}
                   </div>
                   <div className="min-w-0 flex-1">
-                    <p className="truncate text-sm font-medium text-gray-900">{item.product?.name || item.name}</p>
+                    <div className="flex min-w-0 items-center gap-1.5">
+                      <p className="truncate text-sm font-medium text-gray-900">{item.product?.name || item.name}</p>
+                      {!item.productId?.startsWith("mirror-") && (
+                        <span
+                          title="Producto historico: este item pertenece a pedidos anteriores a la conexion con la base espejo. Se conserva como registro del pedido original."
+                          className="inline-flex h-4 w-4 flex-shrink-0 items-center justify-center rounded-full border border-amber-200 bg-amber-50 text-amber-600"
+                        >
+                          <Info className="h-2.5 w-2.5" />
+                        </span>
+                      )}
+                    </div>
                     <p className="text-xs text-gray-400">x{item.quantity} - {fmtMoney(item.price)} c/u</p>
                   </div>
                   <p className="text-sm font-bold text-gray-900">{fmtMoney(item.price * item.quantity)}</p>
