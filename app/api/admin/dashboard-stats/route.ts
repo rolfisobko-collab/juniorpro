@@ -1,5 +1,6 @@
 import { NextResponse } from "next/server"
 import { prisma } from "@/lib/db"
+import { getMirrorProducts, isMirrorCatalogEnabled } from "@/lib/mirror-products"
 
 export async function GET() {
   try {
@@ -85,7 +86,12 @@ export async function GET() {
     ])
 
     // Calcular estadísticas adicionales
-    const processingOrders = await prisma.order.count({ where: { status: "processing" } })
+    const [processingOrders, mirrorProductResult] = await Promise.all([
+      prisma.order.count({ where: { status: "processing" } }),
+      isMirrorCatalogEnabled() ? getMirrorProducts({ page: 1, limit: 1 }) : Promise.resolve(null),
+    ])
+
+    const visibleProductCount = mirrorProductResult?.total ?? totalProducts
 
     const totalRevenue = await prisma.order.aggregate({
       _sum: { total: true },
@@ -98,7 +104,7 @@ export async function GET() {
     })
 
     const stats = {
-      totalProducts,
+      totalProducts: visibleProductCount,
       totalOrders,
       totalUsers,
       pendingOrders,
