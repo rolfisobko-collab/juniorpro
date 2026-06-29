@@ -121,7 +121,9 @@ export default function ParaguayLocationSelect({ isOpen, onClose, onLocationSele
     }
   }
 
-  const currentCities = selectedDepartment ? paraguayData[selectedDepartment as keyof typeof paraguayData]?.cities || [] : []
+  const currentCities = selectedDepartment
+    ? Array.from(new Set((paraguayData[selectedDepartment as keyof typeof paraguayData]?.cities || []).map((city) => city.trim()).filter(Boolean)))
+    : []
 
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
@@ -161,7 +163,7 @@ export default function ParaguayLocationSelect({ isOpen, onClose, onLocationSele
                 </SelectTrigger>
                 <SelectContent>
                   {currentCities.map((city) => (
-                    <SelectItem key={city} value={city}>
+                    <SelectItem key={`${selectedDepartment}-${city}`} value={city}>
                       {city}
                     </SelectItem>
                   ))}

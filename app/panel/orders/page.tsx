@@ -8,7 +8,7 @@ import {
   Copy, MessageCircle, ArrowRight, AlertCircle
 } from "lucide-react"
 
-// ─── Types ────────────────────────────────────────────────────────────────────
+// â”€â”€â”€ Types â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 interface OrderItem {
   id: string; name: string; image: string; price: number; quantity: number
   product?: { id: string; name: string; image: string }
@@ -28,7 +28,7 @@ interface Order {
   statusHistory: StatusHistory[]
 }
 
-// ─── Helpers ──────────────────────────────────────────────────────────────────
+// â”€â”€â”€ Helpers â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 const STATUS_CONFIG: Record<string, { label: string; dot: string; text: string; bg: string }> = {
   pending:    { label: "Pendiente",   dot: "bg-yellow-400", text: "text-yellow-700", bg: "bg-yellow-50 border-yellow-200" },
   processing: { label: "Preparando",  dot: "bg-blue-400",   text: "text-blue-700",   bg: "bg-blue-50 border-blue-200"   },
@@ -42,7 +42,7 @@ const PAY_CONFIG: Record<string, { label: string; dot: string; text: string }> =
   failed:  { label: "Fallido",  dot: "bg-red-400",   text: "text-red-700"   },
 }
 const SHIPPING_LABEL: Record<string, string> = {
-  aex: "AEX", local: "Retiro en local", convenir: "A convenir",
+  aex: "AEX", local: "Retiro en local", "retiro-local": "Retiro en local", convenir: "Envio a coordinar",
 }
 const ORDER_FLOW: string[] = ["pending", "processing", "shipped", "delivered"]
 
@@ -51,8 +51,19 @@ function fmt(d: string) {
 }
 function fmtMoney(n: number) { return `$${n.toLocaleString("es-PY")}` }
 function shortId(id: string) { return id.slice(-8).toUpperCase() }
+function orderMeta(order: Order) {
+  const chunks = (order.shippingAddress || "").split("|").map((chunk) => chunk.trim()).filter(Boolean)
+  const customerName = chunks.find((chunk) => chunk.toLowerCase().startsWith("cliente:"))?.replace(/^cliente:\s*/i, "").trim()
+  const notes = chunks.find((chunk) => chunk.toLowerCase().startsWith("notas:"))?.replace(/^notas:\s*/i, "").trim()
+  const cleanAddress = chunks.filter((chunk) => !/^cliente:/i.test(chunk) && !/^notas:/i.test(chunk)).join(" | ")
+  return {
+    customerName: customerName || (order.user?.email === "cliente@web.com" ? "" : order.user?.name) || order.contactEmail,
+    notes,
+    address: cleanAddress || order.shippingAddress,
+  }
+}
 
-// ─── StatusBadge ──────────────────────────────────────────────────────────────
+// â”€â”€â”€ StatusBadge â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 function StatusBadge({ status }: { status: string }) {
   const c = STATUS_CONFIG[status] ?? STATUS_CONFIG.pending
   return (
@@ -63,7 +74,7 @@ function StatusBadge({ status }: { status: string }) {
   )
 }
 
-// ─── PayBadge ─────────────────────────────────────────────────────────────────
+// â”€â”€â”€ PayBadge â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 function PayBadge({ status }: { status: string | null }) {
   const c = PAY_CONFIG[status ?? "pending"] ?? PAY_CONFIG.pending
   return (
@@ -74,7 +85,7 @@ function PayBadge({ status }: { status: string | null }) {
   )
 }
 
-// ─── OrderDrawer ──────────────────────────────────────────────────────────────
+// â”€â”€â”€ OrderDrawer â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 function OrderDrawer({ order, onClose, onUpdate }: {
   order: Order; onClose: () => void
   onUpdate: (updated: Partial<Order> & { id: string }) => void
@@ -84,6 +95,7 @@ function OrderDrawer({ order, onClose, onUpdate }: {
   const [loadingStatus, setLoadingStatus] = useState(false)
   const [loadingPay, setLoadingPay] = useState(false)
   const [copied, setCopied] = useState(false)
+  const meta = orderMeta(order)
 
   const nextStatus = ORDER_FLOW[ORDER_FLOW.indexOf(order.status) + 1]
 
@@ -106,7 +118,7 @@ function OrderDrawer({ order, onClose, onUpdate }: {
 
   const dispatch = async () => {
     if (order.shippingMethod === "aex" && !trackingInput.trim()) {
-      alert("Ingresá el número de tracking AEX antes de marcar como enviado.")
+      alert("IngresÃ¡ el nÃºmero de tracking AEX antes de marcar como enviado.")
       return
     }
     await advanceStatus("shipped", noteInput || "Pedido despachado", trackingInput || undefined)
@@ -143,7 +155,7 @@ function OrderDrawer({ order, onClose, onUpdate }: {
           <div>
             <p className="text-xs text-gray-400 font-mono">#{shortId(order.id)}</p>
             <h2 className="text-base font-bold text-gray-900 leading-tight">
-              {order.user?.name || order.contactEmail}
+              {meta.customerName}
             </h2>
           </div>
           <button onClick={onClose} className="h-8 w-8 rounded-lg flex items-center justify-center text-gray-400 hover:bg-gray-100">
@@ -178,27 +190,27 @@ function OrderDrawer({ order, onClose, onUpdate }: {
               {ORDER_FLOW.map(s => <span key={s}>{STATUS_CONFIG[s].label}</span>)}
             </div>
 
-            {/* Botones de acción */}
+            {/* Botones de acciÃ³n */}
             {order.status !== "delivered" && order.status !== "cancelled" && (
               <div className="space-y-2">
-                {/* Confirmación de pago si está pendiente */}
+                {/* ConfirmaciÃ³n de pago si estÃ¡ pendiente */}
                 {order.paymentStatus !== "paid" && (
                   <div className="bg-yellow-50 border border-yellow-200 rounded-xl p-3 mb-2">
                     <p className="text-xs font-semibold text-yellow-700 mb-2 flex items-center gap-1">
-                      <AlertCircle className="h-3.5 w-3.5" /> Pago no confirmado — registrar pago en local
+                      <AlertCircle className="h-3.5 w-3.5" /> Pago no confirmado â€” registrar pago en local
                     </p>
                     <div className="flex gap-2">
                       <button onClick={() => registerPayment("efectivo")} disabled={loadingPay}
                         className="flex-1 py-1.5 text-xs font-semibold bg-yellow-600 hover:bg-yellow-700 text-white rounded-lg transition-colors disabled:opacity-50">
-                        💵 Efectivo
+                        ðŸ’µ Efectivo
                       </button>
                       <button onClick={() => registerPayment("transferencia")} disabled={loadingPay}
                         className="flex-1 py-1.5 text-xs font-semibold bg-yellow-600 hover:bg-yellow-700 text-white rounded-lg transition-colors disabled:opacity-50">
-                        🏦 Transferencia
+                        ðŸ¦ Transferencia
                       </button>
                       <button onClick={() => registerPayment("bancard")} disabled={loadingPay}
                         className="flex-1 py-1.5 text-xs font-semibold bg-yellow-600 hover:bg-yellow-700 text-white rounded-lg transition-colors disabled:opacity-50">
-                        💳 Bancard
+                        ðŸ’³ Bancard
                       </button>
                     </div>
                   </div>
@@ -229,7 +241,7 @@ function OrderDrawer({ order, onClose, onUpdate }: {
                   />
                 </div>
 
-                {/* Botón acción principal */}
+                {/* BotÃ³n acciÃ³n principal */}
                 <div className="flex gap-2">
                   {order.status === "processing" ? (
                     <button onClick={dispatch} disabled={loadingStatus}
@@ -266,7 +278,7 @@ function OrderDrawer({ order, onClose, onUpdate }: {
                 <Truck className="h-4 w-4 text-purple-500 flex-shrink-0" />
                 <span className="text-xs font-mono text-purple-700 flex-1">{order.trackingNumber}</span>
                 <button onClick={copyTracking} className="text-xs text-purple-500 hover:text-purple-700 transition-colors">
-                  {copied ? "✓" : <Copy className="h-3.5 w-3.5" />}
+                  {copied ? "âœ“" : <Copy className="h-3.5 w-3.5" />}
                 </button>
               </div>
             )}
@@ -275,7 +287,7 @@ function OrderDrawer({ order, onClose, onUpdate }: {
           {/* Cliente */}
           <div className="bg-gray-50 rounded-2xl p-4">
             <p className="text-xs font-bold text-gray-500 uppercase tracking-wider mb-3">Cliente</p>
-            <p className="text-sm font-semibold text-gray-900">{order.user?.name || "—"}</p>
+            <p className="text-sm font-semibold text-gray-900">{meta.customerName || "Cliente web"}</p>
             <div className="mt-2 space-y-1.5">
               <a href={`mailto:${order.contactEmail}`} className="flex items-center gap-2 text-xs text-gray-500 hover:text-[#009FE3]">
                 <Mail className="h-3.5 w-3.5" />{order.contactEmail}
@@ -290,20 +302,25 @@ function OrderDrawer({ order, onClose, onUpdate }: {
               </div>
               <div className="flex items-start gap-2 text-xs text-gray-500">
                 <MapPin className="h-3.5 w-3.5 mt-0.5 flex-shrink-0" />
-                <span>{order.shippingAddress}, {order.shippingCity}, {order.shippingState}</span>
+                <span>{meta.address}, {order.shippingCity}, {order.shippingState}</span>
               </div>
+              {meta.notes && (
+                <div className="mt-3 rounded-xl border border-blue-100 bg-blue-50 px-3 py-2 text-xs text-blue-800">
+                  <span className="font-semibold">Nota del cliente: </span>{meta.notes}
+                </div>
+              )}
             </div>
           </div>
 
-          {/* Pago + Envío */}
+          {/* Pago + EnvÃ­o */}
           <div className="grid grid-cols-2 gap-3">
             <div className="bg-gray-50 rounded-2xl p-4">
               <p className="text-xs font-bold text-gray-500 uppercase tracking-wider mb-2">Pago</p>
               <PayBadge status={order.paymentStatus} />
-              <p className="text-xs text-gray-400 mt-1">{order.paymentMethod || "—"}</p>
+              <p className="text-xs text-gray-400 mt-1">{order.paymentMethod || "â€”"}</p>
             </div>
             <div className="bg-gray-50 rounded-2xl p-4">
-              <p className="text-xs font-bold text-gray-500 uppercase tracking-wider mb-2">Envío</p>
+              <p className="text-xs font-bold text-gray-500 uppercase tracking-wider mb-2">EnvÃ­o</p>
               <p className="text-sm font-semibold text-gray-700">{SHIPPING_LABEL[order.shippingMethod] || order.shippingMethod}</p>
               {order.shippingCost != null && <p className="text-xs text-gray-400 mt-1">{fmtMoney(order.shippingCost)}</p>}
               {order.boxName && <p className="text-xs text-gray-400">{order.boxName}</p>}
@@ -323,7 +340,7 @@ function OrderDrawer({ order, onClose, onUpdate }: {
                   </div>
                   <div className="flex-1 min-w-0">
                     <p className="text-sm font-medium text-gray-900 truncate">{item.product?.name || item.name}</p>
-                    <p className="text-xs text-gray-400">x{item.quantity} · {fmtMoney(item.price)} c/u</p>
+                    <p className="text-xs text-gray-400">x{item.quantity} Â· {fmtMoney(item.price)} c/u</p>
                   </div>
                   <p className="text-sm font-bold text-gray-900">{fmtMoney(item.price * item.quantity)}</p>
                 </div>
@@ -336,7 +353,7 @@ function OrderDrawer({ order, onClose, onUpdate }: {
               </div>
               {order.shippingCost != null && (
                 <div className="flex justify-between text-xs text-gray-500">
-                  <span>Envío</span><span>{fmtMoney(order.shippingCost)}</span>
+                  <span>EnvÃ­o</span><span>{fmtMoney(order.shippingCost)}</span>
                 </div>
               )}
               <div className="flex justify-between text-sm font-bold text-gray-900 pt-1">
@@ -372,7 +389,7 @@ function OrderDrawer({ order, onClose, onUpdate }: {
   )
 }
 
-// ─── Main Page ────────────────────────────────────────────────────────────────
+// â”€â”€â”€ Main Page â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 export default function AdminOrdersPage() {
   const [orders, setOrders] = useState<Order[]>([])
   const [loading, setLoading] = useState(true)
@@ -392,12 +409,14 @@ export default function AdminOrdersPage() {
 
   const filtered = orders.filter(o => {
     const s = search.toLowerCase()
+    const meta = orderMeta(o)
     const matchSearch = !s ||
       o.id.toLowerCase().includes(s) ||
-      (o.user?.name ?? "").toLowerCase().includes(s) ||
+      meta.customerName.toLowerCase().includes(s) ||
       o.contactEmail.toLowerCase().includes(s) ||
       o.contactPhone.includes(s) ||
-      o.shippingCity.toLowerCase().includes(s)
+      o.shippingCity.toLowerCase().includes(s) ||
+      meta.address.toLowerCase().includes(s)
     const matchStatus = statusFilter === "all" || o.status === statusFilter
     return matchSearch && matchStatus
   })
@@ -467,12 +486,12 @@ export default function AdminOrdersPage() {
           ))}
         </div>
 
-        {/* Búsqueda */}
+        {/* BÃºsqueda */}
         <div className="relative mb-4">
           <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-400" />
           <input
             value={search} onChange={e => setSearch(e.target.value)}
-            placeholder="Buscar por nombre, email, teléfono, ciudad..."
+            placeholder="Buscar por nombre, email, telÃ©fono, ciudad..."
             className="w-full h-10 pl-10 pr-4 text-sm bg-white border border-gray-200 rounded-xl focus:outline-none focus:border-[#009FE3] focus:ring-2 focus:ring-[#009FE3]/10"
           />
         </div>
@@ -493,6 +512,7 @@ export default function AdminOrdersPage() {
               const sc = STATUS_CONFIG[order.status] ?? STATUS_CONFIG.pending
               const pc = PAY_CONFIG[order.paymentStatus ?? "pending"] ?? PAY_CONFIG.pending
               const isSelected = selected?.id === order.id
+              const meta = orderMeta(order)
               return (
                 <button key={order.id} onClick={() => setSelected(order)}
                   className={`w-full text-left bg-white border rounded-2xl px-4 py-3 hover:border-[#009FE3]/40 hover:shadow-sm transition-all flex items-center gap-4 ${
@@ -506,15 +526,15 @@ export default function AdminOrdersPage() {
                   <div className="flex-1 min-w-0">
                     <div className="flex items-center gap-2 mb-0.5">
                       <span className="text-sm font-semibold text-gray-900 truncate">
-                        {order.user?.name || order.contactEmail}
+                        {meta.customerName}
                       </span>
                       <span className="text-[10px] font-mono text-gray-400 flex-shrink-0">#{shortId(order.id)}</span>
                     </div>
                     <div className="flex items-center gap-3 text-xs text-gray-400">
                       <span>{order.shippingCity}</span>
-                      <span>·</span>
+                      <span>Â·</span>
                       <span>{SHIPPING_LABEL[order.shippingMethod] || order.shippingMethod}</span>
-                      <span>·</span>
+                      <span>Â·</span>
                       <span>{fmt(order.createdAt)}</span>
                     </div>
                   </div>

@@ -6,8 +6,9 @@ import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
+import { Textarea } from "@/components/ui/textarea"
 import { Check, ChevronLeft, ChevronRight, Clock, Home, Loader2, MapPin, Package, ShoppingBag, Store } from "lucide-react"
-import ParaguayLocationSelect from "@/components/paraguay-location-select"
 import { useToast } from "@/hooks/use-toast"
 import { useCart } from "@/lib/cart-context"
 import { useCurrency } from "@/lib/currency-context"
@@ -22,6 +23,33 @@ type ShippingOption = {
   requiresAddress: boolean
 }
 
+const PHONE_PREFIXES = [
+  { value: "+595", label: "+595 Paraguay" },
+  { value: "+54", label: "+54 Argentina" },
+  { value: "+55", label: "+55 Brasil" },
+]
+
+const PARAGUAY_DEPARTMENTS = [
+  "Asuncion",
+  "Central",
+  "Alto Parana",
+  "Itapua",
+  "Caaguazu",
+  "San Pedro",
+  "Cordillera",
+  "Guaira",
+  "Caazapa",
+  "Misiones",
+  "Paraguari",
+  "Neembucu",
+  "Amambay",
+  "Canindeyu",
+  "Presidente Hayes",
+  "Boqueron",
+  "Alto Paraguay",
+  "Concepcion",
+]
+
 export default function CheckoutPage() {
   const router = useRouter()
   const { toast } = useToast()
@@ -31,7 +59,7 @@ export default function CheckoutPage() {
   const [currentStep, setCurrentStep] = useState(1)
   const [isSubmittingOrder, setIsSubmittingOrder] = useState(false)
   const [orderId, setOrderId] = useState<string | null>(null)
-  const [isConvenirModalOpen, setIsConvenirModalOpen] = useState(false)
+  const [confirmedOrder, setConfirmedOrder] = useState<null | { items: typeof items; total: number }>(null)
   const [shippingData, setShippingData] = useState({
     method: "convenir",
     cost: 0,
@@ -41,14 +69,32 @@ export default function CheckoutPage() {
   })
   const [contactData, setContactData] = useState({
     name: "",
+    phonePrefix: "+595",
     phone: "",
     notes: "",
   })
 
   useEffect(() => {
-    if (currentStep !== 3 && items.length === 0) {
-      router.push("/cart")
+    if (currentStep === 3 || items.length > 0) return
+
+    const cartHasStoredItems = () => {
+      try {
+        const storedCart = window.localStorage.getItem("cart")
+        if (!storedCart) return false
+        const parsed = JSON.parse(storedCart)
+        return Array.isArray(parsed) && parsed.some((item) => item?.product?.id && item?.quantity > 0)
+      } catch {
+        return false
+      }
     }
+
+    if (cartHasStoredItems()) return
+
+    const redirectTimer = window.setTimeout(() => {
+      if (!cartHasStoredItems()) router.push("/cart")
+    }, 350)
+
+    return () => window.clearTimeout(redirectTimer)
   }, [currentStep, items.length, router])
 
   const shippingOptions: ShippingOption[] = [
@@ -74,6 +120,8 @@ export default function CheckoutPage() {
 
   const selectedShipping = shippingOptions.find((option) => option.id === shippingData.method)
   const orderTotal = total + shippingData.cost
+  const confirmationItems = confirmedOrder?.items ?? items
+  const confirmationTotal = confirmedOrder?.total ?? orderTotal
 
   const handleShippingSelect = (option: ShippingOption) => {
     setShippingData((prev) => ({
@@ -82,20 +130,9 @@ export default function CheckoutPage() {
       cost: option.cost,
       ...(option.id === "retiro-local" ? { address: "", city: "", department: "" } : {}),
     }))
-
-    if (option.requiresAddress) {
-      setIsConvenirModalOpen(true)
-    }
   }
 
-  const handleLocationSelect = (location: { address: string; city: string; department: string }) => {
-    setShippingData((prev) => ({
-      ...prev,
-      address: location.address,
-      city: location.city,
-      department: location.department,
-    }))
-  }
+  const normalizedPhone = `${contactData.phonePrefix} ${contactData.phone}`.replace(/\s+/g, " ").trim()
 
   const handleNextStep = () => {
     if (currentStep === 1) {
@@ -106,6 +143,16 @@ export default function CheckoutPage() {
           variant: "destructive",
         })
         return
+      }
+      if (shippingData.method === "convenir") {
+        if (!shippingData.department.trim() || !shippingData.city.trim() || !shippingData.address.trim()) {
+          toast({
+            title: "Faltan datos de entrega",
+            description: "Para envio a distancia necesitamos departamento, ciudad y direccion.",
+            variant: "destructive",
+          })
+          return
+        }
       }
       setCurrentStep(2)
       return
@@ -135,7 +182,7 @@ export default function CheckoutPage() {
       shippingCity: shippingData.city,
       shippingDepartment: shippingData.department,
       contactName: contactData.name,
-      contactPhone: contactData.phone,
+      contactPhone: normalizedPhone,
       subtotal: total,
       tax: 0,
       total: orderTotal,
@@ -163,7 +210,12 @@ export default function CheckoutPage() {
   const handleConfirmOrder = async () => {
     try {
       setIsSubmittingOrder(true)
+      const orderSnapshot = {
+        items: items.map((item) => ({ ...item })),
+        total: orderTotal,
+      }
       await createOrder()
+      setConfirmedOrder(orderSnapshot)
       clearCart()
       setCurrentStep(3)
       toast({
@@ -245,18 +297,35 @@ export default function CheckoutPage() {
               </div>
               <div className="space-y-2">
                 <Label htmlFor="contact-phone">Telefono / WhatsApp *</Label>
-                <Input
-                  id="contact-phone"
-                  placeholder="Ej: 0981 123 456"
-                  value={contactData.phone}
-                  onChange={(event) => setContactData((prev) => ({ ...prev, phone: event.target.value }))}
-                />
+                <div className="grid grid-cols-[132px_1fr] gap-2">
+                  <Select value={contactData.phonePrefix} onValueChange={(value) => setContactData((prev) => ({ ...prev, phonePrefix: value }))}>
+                    <SelectTrigger aria-label="Caracteristica del telefono" className="h-11">
+                      <SelectValue />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {PHONE_PREFIXES.map((prefix) => (
+                        <SelectItem key={prefix.value} value={prefix.value}>
+                          {prefix.label}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                  <Input
+                    id="contact-phone"
+                    className="h-11"
+                    inputMode="tel"
+                    placeholder="981 123 456"
+                    value={contactData.phone}
+                    onChange={(event) => setContactData((prev) => ({ ...prev, phone: event.target.value }))}
+                  />
+                </div>
               </div>
               <div className="space-y-2 md:col-span-2">
                 <Label htmlFor="contact-notes">Notas para la operadora</Label>
-                <Input
+                <Textarea
                   id="contact-notes"
-                  placeholder="Horario, referencia, forma de contacto, etc."
+                  className="min-h-24"
+                  placeholder="Horario, referencia, forma de contacto, local de envio preferido, etc."
                   value={contactData.notes}
                   onChange={(event) => setContactData((prev) => ({ ...prev, notes: event.target.value }))}
                 />
@@ -295,22 +364,63 @@ export default function CheckoutPage() {
                       <span className="font-bold text-lg">{option.cost === 0 ? "Sin cargo online" : formatPrice(option.cost)}</span>
                     </div>
                     {option.requiresAddress && (
-                      <Button
-                        type="button"
-                        variant={shippingData.method === option.id ? "default" : "outline"}
-                        size="sm"
-                        onClick={(event) => {
-                          event.stopPropagation()
-                          setIsConvenirModalOpen(true)
-                        }}
-                      >
-                        Cargar direccion
-                      </Button>
+                      <p className="text-xs font-semibold text-blue-700">Los datos se cargan abajo, sin calculo automatico.</p>
                     )}
                   </div>
                 </div>
               ))}
             </div>
+
+            {shippingData.method === "convenir" && (
+              <div className="rounded-2xl border border-blue-200 bg-white p-4 md:p-6 shadow-sm">
+                <div className="flex items-start gap-3 mb-5">
+                  <div className="h-10 w-10 rounded-full bg-blue-100 flex items-center justify-center flex-shrink-0">
+                    <MapPin className="h-5 w-5 text-blue-700" />
+                  </div>
+                  <div>
+                    <h3 className="font-bold text-gray-900">Datos para envio a distancia</h3>
+                    <p className="text-sm text-gray-600">Cargalo simple. La operadora confirma empresa de envio, costo y horario antes de cobrar.</p>
+                  </div>
+                </div>
+                <div className="grid md:grid-cols-2 gap-4">
+                  <div className="space-y-2">
+                    <Label>Departamento *</Label>
+                    <Select value={shippingData.department} onValueChange={(value) => setShippingData((prev) => ({ ...prev, department: value }))}>
+                      <SelectTrigger className="h-11">
+                        <SelectValue placeholder="Elegir departamento" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        {PARAGUAY_DEPARTMENTS.map((department) => (
+                          <SelectItem key={department} value={department}>
+                            {department}
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                  </div>
+                  <div className="space-y-2">
+                    <Label htmlFor="shipping-city">Ciudad / localidad *</Label>
+                    <Input
+                      id="shipping-city"
+                      className="h-11"
+                      placeholder="Ej: Ciudad del Este"
+                      value={shippingData.city}
+                      onChange={(event) => setShippingData((prev) => ({ ...prev, city: event.target.value }))}
+                    />
+                  </div>
+                  <div className="space-y-2 md:col-span-2">
+                    <Label htmlFor="shipping-address">Direccion o referencia de entrega *</Label>
+                    <Textarea
+                      id="shipping-address"
+                      className="min-h-24"
+                      placeholder="Barrio, calle, numero, referencia o agencia de envio preferida."
+                      value={shippingData.address}
+                      onChange={(event) => setShippingData((prev) => ({ ...prev, address: event.target.value }))}
+                    />
+                  </div>
+                </div>
+              </div>
+            )}
 
             {shippingData.method && (
               <div className="p-6 bg-gradient-to-r from-blue-50 to-indigo-50 rounded-xl border border-blue-200">
@@ -371,7 +481,7 @@ export default function CheckoutPage() {
                 <p className="text-sm text-gray-600">Nombre</p>
                 <p className="font-semibold mb-3">{contactData.name || "Sin especificar"}</p>
                 <p className="text-sm text-gray-600">Telefono</p>
-                <p className="font-semibold mb-3">{contactData.phone}</p>
+                <p className="font-semibold mb-3">{normalizedPhone}</p>
                 <p className="text-sm text-gray-600">Entrega</p>
                 <p className="font-semibold">{selectedShipping?.name}</p>
                 {shippingData.address && <p className="text-sm text-gray-700 mt-2">{shippingData.address}</p>}
@@ -458,7 +568,7 @@ export default function CheckoutPage() {
                     </div>
                     <div className="flex justify-between items-center py-3 border-b border-gray-200">
                       <span className="text-gray-600 font-medium">Total de productos</span>
-                      <span className="font-bold text-xl text-gray-900">{formatPrice(orderTotal)}</span>
+                      <span className="font-bold text-xl text-gray-900">{formatPrice(confirmationTotal)}</span>
                     </div>
                     <div className="flex justify-between items-center py-3">
                       <span className="text-gray-600 font-medium">Pago</span>
@@ -479,7 +589,7 @@ export default function CheckoutPage() {
                     </div>
                     <div>
                       <span className="text-gray-600 font-medium">Contacto:</span>
-                      <p className="font-medium text-gray-900">{contactData.phone}</p>
+                      <p className="font-medium text-gray-900">{normalizedPhone}</p>
                     </div>
                     <div>
                       <span className="text-gray-600 font-medium">Direccion:</span>
@@ -492,7 +602,7 @@ export default function CheckoutPage() {
               <div className="bg-gradient-to-r from-green-50 to-blue-50 rounded-2xl p-6 mb-8">
                 <h3 className="font-bold text-lg mb-4">Productos Solicitados</h3>
                 <div className="space-y-3">
-                  {items.map((item) => (
+                  {confirmationItems.map((item) => (
                     <div key={item.product.id} className="flex items-center justify-between p-3 bg-white rounded-lg">
                       <div className="flex items-center gap-3">
                         <div className="w-10 h-10 bg-gray-100 rounded-lg flex items-center justify-center">
@@ -523,12 +633,6 @@ export default function CheckoutPage() {
           </Card>
         </div>
       )}
-
-      <ParaguayLocationSelect
-        isOpen={isConvenirModalOpen}
-        onClose={() => setIsConvenirModalOpen(false)}
-        onLocationSelect={handleLocationSelect}
-      />
     </div>
   )
 }
