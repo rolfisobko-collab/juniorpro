@@ -56,7 +56,6 @@ model Product {
   views    ProductView[]
   cartItems CartItem[]
   favorites Favorite[]
-  orderItems OrderItem[]
   productReviews Review[]
 
   @@index([categoryKey])
@@ -169,7 +168,6 @@ model OrderItem {
   quantity  Int
 
   order   Order   @relation(fields: [orderId], references: [id], onDelete: Cascade)
-  product Product @relation(fields: [productId], references: [id])
 
   @@index([orderId])
   @@index([productId])

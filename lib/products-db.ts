@@ -71,20 +71,10 @@ export async function getBestSellerProducts(limit: number = 5): Promise<ProductW
       return result.products
     }
 
-    // Get products with most order items
     const products = await prisma.product.findMany({
       where: { inStock: true },
-      include: { 
-        category: true,
-        _count: {
-          select: { orderItems: true }
-        }
-      },
-      orderBy: {
-        orderItems: {
-          _count: 'desc'
-        }
-      },
+      include: { category: true },
+      orderBy: [{ featured: 'desc' }, { updatedAt: 'desc' }],
       take: limit
     })
     return products

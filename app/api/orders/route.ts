@@ -2,59 +2,6 @@ import { NextResponse, type NextRequest } from "next/server"
 
 import { prisma } from "@/lib/db"
 import { requireUserId } from "@/lib/auth-session"
-import { getMirrorProductById } from "@/lib/mirror-products"
-
-async function ensureOrderProduct(item: any) {
-  const productId = String(item.productId || "")
-  if (!productId) return
-
-  const existing = await prisma.product.findUnique({ where: { id: productId }, select: { id: true } })
-  if (existing) return
-
-  const mirrorProduct = productId.startsWith("mirror-") ? await getMirrorProductById(productId) : null
-  const category = mirrorProduct?.category ?? {
-    key: "general",
-    name: "General",
-    slug: "general",
-    description: "Productos generales del catalogo.",
-  }
-
-  await prisma.category.upsert({
-    where: { key: category.key },
-    update: {
-      name: category.name,
-      slug: category.slug,
-      description: category.description ?? null,
-    },
-    create: {
-      key: category.key,
-      name: category.name,
-      slug: category.slug,
-      description: category.description ?? null,
-    },
-  })
-
-  await prisma.product.create({
-    data: {
-      id: productId,
-      codigo: mirrorProduct?.codigo ? String(mirrorProduct.codigo) : productId.replace(/^mirror-/, ""),
-      name: mirrorProduct?.name || item.name || `Producto ${productId}`,
-      categoryKey: category.key,
-      price: Number(mirrorProduct?.price ?? item.price ?? 0),
-      image: mirrorProduct?.image || item.image || "/placeholder.svg",
-      images: Array.isArray(mirrorProduct?.images) ? mirrorProduct.images as string[] : [],
-      description: mirrorProduct?.description || item.name || `Producto ${productId}`,
-      brand: mirrorProduct?.brand || "Sin marca",
-      rating: Number(mirrorProduct?.rating ?? 0),
-      reviews: Number(mirrorProduct?.reviews ?? 0),
-      inStock: true,
-      stockQuantity: Number(mirrorProduct?.stockQuantity ?? 999999),
-      featured: false,
-      referencia: mirrorProduct?.referencia ? String(mirrorProduct.referencia) : null,
-      codigoBarra: mirrorProduct?.codigoBarra ? String(mirrorProduct.codigoBarra) : null,
-    },
-  })
-}
 
 export async function GET() {
   try {
@@ -123,9 +70,7 @@ export async function POST(req: NextRequest) {
       paymentStatus: body.paymentStatus || "pending"
     }
 
-    await Promise.all(orderData.items.map((item: any) => ensureOrderProduct(item)))
-
-    // Crear orden con el usuario correspondiente
+    // Crear orden con snapshot del producto. No se crea Product local para catalogo espejo.
     const order = await prisma.order.create({
       data: {
         userId: user.id,
