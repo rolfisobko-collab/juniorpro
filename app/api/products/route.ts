@@ -2,6 +2,9 @@ import { NextResponse } from "next/server"
 import { prisma } from "@/lib/db"
 import { getMirrorProducts, isMirrorCatalogEnabled } from "@/lib/mirror-products"
 
+export const dynamic = "force-dynamic"
+export const revalidate = 0
+
 // Mock products for when database is not available
 const MOCK_PRODUCTS = [
   {

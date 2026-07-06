@@ -123,7 +123,8 @@ export function normalizeMirrorSubcategory(value?: string | null) {
 }
 
 export function isMirrorCatalogEnabled() {
-  return process.env.PRODUCT_SOURCE === "mirror" && Boolean(process.env.TECHZONE_DB_HOST)
+  const source = (process.env.PRODUCT_SOURCE || "").replace(/^\uFEFF/, "").replace(/^ï»¿/, "").trim()
+  return source === "mirror" && Boolean(process.env.TECHZONE_DB_HOST)
 }
 
 function getPool() {
