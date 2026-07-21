@@ -33,12 +33,6 @@ export default function WhatsAppFloatingButton() {
       role: "Vendedor", 
       phone: "+595982639445",
       color: "from-teal-500 to-teal-600"
-    },
-    {
-      name: "Karen Mendoza",
-      role: "Vendedora",
-      phone: "+595986664625", 
-      color: "from-green-600 to-green-700"
     }
   ]
 

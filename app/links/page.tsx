@@ -11,7 +11,6 @@ const whatsappContacts = [
   { name: "Diego Villalba", role: "Vendedor", phone: "+595982245365" },
   { name: "Johny Ortigoza", role: "Vendedor", phone: "+595985654487" },
   { name: "Diego Maidana", role: "Vendedor", phone: "+595982639445" },
-  { name: "Karen Mendoza", role: "Vendedora", phone: "+595986664625" },
   { name: "José Mendes", role: "Vendedor", phone: "+595984623013" },
 ]
 
