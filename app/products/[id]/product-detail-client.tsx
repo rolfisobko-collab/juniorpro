@@ -29,6 +29,7 @@ export default function ProductDetailClient({ product, recommendedProducts }: Pr
   const [quantity, setQuantity] = useState(1)
   const [animationTrigger, setAnimationTrigger] = useState<{x: number, y: number} | false>(false)
   const [selectedImage, setSelectedImage] = useState<string | null>(null)
+  const [imageError, setImageError] = useState(false)
   const { user } = useAuth()
   const [ratingAvg, setRatingAvg] = useState(0)
   const [ratingCount, setRatingCount] = useState(0)
@@ -98,11 +99,14 @@ export default function ProductDetailClient({ product, recommendedProducts }: Pr
     })
   }
 
+  const productPlaceholder = "/product-placeholder.webp"
+  const isRealImage = (img?: string | null) => Boolean(img && !img.includes("placeholder"))
   const allImages: string[] = []
-  if (product.image && product.image.startsWith("http")) allImages.push(product.image)
-  ;(product.images ?? []).forEach(img => { if (img && img.startsWith("http") && !allImages.includes(img)) allImages.push(img) })
-  if (allImages.length === 0 && product.image) allImages.push(product.image)
-  const displayImage = selectedImage || allImages[0] || "/placeholder.svg"
+  if (isRealImage(product.image)) allImages.push(product.image)
+  ;(product.images ?? []).forEach(img => {
+    if (isRealImage(img) && !allImages.includes(img)) allImages.push(img)
+  })
+  const displayImage = imageError ? productPlaceholder : selectedImage || allImages[0] || productPlaceholder
 
   const ratingFull = Math.floor(ratingAvg)
 
@@ -136,6 +140,7 @@ export default function ProductDetailClient({ product, recommendedProducts }: Pr
                 sizes="(max-width: 768px) 100vw, 50vw"
                 priority
                 unoptimized={displayImage.startsWith("http")}
+                onError={() => setImageError(true)}
               />
               {/* Badge stock */}
               <div className="absolute top-4 left-4">
@@ -158,7 +163,10 @@ export default function ProductDetailClient({ product, recommendedProducts }: Pr
                 {allImages.slice(0, 4).map((img, i) => (
                   <button
                     key={i}
-                    onClick={() => setSelectedImage(img)}
+                    onClick={() => {
+                      setSelectedImage(img)
+                      setImageError(false)
+                    }}
                     className={`relative aspect-square rounded-xl overflow-hidden bg-white border-2 transition-all duration-200 ${displayImage === img ? "border-[#009FE3] shadow-md shadow-[#009FE3]/20" : "border-transparent hover:border-gray-300"}`}
                   >
                     <Image src={img} alt={`${product.name} - ${i + 1}`} fill className="object-contain p-2" sizes="100px" />

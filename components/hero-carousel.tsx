@@ -9,7 +9,7 @@ const slides = [
   {
     img: "/optimized/carousel/slide-1-desktop.webp",
     imgMobile: "/optimized/carousel/slide-1-mobile.webp",
-    href: "/products/prod_1770627714955_31_vosqjsbib",
+    href: "/products?category=electronics&subcategory=smartfone",
     alt: "iPhone 17 Pro",
     bg: "#000000",
   },
