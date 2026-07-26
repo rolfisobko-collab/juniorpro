@@ -23,8 +23,8 @@ const slides = [
   {
     img: "/optimized/carousel/slide-3-desktop.webp",
     imgMobile: "/optimized/carousel/slide-3-mobile.webp",
-    href: "/products?category=perfumes",
-    alt: "Lattafa Perfumes",
+    href: "/products?category=electronics&subcategory=audios",
+    alt: "Audio y accesorios",
     bg: "#1a0a0a",
   },
   {

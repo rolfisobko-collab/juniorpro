@@ -115,10 +115,10 @@ export default function Footer() {
               </li>
               <li>
                 <Link
-                  href="/products?category=perfumes"
+                  href="/products?category=electronics&subcategory=audios"
                   className="text-sm text-muted-foreground hover:text-primary transition-colors"
                 >
-                  {t('Perfumes')}
+                  Audio y accesorios
                 </Link>
               </li>
               <li>
