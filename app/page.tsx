@@ -4,7 +4,7 @@ import { Button } from "@/components/ui/button"
 import { defaultCTAs } from "@/lib/ctas-data"
 import { HeroCarousel } from "@/components/hero-carousel"
 import { getActiveHomeCategories } from "@/lib/home-categories-data"
-import { HomeBestSellers, HomeAppliances, HomeNewArrivals } from "@/components/homepage-products-static"
+import { HomeProductSections } from "@/components/homepage-products-static"
 import Link from "next/link"
 import Image from "next/image"
 import { ArrowRight, ShieldCheck, Truck, Zap, Award } from "lucide-react"
@@ -84,9 +84,11 @@ export default async function HomePage() {
         </div>
       </section>
 
-      <HomeBestSellers title={t('Best Sellers')} />
-
-      <HomeAppliances title={lang === 'pt' ? 'Eletrodomésticos em Destaque' : 'Electrodomésticos Destacados'} />
+      <HomeProductSections
+        bestTitle={t('Best Sellers')}
+        appliancesTitle={lang === 'pt' ? 'Eletrodomésticos em Destaque' : 'Electrodomésticos Destacados'}
+        newTitle={t('New Arrivals')}
+      />
 
       {activeCTAs.length > 0 && activeCTAs[0] && (
         <section className="py-0 relative overflow-hidden">
@@ -140,7 +142,6 @@ export default async function HomePage() {
         </section>
       )}
 
-      <HomeNewArrivals title={t('New Arrivals')} />
     </div>
   )
 }

@@ -11,7 +11,7 @@ export let homeCategories: HomeCategory[] = [
   {
     id: "1",
     name: "Smartphones",
-    image: "/categories/smartphones.png",
+    image: "/optimized/categories/smartphones.webp",
     link: "/products?category=electronics&subcategory=smartfone",
     order: 1,
     active: true,
@@ -19,7 +19,7 @@ export let homeCategories: HomeCategory[] = [
   {
     id: "2",
     name: "Computadoras",
-    image: "/categories/computadoras.png",
+    image: "/optimized/categories/computadoras.webp",
     link: "/products?category=electronics&subcategory=notebook",
     order: 2,
     active: true,
@@ -27,7 +27,7 @@ export let homeCategories: HomeCategory[] = [
   {
     id: "3",
     name: "Tablets",
-    image: "https://images.unsplash.com/photo-1544244015-0df4b3ffc6b0?w=400&q=80",
+    image: "/optimized/categories/tablets.webp",
     link: "/products?category=electronics&subcategory=tablet",
     order: 3,
     active: true,
@@ -35,7 +35,7 @@ export let homeCategories: HomeCategory[] = [
   {
     id: "4",
     name: "Videojuegos",
-    image: "/categories/videojuegos.png",
+    image: "/optimized/categories/videojuegos.webp",
     link: "/products?category=electronics&subcategory=videogame",
     order: 4,
     active: true,
@@ -43,7 +43,7 @@ export let homeCategories: HomeCategory[] = [
   {
     id: "5",
     name: "Auriculares",
-    image: "/categories/audio.png",
+    image: "/optimized/categories/audio.webp",
     link: "/products?category=electronics&subcategory=audios",
     order: 5,
     active: true,
@@ -51,7 +51,7 @@ export let homeCategories: HomeCategory[] = [
   {
     id: "6",
     name: "Accesorios",
-    image: "https://images.unsplash.com/photo-1572635196237-14b3f281503f?w=400&q=80",
+    image: "/optimized/categories/accesorios.webp",
     link: "/products?category=electronics",
     order: 6,
     active: true,
@@ -59,7 +59,7 @@ export let homeCategories: HomeCategory[] = [
   {
     id: "7",
     name: "TV Box",
-    image: "https://images.unsplash.com/photo-1593784991095-a205069470b6?w=400&q=80",
+    image: "/optimized/categories/tv-box.webp",
     link: "/products?category=electronics&subcategory=tv-box",
     order: 7,
     active: true,
@@ -67,7 +67,7 @@ export let homeCategories: HomeCategory[] = [
   {
     id: "8",
     name: "Freidoras",
-    image: "https://images.unsplash.com/photo-1585771724684-38269d6639fd?w=400&q=80",
+    image: "/optimized/categories/freidoras.webp",
     link: "/products?category=appliances&subcategory=airfrayer",
     order: 8,
     active: true,
@@ -75,7 +75,7 @@ export let homeCategories: HomeCategory[] = [
   {
     id: "9",
     name: "Electrodomésticos",
-    image: "https://images.unsplash.com/photo-1556909114-f6e7ad7d3136?w=400&q=80",
+    image: "/optimized/categories/electrodomesticos.webp",
     link: "/products?category=appliances",
     order: 9,
     active: true,
@@ -83,7 +83,7 @@ export let homeCategories: HomeCategory[] = [
   {
     id: "10",
     name: "Perfumes Masculinos",
-    image: "/categories/perfumes-masculinos.png",
+    image: "/optimized/categories/perfumes-masculinos.webp",
     link: "/products?category=perfumes&subcategory=men",
     order: 10,
     active: false,
@@ -91,7 +91,7 @@ export let homeCategories: HomeCategory[] = [
   {
     id: "11",
     name: "Perfumes Femeninos",
-    image: "/categories/perfumes-femeninos.png",
+    image: "/optimized/categories/perfumes-femeninos.webp",
     link: "/products?category=perfumes&subcategory=women",
     order: 11,
     active: false,

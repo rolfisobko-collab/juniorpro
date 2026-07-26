@@ -7,30 +7,56 @@ import Link from "next/link"
 
 const slides = [
   {
-    img: "/carousel-1.png",
+    img: "/optimized/carousel/slide-1-desktop.webp",
+    imgMobile: "/optimized/carousel/slide-1-mobile.webp",
     href: "/products/prod_1770627714955_31_vosqjsbib",
     alt: "iPhone 17 Pro",
     bg: "#000000",
   },
   {
-    img: "/carousel-2.png",
+    img: "/optimized/carousel/slide-2-desktop.webp",
+    imgMobile: "/optimized/carousel/slide-2-mobile.webp",
     href: "/products?category=electronics&subcategory=smartfone",
     alt: "Samsung Galaxy S26 Ultra",
     bg: "#8B8FA8",
   },
   {
-    img: "/carousel-3.png",
+    img: "/optimized/carousel/slide-3-desktop.webp",
+    imgMobile: "/optimized/carousel/slide-3-mobile.webp",
     href: "/products?category=perfumes",
     alt: "Lattafa Perfumes",
     bg: "#1a0a0a",
   },
   {
-    img: "/carousel-4.png",
+    img: "/optimized/carousel/slide-4-desktop.webp",
+    imgMobile: "/optimized/carousel/slide-4-mobile.webp",
     href: "/",
     alt: "Nuestros Asesores",
     bg: "#0ea5e9",
   },
 ]
+
+function SlideImage({
+  slide,
+  priority = false,
+}: {
+  slide: (typeof slides)[number]
+  priority?: boolean
+}) {
+  return (
+    <picture>
+      <source media="(max-width: 640px)" srcSet={slide.imgMobile} />
+      <img
+        src={slide.img}
+        alt={slide.alt}
+        className="h-full w-full object-cover"
+        fetchPriority={priority ? "high" : "low"}
+        decoding={priority ? "sync" : "async"}
+        loading={priority ? "eager" : "lazy"}
+      />
+    </picture>
+  )
+}
 
 export function HeroCarousel() {
   const [currentIndex, setCurrentIndex] = useState(0)
@@ -43,10 +69,13 @@ export function HeroCarousel() {
   }, [])
 
   return (
-    <div className="relative w-full overflow-hidden" style={{ background: slides[currentIndex].bg }}>
+    <div
+      className="relative w-full overflow-hidden aspect-square sm:aspect-[16/5] md:aspect-[32/9]"
+      style={{ background: slides[currentIndex].bg }}
+    >
       {/* Slide 0 establece la altura natural de la imagen */}
-      <Link href={slides[0].href} className={`block w-full transition-opacity duration-500 ${currentIndex === 0 ? "opacity-100" : "opacity-0 pointer-events-none"}`}>
-        <img src={slides[0].img} alt={slides[0].alt} className="w-full h-auto block" fetchPriority="high" decoding="sync" loading="eager" />
+      <Link href={slides[0].href} className={`block h-full w-full transition-opacity duration-500 ${currentIndex === 0 ? "opacity-100" : "opacity-0 pointer-events-none"}`}>
+        <SlideImage slide={slides[0]} priority />
       </Link>
       {/* Resto de slides superpuestos */}
       {slides.slice(1).map((slide, idx) => {
@@ -57,14 +86,7 @@ export function HeroCarousel() {
             href={slide.href}
             className={`absolute inset-0 transition-opacity duration-500 ${i === currentIndex ? "opacity-100" : "opacity-0 pointer-events-none"}`}
           >
-            <img
-              src={slide.img}
-              alt={slide.alt}
-              className="w-full h-auto block"
-              fetchPriority="low"
-              decoding="async"
-              loading="eager"
-            />
+            <SlideImage slide={slide} />
           </Link>
         )
       })}

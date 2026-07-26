@@ -27,6 +27,7 @@ type MirrorFilters = {
   maxPrice?: string | null
   sort?: string | null
   excludeId?: string
+  includeTotal?: boolean
 }
 
 type ImageCandidate = {
@@ -41,6 +42,15 @@ let imageCatalogCache: { expiresAt: number; items: ImageCandidate[] } | null = n
 let imageOverrideCache: { expiresAt: number; items: Map<string, string> } | null = null
 let overridesEnsured = false
 let mirrorPool: mysql.Pool | null = null
+let mirrorProductsCache = new Map<string, { expiresAt: number; value: MirrorProductsResult }>()
+let mirrorCategoriesCache: { expiresAt: number; value: any[] } | null = null
+
+type MirrorProductsResult = {
+  products: ProductWithCategory[]
+  total: number
+  page: number
+  limit: number
+}
 
 const CATEGORY_META: Record<string, { name: string; slug: string; description: string }> = {
   electronics: {
@@ -146,6 +156,34 @@ function getPool() {
 
 function shouldUseLegacyImageMatching() {
   return process.env.MIRROR_IMAGE_MATCHING === "true"
+}
+
+function getMirrorProductsCacheTtl() {
+  const ttl = Number(process.env.MIRROR_PRODUCTS_CACHE_TTL_MS || 60_000)
+  return Number.isFinite(ttl) && ttl >= 0 ? ttl : 60_000
+}
+
+function getProductsCacheKey(filters: MirrorFilters, page: number, limit: number) {
+  return JSON.stringify({
+    page,
+    limit,
+    category: filters.category || "",
+    subcategory: filters.subcategory || "",
+    search: filters.search || "",
+    minPrice: filters.minPrice || "",
+    maxPrice: filters.maxPrice || "",
+    sort: filters.sort || "",
+    excludeId: filters.excludeId || "",
+    includeTotal: filters.includeTotal !== false,
+  })
+}
+
+function rememberMirrorProducts(key: string, value: MirrorProductsResult) {
+  const ttl = getMirrorProductsCacheTtl()
+  if (ttl <= 0) return value
+  if (mirrorProductsCache.size > 100) mirrorProductsCache = new Map()
+  mirrorProductsCache.set(key, { expiresAt: Date.now() + ttl, value })
+  return value
 }
 
 function toNumber(value: unknown) {
@@ -259,6 +297,7 @@ export async function saveMirrorImageOverride(productIdOrCode: string, imageUrl:
     imageUrl
   )
   imageOverrideCache = null
+  mirrorProductsCache = new Map()
   return { productCode, imageUrl }
 }
 
@@ -293,7 +332,7 @@ function findBestImage(productCode: string, productName: string, brand: string, 
     }
   }
 
-  return best && bestScore >= 0.82 ? best.image : "/placeholder.svg"
+  return best && bestScore >= 0.82 ? best.image : "/product-placeholder.webp"
 }
 
 function normalizeSubcategory(value?: string | null) {
@@ -450,15 +489,21 @@ export function mapMirrorProduct(
 export async function getMirrorProducts(filters: MirrorFilters = {}) {
   const page = Math.max(1, Number(filters.page || 1))
   const limit = Math.min(100, Math.max(1, Number(filters.limit || 20)))
+  const cacheKey = getProductsCacheKey(filters, page, limit)
+  const cached = mirrorProductsCache.get(cacheKey)
+  if (cached && cached.expiresAt > Date.now()) return cached.value
+
   const offset = (page - 1) * limit
   const where = buildWhere(filters)
   const pool = getPool()
+  const includeTotal = filters.includeTotal !== false
 
   const orderBy = mapSort(filters.sort)
-  const [rowsResult, countResult] = await Promise.all([
-    pool.query(`${selectSql()} ${where.sql} ORDER BY ${orderBy} LIMIT ? OFFSET ?`, [...where.params, limit, offset]),
-    pool.query(`SELECT COUNT(*) AS total FROM produtos p LEFT JOIN marcas m ON m.mrc_codigo = p.prd_marca LEFT JOIN grupos g ON g.grp_codigo = p.prd_grupo LEFT JOIN sgrupos sg ON sg.sgr_codigo = p.prd_subgrupo ${where.sql}`, where.params),
-  ])
+  const rowsPromise = pool.query(`${selectSql()} ${where.sql} ORDER BY ${orderBy} LIMIT ? OFFSET ?`, [...where.params, limit, offset])
+  const countPromise = includeTotal
+    ? pool.query(`SELECT COUNT(*) AS total FROM produtos p LEFT JOIN marcas m ON m.mrc_codigo = p.prd_marca LEFT JOIN grupos g ON g.grp_codigo = p.prd_grupo LEFT JOIN sgrupos sg ON sg.sgr_codigo = p.prd_subgrupo ${where.sql}`, where.params)
+    : Promise.resolve([[{ total: page * limit }], []] as any)
+  const [rowsResult, countResult] = await Promise.all([rowsPromise, countPromise])
 
   const rows = rowsResult[0] as MirrorProductRow[]
   const countRows = countResult[0] as Array<{ total: number }>
@@ -466,12 +511,12 @@ export async function getMirrorProducts(filters: MirrorFilters = {}) {
   const imageCatalog = shouldUseLegacyImageMatching() ? await getImageCatalog() : []
   const imageOverrides = await getImageOverrides()
 
-  return {
+  return rememberMirrorProducts(cacheKey, {
     products: rows.map(row => mapMirrorProduct(row, imageCatalog, imageOverrides)),
     total,
     page,
     limit,
-  }
+  })
 }
 
 export async function getMirrorProductById(id: string) {
@@ -486,6 +531,8 @@ export async function getMirrorProductById(id: string) {
 }
 
 export async function getMirrorCategories() {
+  if (mirrorCategoriesCache && mirrorCategoriesCache.expiresAt > Date.now()) return mirrorCategoriesCache.value
+
   const pool = getPool()
   const [rows] = await pool.query(`
     SELECT
@@ -522,8 +569,10 @@ export async function getMirrorCategories() {
     grouped.set(key, current)
   }
 
-  return Array.from(grouped.values()).map(category => ({
+  const categories = Array.from(grouped.values()).map(category => ({
     ...category,
     subcategories: Array.from(category.subcategories.values()),
   }))
+  mirrorCategoriesCache = { expiresAt: Date.now() + 5 * 60 * 1000, value: categories }
+  return categories
 }

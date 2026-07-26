@@ -65,10 +65,10 @@ export function ProductCard({ product, priority = false }: ProductCardProps) {
         {/* Imagen */}
         <div className="relative aspect-square overflow-hidden bg-gradient-to-br from-gray-50 to-white">
           <Image
-            src={product.image || "/placeholder.svg"}
+            src={product.image && !product.image.includes("placeholder") ? product.image : "/product-placeholder.webp"}
             alt={product.name}
             className="absolute inset-3 w-[calc(100%-1.5rem)] h-[calc(100%-1.5rem)] object-contain transition-transform duration-500 group-hover:scale-[1.07]"
-            fallback="/placeholder.svg"
+            fallback="/product-placeholder.webp"
             loading={priority ? "eager" : "lazy"}
             fetchPriority={priority ? "high" : "auto"}
           />

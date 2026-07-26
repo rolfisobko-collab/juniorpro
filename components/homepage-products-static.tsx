@@ -14,6 +14,7 @@ async function fetchSection(opts: { category?: string; featured?: boolean; sort:
         sort: opts.sort,
         limit: opts.limit,
         page: 1,
+        includeTotal: false,
       })
       return result.products as unknown as UnifiedProduct[]
     }
@@ -110,4 +111,28 @@ export async function HomeAppliances({ title }: { title: string }) {
 export async function HomeNewArrivals({ title }: { title: string }) {
   const products = await getNewArrivals()
   return <Section title={title} eyebrow="Novedades" href="/products?sort=latest" bg="gray" products={products} />
+}
+
+export async function HomeProductSections({
+  bestTitle,
+  appliancesTitle,
+  newTitle,
+}: {
+  bestTitle: string
+  appliancesTitle: string
+  newTitle: string
+}) {
+  const [bestSellers, appliances, newArrivals] = await Promise.all([
+    getBestSellers(),
+    getAppliances(),
+    getNewArrivals(),
+  ])
+
+  return (
+    <>
+      <Section title={bestTitle} eyebrow="Destacados" href="/products?featured=true" bg="gray" products={bestSellers} />
+      <Section title={appliancesTitle} eyebrow="Categoría" href="/products?category=appliances" bg="white" products={appliances} />
+      <Section title={newTitle} eyebrow="Novedades" href="/products?sort=latest" bg="gray" products={newArrivals} />
+    </>
+  )
 }
