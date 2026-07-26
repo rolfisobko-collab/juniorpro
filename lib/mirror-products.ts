@@ -40,6 +40,7 @@ type ImageCandidate = {
 let imageCatalogCache: { expiresAt: number; items: ImageCandidate[] } | null = null
 let imageOverrideCache: { expiresAt: number; items: Map<string, string> } | null = null
 let overridesEnsured = false
+let mirrorPool: mysql.Pool | null = null
 
 const CATEGORY_META: Record<string, { name: string; slug: string; description: string }> = {
   electronics: {
@@ -128,7 +129,9 @@ export function isMirrorCatalogEnabled() {
 }
 
 function getPool() {
-  return mysql.createPool({
+  if (mirrorPool) return mirrorPool
+
+  mirrorPool = mysql.createPool({
     host: process.env.TECHZONE_DB_HOST,
     port: Number(process.env.TECHZONE_DB_PORT || 3306),
     user: process.env.TECHZONE_DB_USER,
@@ -138,6 +141,11 @@ function getPool() {
     connectionLimit: 5,
     enableKeepAlive: true,
   })
+  return mirrorPool
+}
+
+function shouldUseLegacyImageMatching() {
+  return process.env.MIRROR_IMAGE_MATCHING === "true"
 }
 
 function toNumber(value: unknown) {
@@ -231,7 +239,7 @@ async function getImageOverrides() {
       `SELECT "productCode", "imageUrl" FROM "ProductImageOverride"`
     )
     const items = new Map(rows.map(row => [String(row.productCode), row.imageUrl]))
-    imageOverrideCache = { expiresAt: Date.now() + 60 * 1000, items }
+    imageOverrideCache = { expiresAt: Date.now() + 5 * 60 * 1000, items }
     return items
   } catch (error) {
     console.warn("Mirror image overrides unavailable:", error)
@@ -452,11 +460,10 @@ export async function getMirrorProducts(filters: MirrorFilters = {}) {
     pool.query(`SELECT COUNT(*) AS total FROM produtos p LEFT JOIN marcas m ON m.mrc_codigo = p.prd_marca LEFT JOIN grupos g ON g.grp_codigo = p.prd_grupo LEFT JOIN sgrupos sg ON sg.sgr_codigo = p.prd_subgrupo ${where.sql}`, where.params),
   ])
 
-  await pool.end()
   const rows = rowsResult[0] as MirrorProductRow[]
   const countRows = countResult[0] as Array<{ total: number }>
   const total = Number(countRows[0]?.total || 0)
-  const imageCatalog = await getImageCatalog()
+  const imageCatalog = shouldUseLegacyImageMatching() ? await getImageCatalog() : []
   const imageOverrides = await getImageOverrides()
 
   return {
@@ -472,9 +479,8 @@ export async function getMirrorProductById(id: string) {
   const code = id.replace("mirror-", "")
   const pool = getPool()
   const [result] = await pool.query(`${selectSql()} WHERE CAST(p.prd_codigo AS CHAR) = ? AND p.prd_preco_venta > 0 LIMIT 1`, [code])
-  await pool.end()
   const rows = result as MirrorProductRow[]
-  const imageCatalog = await getImageCatalog()
+  const imageCatalog = shouldUseLegacyImageMatching() ? await getImageCatalog() : []
   const imageOverrides = await getImageOverrides()
   return rows[0] ? mapMirrorProduct(rows[0], imageCatalog, imageOverrides) : null
 }
@@ -493,7 +499,6 @@ export async function getMirrorCategories() {
     GROUP BY g.grp_descricao, sg.sgr_descricao
     ORDER BY g.grp_descricao, sg.sgr_descricao
   `)
-  await pool.end()
 
   const grouped = new Map<string, any>()
   for (const row of rows as Array<{ grp_descricao: string | null; sgr_descricao: string | null; total: number }>) {

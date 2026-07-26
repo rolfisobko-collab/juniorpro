@@ -2,14 +2,10 @@ import type React from "react"
 import { Inter } from "next/font/google"
 import Script from "next/script"
 import ClientLayout from "./client-layout"
-import { warmupCache } from "@/lib/cache-warmup"
 import { getServerLang } from "@/lib/i18n/get-server-lang"
 import "./globals.css"
 
 const inter = Inter({ subsets: ["latin"], variable: "--font-sans" })
-
-// Fire warm-up in background — doesn't block rendering
-warmupCache().catch(() => {})
 
 export default async function RootLayout({
   children,
@@ -46,14 +42,6 @@ export default async function RootLayout({
             gtag('config', 'G-J290XBN46Y');
           `}
         </Script>
-        <Script
-          src="https://www.gstatic.com/firebasejs/11.10.0/firebase-app.js"
-          strategy="afterInteractive"
-        />
-        <Script
-          src="https://www.gstatic.com/firebasejs/11.10.0/firebase-auth.js"
-          strategy="afterInteractive"
-        />
       </head>
       <body className={`${inter.variable} font-sans antialiased`}>
         <ClientLayout>{children}</ClientLayout>
