@@ -312,7 +312,7 @@ function mapSort(sort?: string | null) {
 }
 
 function buildWhere(filters: MirrorFilters) {
-  const where: string[] = []
+  const where: string[] = ["p.prd_preco_venta > 0"]
   const params: Array<string | number> = []
 
   if (filters.excludeId?.startsWith("mirror-")) {
@@ -352,12 +352,12 @@ function buildWhere(filters: MirrorFilters) {
   }
 
   if (filters.minPrice) {
-    where.push("COALESCE(NULLIF(p.prd_preco_web, 0), NULLIF(p.prd_preco_venta, 0), p.prd_preco_minimo, 0) >= ?")
+    where.push("p.prd_preco_venta >= ?")
     params.push(Number(filters.minPrice))
   }
 
   if (filters.maxPrice) {
-    where.push("COALESCE(NULLIF(p.prd_preco_web, 0), NULLIF(p.prd_preco_venta, 0), p.prd_preco_minimo, 0) <= ?")
+    where.push("p.prd_preco_venta <= ?")
     params.push(Number(filters.maxPrice))
   }
 
@@ -382,7 +382,7 @@ function selectSql() {
       m.mrc_descricao,
       g.grp_descricao,
       sg.sgr_descricao,
-      COALESCE(NULLIF(p.prd_preco_web, 0), NULLIF(p.prd_preco_venta, 0), p.prd_preco_minimo, 0) AS price,
+      p.prd_preco_venta AS price,
       COALESCE(NULLIF(p.prd_nomelongo, ''), NULLIF(p.prd_descricao, ''), CONCAT('Producto ', p.prd_codigo)) AS name
     FROM produtos p
     LEFT JOIN marcas m ON m.mrc_codigo = p.prd_marca
@@ -400,7 +400,7 @@ export function mapMirrorProduct(
   const category = getCategory(categoryKey)
   const name = clean(row.prd_nomelongo) || clean(row.prd_descricao) || `Producto ${row.prd_codigo}`
   const stockQuantity = toNumber(row.prd_estoque)
-  const price = toNumber(row.prd_preco_web) || toNumber(row.prd_preco_venta) || toNumber(row.prd_preco_minimo)
+  const price = toNumber(row.prd_preco_venta)
   const brand = clean(row.mrc_descricao) || "Sin marca"
   const subgroup = clean(row.sgr_descricao)
   const reference = clean(row.prd_referencia)
@@ -471,7 +471,7 @@ export async function getMirrorProductById(id: string) {
   if (!id.startsWith("mirror-")) return null
   const code = id.replace("mirror-", "")
   const pool = getPool()
-  const [result] = await pool.query(`${selectSql()} WHERE CAST(p.prd_codigo AS CHAR) = ? LIMIT 1`, [code])
+  const [result] = await pool.query(`${selectSql()} WHERE CAST(p.prd_codigo AS CHAR) = ? AND p.prd_preco_venta > 0 LIMIT 1`, [code])
   await pool.end()
   const rows = result as MirrorProductRow[]
   const imageCatalog = await getImageCatalog()
@@ -489,6 +489,7 @@ export async function getMirrorCategories() {
     FROM produtos p
     LEFT JOIN grupos g ON g.grp_codigo = p.prd_grupo
     LEFT JOIN sgrupos sg ON sg.sgr_codigo = p.prd_subgrupo
+    WHERE p.prd_preco_venta > 0
     GROUP BY g.grp_descricao, sg.sgr_descricao
     ORDER BY g.grp_descricao, sg.sgr_descricao
   `)
