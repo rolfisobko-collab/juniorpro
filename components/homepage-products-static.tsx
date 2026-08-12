@@ -1,22 +1,52 @@
-import { unstable_cache } from "next/cache"
-import { prisma } from "@/lib/db"
+﻿import { prisma } from "@/lib/db"
 import { getMirrorProducts, isMirrorCatalogEnabled } from "@/lib/mirror-products"
 import { ProductCard } from "@/components/product-card"
 import type { UnifiedProduct } from "@/lib/product-types"
+import { curateFeaturedProducts, hasUsableProductImage } from "@/lib/featured-products"
 import Link from "next/link"
 import { ArrowRight } from "lucide-react"
 
-async function fetchSection(opts: { category?: string; featured?: boolean; sort: string; limit: number }) {
+type SectionKind = "premium" | "smartHome" | "gamingComputing"
+
+function matchesSection(product: UnifiedProduct, kind?: SectionKind) {
+  const price = Number(product.price) || 0
+  if (price <= 0 || price > 10000) return false
+
+  if (!kind || kind === "premium") return true
+  const haystack = [
+    product.name,
+    product.brand,
+    (product as any).categoryKey,
+    (product as any).mirrorSubgroup,
+    (product as any).mirrorGroup,
+    product.description,
+  ].join(" ").toLowerCase()
+
+  if (kind === "smartHome") {
+    return /robot|aspirador|tv |^tv|qled tv|oled tv|google tv|ar condicionado|cafeteira|airfryer/.test(haystack)
+  }
+
+  return /playstation|ps5|xbox|nintendo|game|macbook|notebook|^nb |ipad|tablet|rtx|msi|asus|lenovo/.test(haystack)
+}
+
+async function fetchSection(opts: { category?: string; featured?: boolean; sort: string; limit: number; kind?: SectionKind }) {
   try {
     if (isMirrorCatalogEnabled()) {
       const result = await getMirrorProducts({
-        category: opts.category === "electrodomesticos" ? "appliances" : opts.category,
-        sort: opts.sort,
-        limit: opts.limit,
+        category: opts.category,
+        sort: opts.featured || opts.kind ? "price_desc" : opts.sort,
+        limit: opts.featured || opts.kind ? 120 : Math.max(opts.limit, 24),
         page: 1,
         includeTotal: false,
+        requireImages: true,
       })
-      return result.products as unknown as UnifiedProduct[]
+      const products = (result.products as unknown as UnifiedProduct[])
+        .filter(hasUsableProductImage)
+        .filter((product) => matchesSection(product, opts.kind))
+      if (opts.featured || opts.kind === "premium") {
+        return curateFeaturedProducts(products, opts.limit) as unknown as UnifiedProduct[]
+      }
+      return products.slice(0, opts.limit)
     }
 
     const where: any = { image: { startsWith: "http" } }
@@ -24,19 +54,28 @@ async function fetchSection(opts: { category?: string; featured?: boolean; sort:
     if (opts.featured) where.featured = true
 
     const orderBy: any[] =
+      opts.featured ? [{ price: "desc" }] :
       opts.sort === "rating_desc" ? [{ rating: "desc" }, { featured: "desc" }] :
       opts.sort === "price_desc"  ? [{ price: "desc" }] :
       opts.sort === "latest"      ? [{ createdAt: "desc" }] :
                                     [{ featured: "desc" }, { rating: "desc" }]
 
-    const products = await prisma.product.findMany({
+    const rawProducts = await prisma.product.findMany({
       where,
       orderBy,
-      take: opts.limit,
+      take: opts.featured || opts.kind ? 250 : opts.limit,
       include: { category: { select: { key: true, name: true, slug: true, description: true } } },
     })
 
-    return products.map(p => ({
+    const filtered = rawProducts
+      .filter(hasUsableProductImage)
+      .filter((product: any) => matchesSection(product, opts.kind))
+
+    const products = opts.featured || opts.kind === "premium"
+      ? curateFeaturedProducts(filtered, opts.limit)
+      : filtered.slice(0, opts.limit)
+
+    return products.map((p: any) => ({
       ...p,
       images: [],
       stockQuantity: p.stockQuantity ?? 0,
@@ -48,20 +87,11 @@ async function fetchSection(opts: { category?: string; featured?: boolean; sort:
   }
 }
 
-const getBestSellers = unstable_cache(
-  () => fetchSection({ featured: true, sort: "rating_desc", limit: 10 }),
-  ["home-best-sellers"], { revalidate: 300, tags: ["products"] }
-)
+const getBestSellers = () => fetchSection({ featured: true, sort: "rating_desc", limit: 15, kind: "premium" })
 
-const getAppliances = unstable_cache(
-  () => fetchSection({ category: "appliances", sort: "price_desc", limit: 10 }),
-  ["home-appliances"], { revalidate: 300, tags: ["products"] }
-)
+const getAppliances = () => fetchSection({ sort: "price_desc", limit: 15, kind: "smartHome" })
 
-const getNewArrivals = unstable_cache(
-  () => fetchSection({ sort: "latest", limit: 10 }),
-  ["home-new-arrivals"], { revalidate: 300, tags: ["products"] }
-)
+const getNewArrivals = () => fetchSection({ sort: "price_desc", limit: 15, kind: "gamingComputing" })
 
 function Section({ title, eyebrow, href, bg = "white", products }: {
   title: string

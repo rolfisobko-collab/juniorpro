@@ -1,4 +1,4 @@
-"use client"
+﻿"use client"
 
 import { useCallback, useEffect, useState } from "react"
 import PanelLayout from "@/components/panel-layout"
@@ -18,6 +18,8 @@ import {
   X,
   XCircle,
 } from "lucide-react"
+
+import { useToast } from "@/hooks/use-toast"
 
 interface OrderItem {
   id: string
@@ -146,6 +148,7 @@ function OrderDrawer({
   const [loadingStatus, setLoadingStatus] = useState(false)
   const [loadingPay, setLoadingPay] = useState(false)
   const [copied, setCopied] = useState(false)
+  const { toast } = useToast()
   const meta = orderMeta(order)
   const flowIndex = ORDER_FLOW.indexOf(order.status)
   const nextStatus = ORDER_FLOW[flowIndex + 1]
@@ -162,8 +165,12 @@ function OrderDrawer({
         body: JSON.stringify({ status: toStatus, note: note || noteInput || undefined }),
       })
       if (res.ok) {
-        onUpdate({ id: order.id, status: toStatus, statusHistory: [] })
+        const data = await res.json()
+        onUpdate({ id: order.id, status: toStatus, ...data.order, statusHistory: [] })
         setNoteInput("")
+        toast({ title: "Estado actualizado", description: `El pedido pasó a ${STATUS_CONFIG[toStatus]?.label || toStatus}.` })
+      } else {
+        toast({ title: "Error", description: "No se pudo actualizar el estado.", variant: "destructive" })
       }
     } finally {
       setLoadingStatus(false)
@@ -180,7 +187,11 @@ function OrderDrawer({
         body: JSON.stringify({ paymentStatus: "paid", paymentMethod: method }),
       })
       if (res.ok) {
-        onUpdate({ id: order.id, paymentStatus: "paid", paymentMethod: method, statusHistory: [] })
+        const data = await res.json()
+        onUpdate({ id: order.id, paymentStatus: "paid", paymentMethod: method, ...data.order, statusHistory: [] })
+        toast({ title: "Pago registrado", description: `Se marcó como pagado por ${method}.` })
+      } else {
+        toast({ title: "Error", description: "No se pudo registrar el pago.", variant: "destructive" })
       }
     } finally {
       setLoadingPay(false)
@@ -419,23 +430,34 @@ export default function AdminOrdersPage() {
   const [search, setSearch] = useState("")
   const [statusFilter, setStatusFilter] = useState("all")
   const [selected, setSelected] = useState<Order | null>(null)
+  const { toast } = useToast()
 
-  const load = useCallback(async () => {
-    setLoading(true)
+  const refresh = useCallback(async () => {
     try {
       const res = await fetch("/api/admin/orders", { credentials: "include" })
       if (res.ok) {
         const data = await res.json()
         setOrders(data.orders ?? [])
       }
+    } catch {}
+  }, [])
+
+  const load = useCallback(async () => {
+    setLoading(true)
+    try {
+      await refresh()
     } finally {
       setLoading(false)
     }
-  }, [])
+  }, [refresh])
 
   useEffect(() => {
     void load()
-  }, [load])
+    const interval = setInterval(() => {
+      if (!document.hidden) refresh()
+    }, 10000)
+    return () => clearInterval(interval)
+  }, [load, refresh])
 
   const filtered = orders.filter((order) => {
     const term = search.toLowerCase()
@@ -472,6 +494,7 @@ export default function AdminOrdersPage() {
           setSelected(data.order)
         }
       })
+      .then(() => refresh())
       .catch(() => {})
   }
 

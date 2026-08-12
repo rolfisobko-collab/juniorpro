@@ -8,13 +8,14 @@ interface ImageProps extends React.ImgHTMLAttributes<HTMLImageElement> {
   className?: string
 }
 
-export function Image({ fallback = "/placeholder.svg", className, ...props }: ImageProps) {
+export function Image({ fallback = "/placeholder.svg", className, onError, ...props }: ImageProps) {
   const [error, setError] = useState(false)
 
-  const handleError = () => {
+  const handleError: React.ReactEventHandler<HTMLImageElement> = (event) => {
     if (!error) {
       setError(true)
     }
+    onError?.(event)
   }
 
   return (

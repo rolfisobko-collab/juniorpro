@@ -1,12 +1,15 @@
 import { NextResponse } from "next/server"
 import { v2 as cloudinary } from 'cloudinary'
 
-// Configurar Cloudinary
+export const runtime = "nodejs"
+
 cloudinary.config({
-  cloud_name: 'dxibpzcfy',
-  api_key: '395575268427478',
-  api_secret: 'bbE8bMA7stCyME9srmYdw98m0sE',
+  cloud_name: process.env.CLOUDINARY_CLOUD_NAME || 'dxibpzcfy',
+  api_key: process.env.CLOUDINARY_API_KEY || '395575268427478',
+  api_secret: process.env.CLOUDINARY_API_SECRET || 'bbE8bMA7stCyME9srmYdw98m0sE',
 })
+
+const MAX_IMAGE_BYTES = 25 * 1024 * 1024
 
 export async function POST(req: Request) {
   try {
@@ -19,7 +22,11 @@ export async function POST(req: Request) {
 
     // Validar tipo de archivo
     if (!file.type.startsWith('image/')) {
-      return NextResponse.json({ error: 'Invalid file type' }, { status: 400 })
+      return NextResponse.json({ error: 'El archivo no es una imagen valida' }, { status: 400 })
+    }
+
+    if (file.size > MAX_IMAGE_BYTES) {
+      return NextResponse.json({ error: 'La imagen no debe superar los 25MB' }, { status: 400 })
     }
 
     // Convertir file a buffer

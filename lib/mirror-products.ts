@@ -1,4 +1,4 @@
-import mysql from "mysql2/promise"
+﻿import mysql from "mysql2/promise"
 import type { ProductWithCategory } from "./products-db"
 import { prisma } from "./db"
 
@@ -28,6 +28,7 @@ type MirrorFilters = {
   sort?: string | null
   excludeId?: string
   includeTotal?: boolean
+  requireImages?: boolean
 }
 
 type ImageCandidate = {
@@ -134,7 +135,7 @@ export function normalizeMirrorSubcategory(value?: string | null) {
 }
 
 export function isMirrorCatalogEnabled() {
-  const source = (process.env.PRODUCT_SOURCE || "").replace(/^\uFEFF/, "").replace(/^ï»¿/, "").trim()
+  const source = (process.env.PRODUCT_SOURCE || "").replace(/^\uFEFF/, "").replace(/^Ã¯Â»Â¿/, "").trim()
   return source === "mirror" && Boolean(process.env.TECHZONE_DB_HOST)
 }
 
@@ -335,6 +336,11 @@ function findBestImage(productCode: string, productName: string, brand: string, 
   return best && bestScore >= 0.82 ? best.image : "/product-placeholder.webp"
 }
 
+function hasUsableMirrorImage(product: { image?: unknown }) {
+  const image = String(product.image || "").trim().toLowerCase()
+  return Boolean(image) && !image.includes("placeholder") && !image.includes("generic-placeholder")
+}
+
 function normalizeSubcategory(value?: string | null) {
   const label = clean(value) || "General"
   return label
@@ -494,12 +500,13 @@ export async function getMirrorProducts(filters: MirrorFilters = {}) {
   if (cached && cached.expiresAt > Date.now()) return cached.value
 
   const offset = (page - 1) * limit
+  const queryLimit = filters.requireImages ? Math.min(500, limit * 8) : limit
   const where = buildWhere(filters)
   const pool = getPool()
   const includeTotal = filters.includeTotal !== false
 
   const orderBy = mapSort(filters.sort)
-  const rowsPromise = pool.query(`${selectSql()} ${where.sql} ORDER BY ${orderBy} LIMIT ? OFFSET ?`, [...where.params, limit, offset])
+  const rowsPromise = pool.query(`${selectSql()} ${where.sql} ORDER BY ${orderBy} LIMIT ? OFFSET ?`, [...where.params, queryLimit, offset])
   const countPromise = includeTotal
     ? pool.query(`SELECT COUNT(*) AS total FROM produtos p LEFT JOIN marcas m ON m.mrc_codigo = p.prd_marca LEFT JOIN grupos g ON g.grp_codigo = p.prd_grupo LEFT JOIN sgrupos sg ON sg.sgr_codigo = p.prd_subgrupo ${where.sql}`, where.params)
     : Promise.resolve([[{ total: page * limit }], []] as any)
@@ -510,10 +517,14 @@ export async function getMirrorProducts(filters: MirrorFilters = {}) {
   const total = Number(countRows[0]?.total || 0)
   const imageCatalog = shouldUseLegacyImageMatching() ? await getImageCatalog() : []
   const imageOverrides = await getImageOverrides()
+  const mapped = rows.map(row => mapMirrorProduct(row, imageCatalog, imageOverrides))
+  const products = filters.requireImages
+    ? mapped.filter(hasUsableMirrorImage).slice(0, limit)
+    : mapped
 
   return rememberMirrorProducts(cacheKey, {
-    products: rows.map(row => mapMirrorProduct(row, imageCatalog, imageOverrides)),
-    total,
+    products,
+    total: filters.requireImages ? products.length : total,
     page,
     limit,
   })

@@ -1,6 +1,7 @@
-import { NextResponse } from "next/server"
+﻿import { NextResponse } from "next/server"
 import { prisma } from "@/lib/db"
 import { getMirrorProducts, isMirrorCatalogEnabled } from "@/lib/mirror-products"
+import { curateFeaturedProducts, hasUsableProductImage } from "@/lib/featured-products"
 
 export const dynamic = "force-dynamic"
 export const revalidate = 0
@@ -127,7 +128,7 @@ export async function GET(req: Request) {
     const limit = Math.min(100, Math.max(1, parseInt(searchParams.get("limit") || "20")))
     const category = searchParams.get("category")
     const subcategory = (searchParams.get("subcategory") ?? "").trim()
-    const hasImage = searchParams.get("hasImage") === "true"
+    const includeMissingImages = searchParams.get("includeMissingImages") === "true"
     const minPrice = searchParams.get("minPrice")
     const maxPrice = searchParams.get("maxPrice")
     const sort = searchParams.get("sort")
@@ -136,22 +137,27 @@ export async function GET(req: Request) {
     if (isMirrorCatalogEnabled()) {
       const result = await getMirrorProducts({
         page,
-        limit,
+        limit: sort === "featured" ? 250 : limit,
         category,
         subcategory,
         search,
         minPrice,
         maxPrice,
-        sort,
+        sort: sort === "featured" ? "price_desc" : sort,
+        requireImages: !includeMissingImages,
       })
 
+      const curatedProducts = sort === "featured"
+        ? curateFeaturedProducts(result.products, limit)
+        : result.products.filter(hasUsableProductImage)
+
       return NextResponse.json({
-        products: result.products,
+        products: curatedProducts,
         pagination: {
           page,
           limit,
-          total: result.total,
-          totalPages: Math.max(1, Math.ceil(result.total / limit)),
+          total: sort === "featured" ? curatedProducts.length : result.total,
+          totalPages: sort === "featured" ? 1 : Math.max(1, Math.ceil(result.total / limit)),
         },
         source: "techzone_mirror",
         fromMock: false,
@@ -169,9 +175,7 @@ export async function GET(req: Request) {
       where.categoryKey = category
     }
 
-    if (hasImage) {
-      where.image = { startsWith: "http" }
-    }
+    if (!includeMissingImages) where.image = { startsWith: "http", not: "/placeholder.svg" }
 
     if (subcategory) {
       // Products don't have a subcategory field — filter by keyword in name
@@ -247,8 +251,11 @@ export async function GET(req: Request) {
 
     // Build order by clause
     let orderBy: any[] = [{ featured: "desc" }, { name: "asc" }]
-    
+    const isFeaturedSort = sort === "featured"
     switch (sort) {
+      case "featured":
+        orderBy = [{ price: "desc" }]
+        break
       case "price_asc":
         orderBy = [{ price: "asc" }]
         break
@@ -278,22 +285,26 @@ export async function GET(req: Request) {
           }
         },
         orderBy,
-        skip: (page - 1) * limit,
-        take: limit
+        skip: isFeaturedSort ? 0 : (page - 1) * limit,
+        take: isFeaturedSort ? 250 : limit
       }),
       prisma.product.count({ where })
     ])
 
-    return NextResponse.json({ 
-      products: products.map(product => ({
-        ...product,
-        stockQuantity: product.stockQuantity || 0
-      })),
+    const outputProducts = isFeaturedSort
+      ? curateFeaturedProducts(products, limit)
+      : products.map(product => ({
+          ...product,
+          stockQuantity: product.stockQuantity || 0
+        })).filter(hasUsableProductImage)
+
+    return NextResponse.json({
+      products: outputProducts,
       pagination: {
         page,
         limit,
-        total,
-        totalPages: Math.max(1, Math.ceil(total / limit)),
+        total: isFeaturedSort ? outputProducts.length : total,
+        totalPages: Math.max(1, Math.ceil((isFeaturedSort ? outputProducts.length : total) / limit)),
       },
       fromMock: false
     }, {
@@ -324,3 +335,4 @@ function parseSort(sort: string | null): { [key: string]: "asc" | "desc" }[] {
       return [{ featured: "desc" }, { name: "asc" }]
   }
 }
+

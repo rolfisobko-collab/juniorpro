@@ -8,16 +8,11 @@ import { cn } from "@/lib/utils"
 import type { Permission } from "@/lib/admin-users-data"
 import { BrandingLogo } from "./branding-logo"
 import {
-  FileText,
   FolderTree,
-  Grid3x3,
   Images,
   LayoutDashboard,
   LogOut,
-  Megaphone,
   Package,
-  Palette,
-  Phone,
   ShoppingBag,
   ShoppingCart,
   Tag,
@@ -56,17 +51,6 @@ const menuGroups = [
     items: [
       { href: "/panel/users", label: "Clientes", icon: Users, permission: "users" as Permission },
       { href: "/panel/admin-users", label: "Administradores", icon: UserCog, permission: "admin_users" as Permission },
-    ],
-  },
-  {
-    label: "Contenido",
-    items: [
-      { href: "/panel/carousel", label: "Carrusel", icon: Images, permission: "carousel" as Permission },
-      { href: "/panel/ctas", label: "CTAs", icon: Megaphone, permission: "ctas" as Permission },
-      { href: "/panel/home-categories", label: "Categorias Home", icon: Grid3x3, permission: "home_categories" as Permission },
-      { href: "/panel/legal-content", label: "Contenido Legal", icon: FileText, permission: "legal_content" as Permission },
-      { href: "/panel/branding", label: "Branding y Logo", icon: Palette, permission: "dashboard" as Permission },
-      { href: "/panel/contact", label: "Informacion de Contacto", icon: Phone, permission: "dashboard" as Permission },
     ],
   },
 ]

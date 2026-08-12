@@ -28,6 +28,9 @@ export function ProductCard({ product, priority = false }: ProductCardProps) {
   const { formatPrice } = useCurrency()
   const { toast } = useToast()
   const [animationTrigger, setAnimationTrigger] = useState<{x: number, y: number} | false>(false)
+  const [imageFailed, setImageFailed] = useState(false)
+
+  if (imageFailed) return null
 
   const handleAddToCart = (e: React.MouseEvent) => {
     e.preventDefault()
@@ -71,6 +74,7 @@ export function ProductCard({ product, priority = false }: ProductCardProps) {
             fallback="/product-placeholder.webp"
             loading={priority ? "eager" : "lazy"}
             fetchPriority={priority ? "high" : "auto"}
+            onError={() => setImageFailed(true)}
           />
 
           {/* Favorito */}
