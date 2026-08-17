@@ -1,6 +1,5 @@
 ﻿import { prisma } from "@/lib/db"
 import { getMirrorProducts, isMirrorCatalogEnabled } from "@/lib/mirror-products"
-import { ProductCard } from "@/components/product-card"
 import type { UnifiedProduct } from "@/lib/product-types"
 import { curateFeaturedProducts, hasUsableProductImage } from "@/lib/featured-products"
 import { getHomeSections, getProductsByIds, type HomeSectionConfig } from "@/lib/home-sections"
@@ -94,6 +93,37 @@ const getAppliances = () => fetchSection({ sort: "price_desc", limit: 15, kind: 
 
 const getNewArrivals = () => fetchSection({ sort: "price_desc", limit: 15, kind: "gamingComputing" })
 
+function money(value: unknown) {
+  return `$ ${Number(value || 0).toLocaleString("en-US", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`
+}
+
+function HomeSectionProductCard({ product, priority }: { product: UnifiedProduct; priority?: boolean }) {
+  const categoryName = typeof product.category === "object" && product.category ? product.category.name : ""
+
+  return (
+    <Link href={`/products/${product.id}`} className="group block overflow-hidden rounded-2xl border border-gray-100/80 bg-white transition-all duration-300 hover:border-[#009FE3]/30 hover:shadow-[0_8px_30px_rgba(0,159,227,0.12)]">
+      <div className="relative aspect-square overflow-hidden bg-gradient-to-br from-gray-50 to-white p-3">
+        <img
+          src={product.image}
+          alt={product.name}
+          className="h-full w-full object-contain transition-transform duration-500 group-hover:scale-[1.06]"
+          loading={priority ? "eager" : "lazy"}
+          fetchPriority={priority ? "high" : "auto"}
+        />
+      </div>
+      <div className="space-y-1 p-3">
+        <p className="truncate text-[10px] font-bold uppercase tracking-wider text-[#009FE3]">
+          {product.brand || categoryName || "TechZone"}
+        </p>
+        <h3 className="line-clamp-2 min-h-[2.5rem] text-sm font-bold leading-tight text-gray-900">
+          {product.name}
+        </h3>
+        <p className="text-base font-black text-gray-950">{money(product.price)}</p>
+      </div>
+    </Link>
+  )
+}
+
 function Section({ title, eyebrow, href, bg = "white", products }: {
   title: string
   eyebrow: string
@@ -116,7 +146,7 @@ function Section({ title, eyebrow, href, bg = "white", products }: {
         </div>
         <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-3 md:gap-4">
           {products.map((product, i) => (
-            <ProductCard key={product.id} product={product} priority={i < 6} />
+            <HomeSectionProductCard key={product.id} product={product} priority={i < 6} />
           ))}
         </div>
         <div className="mt-6 sm:hidden text-center">

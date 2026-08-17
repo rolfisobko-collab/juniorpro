@@ -170,12 +170,16 @@ export async function getProductsByIds(productIds: string[]) {
 
   const products = await Promise.all(
     uniqueIds.map(async (id) => {
-      if (id.startsWith("mirror-")) return getMirrorProductById(id)
+      try {
+        if (id.startsWith("mirror-")) return await getMirrorProductById(id)
 
-      return prisma.product.findUnique({
-        where: { id },
-        include: { category: { select: { key: true, name: true, slug: true, description: true } } },
-      })
+        return await prisma.product.findUnique({
+          where: { id },
+          include: { category: { select: { key: true, name: true, slug: true, description: true } } },
+        })
+      } catch {
+        return null
+      }
     }),
   )
 
@@ -183,4 +187,3 @@ export async function getProductsByIds(productIds: string[]) {
     .filter(Boolean)
     .filter(hasUsableProductImage) as UnifiedProduct[]
 }
-

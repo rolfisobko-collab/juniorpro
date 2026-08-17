@@ -354,13 +354,13 @@ function normalizeSubcategory(value?: string | null) {
 function mapSort(sort?: string | null) {
   switch (sort) {
     case "price_asc":
-      return "price ASC, name ASC"
+      return "price ASC, name ASC, CAST(p.prd_codigo AS UNSIGNED) ASC"
     case "price_desc":
-      return "price DESC, name ASC"
+      return "price DESC, name ASC, CAST(p.prd_codigo AS UNSIGNED) ASC"
     case "latest":
-      return "CAST(p.prd_codigo AS UNSIGNED) DESC"
+      return "CAST(p.prd_codigo AS UNSIGNED) DESC, name ASC"
     default:
-      return "name ASC"
+      return "name ASC, CAST(p.prd_codigo AS UNSIGNED) ASC"
   }
 }
 
@@ -402,6 +402,37 @@ function buildWhere(filters: MirrorFilters) {
     const subcategory = normalizeMirrorSubcategory(filters.subcategory)
     where.push("LOWER(REPLACE(sg.sgr_descricao, ' ', '-')) = ?")
     params.push(subcategory.toLowerCase())
+
+    if (subcategory === "smartfone") {
+      where.push(`(
+        UPPER(COALESCE(p.prd_nomelongo, p.prd_descricao, '')) LIKE '%IPHONE%' OR
+        UPPER(COALESCE(p.prd_nomelongo, p.prd_descricao, '')) LIKE '%GALAXY%' OR
+        UPPER(COALESCE(p.prd_nomelongo, p.prd_descricao, '')) LIKE '%REDMI%' OR
+        UPPER(COALESCE(p.prd_nomelongo, p.prd_descricao, '')) LIKE '%POCO%' OR
+        UPPER(COALESCE(p.prd_nomelongo, p.prd_descricao, '')) LIKE '%REALME%' OR
+        UPPER(COALESCE(p.prd_nomelongo, p.prd_descricao, '')) LIKE '%MOTOROLA%' OR
+        UPPER(COALESCE(p.prd_nomelongo, p.prd_descricao, '')) LIKE '%MOTO %' OR
+        UPPER(COALESCE(p.prd_nomelongo, p.prd_descricao, '')) LIKE '%TECNO%' OR
+        UPPER(COALESCE(p.prd_nomelongo, p.prd_descricao, '')) LIKE '%INFINIX%' OR
+        UPPER(COALESCE(p.prd_nomelongo, p.prd_descricao, '')) LIKE '%HONOR%'
+      )`)
+      where.push(`(
+        UPPER(COALESCE(p.prd_nomelongo, p.prd_descricao, '')) NOT LIKE '%CABO%' AND
+        UPPER(COALESCE(p.prd_nomelongo, p.prd_descricao, '')) NOT LIKE '%CABLE%' AND
+        UPPER(COALESCE(p.prd_nomelongo, p.prd_descricao, '')) NOT LIKE '%CARREGADOR%' AND
+        UPPER(COALESCE(p.prd_nomelongo, p.prd_descricao, '')) NOT LIKE '%CARGADOR%' AND
+        UPPER(COALESCE(p.prd_nomelongo, p.prd_descricao, '')) NOT LIKE '%FONE%' AND
+        UPPER(COALESCE(p.prd_nomelongo, p.prd_descricao, '')) NOT LIKE '%HEADPHONE%' AND
+        UPPER(COALESCE(p.prd_nomelongo, p.prd_descricao, '')) NOT LIKE '%BASTAO%' AND
+        UPPER(COALESCE(p.prd_nomelongo, p.prd_descricao, '')) NOT LIKE '%SELFIE%' AND
+        UPPER(COALESCE(p.prd_nomelongo, p.prd_descricao, '')) NOT LIKE '%CAIXA DE SOM%' AND
+        UPPER(COALESCE(p.prd_nomelongo, p.prd_descricao, '')) NOT LIKE '%SOUNDBAR%' AND
+        UPPER(COALESCE(p.prd_nomelongo, p.prd_descricao, '')) NOT LIKE '%CADEIRA%' AND
+        UPPER(COALESCE(p.prd_nomelongo, p.prd_descricao, '')) NOT LIKE '%PATINETE%' AND
+        UPPER(COALESCE(p.prd_nomelongo, p.prd_descricao, '')) NOT LIKE '%CAPA%' AND
+        UPPER(COALESCE(p.prd_nomelongo, p.prd_descricao, '')) NOT LIKE '%CASE%'
+      )`)
+    }
   }
 
   if (filters.minPrice) {

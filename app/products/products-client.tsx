@@ -1,11 +1,11 @@
 "use client"
 
-import { useState, useEffect, useRef, useCallback } from "react"
+import { useState, useEffect, useRef } from "react"
 import { ProductCard } from "@/components/product-card"
-import { Button } from "@/components/ui/button"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { SlidersHorizontal } from "lucide-react"
 import type { ProductWithCategory } from "@/lib/products-db"
+import { normalizeCatalogSubcategoryParam, normalizeCatalogFilters } from "@/lib/catalog-route-aliases"
 
 interface ProductsClientProps {
   initialProducts: ProductWithCategory[]
@@ -14,41 +14,59 @@ interface ProductsClientProps {
   initialSubcategory?: string
 }
 
+function dedupeProducts(items: ProductWithCategory[]) {
+  const seen = new Set<string>()
+  return items.filter((item) => {
+    if (!item?.id || seen.has(item.id)) return false
+    seen.add(item.id)
+    return true
+  })
+}
+
 export default function ProductsClient({ 
   initialProducts, 
   categories, 
   initialCategory,
   initialSubcategory
 }: ProductsClientProps) {
-  const [products, setProducts] = useState<ProductWithCategory[]>(initialProducts)
-  const [selectedCategory, setSelectedCategory] = useState<string>(initialCategory || "all")
-  const [selectedSubcategory, setSelectedSubcategory] = useState<string>(initialSubcategory || "")
-  const [sortBy, setSortBy] = useState(initialSubcategory === "videojuegos" ? "price_desc" : "featured")
+  const [products, setProducts] = useState<ProductWithCategory[]>(() => dedupeProducts(initialProducts))
+  const initialFilters = normalizeCatalogFilters(initialCategory, initialSubcategory)
+  const [selectedCategory, setSelectedCategory] = useState<string>(initialFilters.category || "all")
+  const [selectedSubcategory, setSelectedSubcategory] = useState<string>(initialFilters.subcategory || "")
+  const [sortBy, setSortBy] = useState(normalizeCatalogSubcategoryParam(initialSubcategory) === "videojuegos" ? "price_desc" : "featured")
   const [loading, setLoading] = useState(false)
   const [hasMore, setHasMore] = useState(true)
   const [page, setPage] = useState(1)
   const [newProductIds, setNewProductIds] = useState<Set<string>>(new Set())
   const animatingRef = useRef<Set<string>>(new Set())
+  const loadingRef = useRef(false)
+  const requestedPagesRef = useRef<Set<string>>(new Set())
 
   useEffect(() => {
     console.log('Initial params:', { initialCategory, initialSubcategory })
-    if (initialCategory) {
-      console.log('Setting initial category:', initialCategory)
-      setSelectedCategory(initialCategory)
-    }
-    if (initialSubcategory) {
-      console.log('Setting initial subcategory:', initialSubcategory)
-      setSelectedSubcategory(initialSubcategory)
+    if (initialCategory || initialSubcategory) {
+      const normalized = normalizeCatalogFilters(initialCategory, initialSubcategory)
+      console.log('Setting initial filters:', normalized)
+      setSelectedCategory(normalized.category || "all")
+      setSelectedSubcategory(normalized.subcategory || "")
     }
   }, [initialCategory, initialSubcategory])
 
   const fetchProducts = async (category: string, subcategory: string, sort: string, pageNum: number = 1, append: boolean = false) => {
-    console.log('Fetching products:', { category, subcategory, sort, pageNum })
+    const { category: normalizedCategory, subcategory: normalizedSubcategory } = normalizeCatalogFilters(category, subcategory)
+    const requestKey = `${normalizedCategory || "all"}:${normalizedSubcategory || "all"}:${sort || "featured"}:${pageNum}`
+    if (append && (loadingRef.current || requestedPagesRef.current.has(requestKey))) {
+      return
+    }
+
+    console.log('Fetching products:', { category: normalizedCategory, subcategory: normalizedSubcategory, sort, pageNum })
+    if (append) requestedPagesRef.current.add(requestKey)
+    loadingRef.current = true
     setLoading(true)
     try {
       const params = new URLSearchParams({
-        ...(category !== "all" && { category }),
-        ...(subcategory && { subcategory }),
+        ...(normalizedCategory !== "all" && { category: normalizedCategory }),
+        ...(normalizedSubcategory && { subcategory: normalizedSubcategory }),
         ...(sort && { sort }),
         limit: "50",
         page: pageNum.toString()
@@ -59,25 +77,34 @@ export default function ProductsClient({
       
       if (data.products) {
         if (append) {
-          const incoming: ProductWithCategory[] = data.products
-          const ids = new Set<string>(incoming.map((p: ProductWithCategory) => p.id))
-          animatingRef.current = ids
-          setNewProductIds(ids)
-          setProducts(prev => [...prev, ...incoming])
+          const incoming = dedupeProducts(data.products)
+          let addedIds = new Set<string>()
+          setProducts(prev => {
+            const existingIds = new Set(prev.map((p) => p.id))
+            const uniqueIncoming = incoming.filter((p) => !existingIds.has(p.id))
+            addedIds = new Set(uniqueIncoming.map((p) => p.id))
+            return [...prev, ...uniqueIncoming]
+          })
+          animatingRef.current = addedIds
+          setNewProductIds(addedIds)
           // Clear animation classes after they finish
           setTimeout(() => {
             animatingRef.current = new Set()
             setNewProductIds(new Set())
           }, 800)
         } else {
-          setProducts(data.products)
+          requestedPagesRef.current = new Set()
+          setProducts(dedupeProducts(data.products))
           setNewProductIds(new Set())
         }
-        setHasMore(data.products.length === 50)
+        const totalPages = Number(data.pagination?.totalPages || 1)
+        setHasMore(pageNum < totalPages)
       }
     } catch (error) {
+      if (append) requestedPagesRef.current.delete(requestKey)
       console.error("Error fetching products:", error)
     } finally {
+      loadingRef.current = false
       setLoading(false)
     }
   }
@@ -90,7 +117,7 @@ export default function ProductsClient({
   }, [selectedCategory, selectedSubcategory, sortBy])
 
   const loadMore = () => {
-    if (!loading && hasMore) {
+    if (!loading && !loadingRef.current && hasMore) {
       const nextPage = page + 1
       setPage(nextPage)
       fetchProducts(selectedCategory, selectedSubcategory, sortBy, nextPage, true)

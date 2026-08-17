@@ -2,6 +2,7 @@
 import { prisma } from "@/lib/db"
 import { getMirrorProducts, isMirrorCatalogEnabled } from "@/lib/mirror-products"
 import { curateFeaturedProducts, hasUsableProductImage } from "@/lib/featured-products"
+import { normalizeCatalogFilters } from "@/lib/catalog-route-aliases"
 
 export const dynamic = "force-dynamic"
 export const revalidate = 0
@@ -126,28 +127,33 @@ export async function GET(req: Request) {
 
     const page = Math.max(1, parseInt(searchParams.get("page") || "1"))
     const limit = Math.min(100, Math.max(1, parseInt(searchParams.get("limit") || "20")))
-    const category = searchParams.get("category")
-    const subcategory = (searchParams.get("subcategory") ?? "").trim()
+    const { category, subcategory } = normalizeCatalogFilters(
+      searchParams.get("category"),
+      searchParams.get("subcategory"),
+    )
     const includeMissingImages = searchParams.get("includeMissingImages") === "true"
     const minPrice = searchParams.get("minPrice")
     const maxPrice = searchParams.get("maxPrice")
     const sort = searchParams.get("sort")
     const search = (searchParams.get("search") ?? "").trim()
+    const hasCatalogFilter = Boolean((category && category !== "all") || subcategory || search)
+    const useFeaturedCuration = sort === "featured" && !hasCatalogFilter
+    const effectiveSort = sort === "featured" && hasCatalogFilter ? "price_desc" : sort
 
     if (isMirrorCatalogEnabled()) {
       const result = await getMirrorProducts({
         page,
-        limit: sort === "featured" ? 250 : limit,
+        limit: useFeaturedCuration ? 250 : limit,
         category,
         subcategory,
         search,
         minPrice,
         maxPrice,
-        sort: sort === "featured" ? "price_desc" : sort,
+        sort: useFeaturedCuration ? "price_desc" : effectiveSort,
         requireImages: !includeMissingImages,
       })
 
-      const curatedProducts = sort === "featured"
+      const curatedProducts = useFeaturedCuration
         ? curateFeaturedProducts(result.products, limit)
         : result.products.filter(hasUsableProductImage)
 
@@ -156,8 +162,8 @@ export async function GET(req: Request) {
         pagination: {
           page,
           limit,
-          total: sort === "featured" ? curatedProducts.length : result.total,
-          totalPages: sort === "featured" ? 1 : Math.max(1, Math.ceil(result.total / limit)),
+          total: useFeaturedCuration ? curatedProducts.length : result.total,
+          totalPages: useFeaturedCuration ? 1 : Math.max(1, Math.ceil(result.total / limit)),
         },
         source: "techzone_mirror",
         fromMock: false,
@@ -208,7 +214,7 @@ export async function GET(req: Request) {
         "electrodomesticos-general": [],
         "electrodomesticos":     [],
         // electronics — smartphones/tablets now use categoryKey, not name
-        "smartphones":           ["iphone", "galaxy", "redmi", "poco", "motorola", "xiaomi", "realme", "tecno", "infinix", "huawei"],
+        "smartphones":           ["iphone", "galaxy", "redmi", "poco", "motorola", "moto ", "xiaomi note", "realme", "tecno", "infinix", "huawei", "honor"],
         "laptops":               ["notebook", "laptop", "macbook", "chromebook"],
         "tablets":               ["tablet", "ipad", "tab ", "tab_"],
         "headphones":            ["fone", "auricular", "headphone", "headset", "earphone", "earbuds", "tws", "buds"],
@@ -228,6 +234,17 @@ export async function GET(req: Request) {
         where.OR = [
           ...(where.OR || []),
           ...keywords.map((kw: string) => ({ name: { contains: kw, mode: "insensitive" as const } })),
+        ]
+      }
+      if (subcategory === "smartphones") {
+        const excluded = [
+          "cabo", "cable", "carregador", "cargador", "fone", "headphone", "bastao", "selfie",
+          "caixa de som", "soundbar", "cadeira", "patinete", "capa", "case", "pelicula",
+          "adaptador", "suporte", "power bank", "relogio", "watch", "tablet", " pad ",
+        ]
+        where.NOT = [
+          ...(where.NOT || []),
+          ...excluded.map((kw) => ({ name: { contains: kw, mode: "insensitive" as const } })),
         ]
       }
       // empty array = show all products in that category (no extra name filter)
@@ -250,23 +267,23 @@ export async function GET(req: Request) {
     }
 
     // Build order by clause
-    let orderBy: any[] = [{ featured: "desc" }, { name: "asc" }]
-    const isFeaturedSort = sort === "featured"
-    switch (sort) {
+    let orderBy: any[] = [{ featured: "desc" }, { name: "asc" }, { id: "asc" }]
+    const isFeaturedSort = useFeaturedCuration
+    switch (effectiveSort) {
       case "featured":
-        orderBy = [{ price: "desc" }]
+        orderBy = [{ price: "desc" }, { name: "asc" }, { id: "asc" }]
         break
       case "price_asc":
-        orderBy = [{ price: "asc" }]
+        orderBy = [{ price: "asc" }, { name: "asc" }, { id: "asc" }]
         break
       case "price_desc":
-        orderBy = [{ price: "desc" }]
+        orderBy = [{ price: "desc" }, { name: "asc" }, { id: "asc" }]
         break
       case "rating_desc":
-        orderBy = [{ rating: "desc" }]
+        orderBy = [{ rating: "desc" }, { name: "asc" }, { id: "asc" }]
         break
       case "latest":
-        orderBy = [{ createdAt: "desc" }]
+        orderBy = [{ createdAt: "desc" }, { id: "asc" }]
         break
     }
 
