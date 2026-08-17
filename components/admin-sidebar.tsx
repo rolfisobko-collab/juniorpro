@@ -10,6 +10,7 @@ import { BrandingLogo } from "./branding-logo"
 import {
   FolderTree,
   Images,
+  LayoutTemplate,
   LayoutDashboard,
   LogOut,
   Package,
@@ -26,6 +27,7 @@ const menuGroups = [
     label: "General",
     items: [
       { href: "/panel", label: "Dashboard", icon: LayoutDashboard, permission: "dashboard" as Permission },
+      { href: "/panel/home-sections", label: "Secciones Home", icon: LayoutTemplate, permission: "dashboard" as Permission },
       { href: "/panel/exchange-rates", label: "Tasas de Cambio", icon: TrendingUp, permission: "dashboard" as Permission },
     ],
   },

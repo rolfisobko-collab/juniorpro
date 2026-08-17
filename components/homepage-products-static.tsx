@@ -3,6 +3,7 @@ import { getMirrorProducts, isMirrorCatalogEnabled } from "@/lib/mirror-products
 import { ProductCard } from "@/components/product-card"
 import type { UnifiedProduct } from "@/lib/product-types"
 import { curateFeaturedProducts, hasUsableProductImage } from "@/lib/featured-products"
+import { getHomeSections, getProductsByIds, type HomeSectionConfig } from "@/lib/home-sections"
 import Link from "next/link"
 import { ArrowRight } from "lucide-react"
 
@@ -128,6 +129,17 @@ function Section({ title, eyebrow, href, bg = "white", products }: {
   )
 }
 
+async function getSectionProducts(section: HomeSectionConfig) {
+  if (section.mode === "manual" && section.productIds.length) {
+    const manualProducts = await getProductsByIds(section.productIds)
+    if (manualProducts.length) return manualProducts
+  }
+
+  if (section.id === "appliances") return getAppliances()
+  if (section.id === "new-arrivals") return getNewArrivals()
+  return getBestSellers()
+}
+
 export async function HomeBestSellers({ title }: { title: string }) {
   const products = await getBestSellers()
   return <Section title={title} eyebrow="Destacados" href="/products?featured=true" bg="gray" products={products} />
@@ -152,17 +164,49 @@ export async function HomeProductSections({
   appliancesTitle: string
   newTitle: string
 }) {
-  const [bestSellers, appliances, newArrivals] = await Promise.all([
-    getBestSellers(),
-    getAppliances(),
-    getNewArrivals(),
-  ])
+  let sections: HomeSectionConfig[] = []
+
+  try {
+    sections = await getHomeSections()
+  } catch {
+    sections = []
+  }
+
+  if (!sections.length) {
+    const [bestSellers, appliances, newArrivals] = await Promise.all([
+      getBestSellers(),
+      getAppliances(),
+      getNewArrivals(),
+    ])
+
+    return (
+      <>
+        <Section title={bestTitle} eyebrow="Destacados" href="/products?featured=true" bg="gray" products={bestSellers} />
+        <Section title={appliancesTitle} eyebrow="Categoria" href="/products?category=appliances" bg="white" products={appliances} />
+        <Section title={newTitle} eyebrow="Novedades" href="/products?sort=latest" bg="gray" products={newArrivals} />
+      </>
+    )
+  }
+
+  const resolved = await Promise.all(
+    sections.map(async (section) => ({
+      section,
+      products: await getSectionProducts(section),
+    })),
+  )
 
   return (
     <>
-      <Section title={bestTitle} eyebrow="Destacados" href="/products?featured=true" bg="gray" products={bestSellers} />
-      <Section title={appliancesTitle} eyebrow="Categoría" href="/products?category=appliances" bg="white" products={appliances} />
-      <Section title={newTitle} eyebrow="Novedades" href="/products?sort=latest" bg="gray" products={newArrivals} />
+      {resolved.map(({ section, products }) => (
+        <Section
+          key={section.id}
+          title={section.title || bestTitle}
+          eyebrow={section.eyebrow || "Destacados"}
+          href={section.href || "/products"}
+          bg={section.bg}
+          products={products}
+        />
+      ))}
     </>
   )
 }
