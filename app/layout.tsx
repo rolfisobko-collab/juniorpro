@@ -16,6 +16,7 @@ export default async function RootLayout({
   return (
     <html lang={lang}>
       <head>
+        <meta name="facebook-domain-verification" content="0mfucw8qmk5gen0zdem6un49zrslte" />
         {/* DNS prefetch + preconnect for external image CDN */}
         <link rel="preconnect" href="https://iili.io" />
         <link rel="dns-prefetch" href="https://iili.io" />
