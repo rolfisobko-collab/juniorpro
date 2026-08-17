@@ -122,7 +122,7 @@ export function ProductCard({ product, priority = false }: ProductCardProps) {
           {product.brand && (
             <p className="text-[10px] text-[#009FE3] font-bold uppercase tracking-wider mb-0.5 truncate">{product.brand}</p>
           )}
-          <h3 className="text-[13px] font-semibold text-gray-800 line-clamp-2 leading-snug mb-2.5 min-h-[2.4em]">
+          <h3 className="text-[13px] font-semibold text-gray-800 line-clamp-3 leading-snug mb-2.5 min-h-[3.55em]">
             {product.name}
           </h3>
           <div className="flex items-center justify-between gap-2">

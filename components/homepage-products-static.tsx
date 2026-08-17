@@ -115,7 +115,7 @@ function HomeSectionProductCard({ product, priority }: { product: UnifiedProduct
         <p className="truncate text-[10px] font-bold uppercase tracking-wider text-[#009FE3]">
           {product.brand || categoryName || "TechZone"}
         </p>
-        <h3 className="line-clamp-2 min-h-[2.5rem] text-sm font-bold leading-tight text-gray-900">
+        <h3 className="line-clamp-3 min-h-[3.35rem] text-sm font-bold leading-tight text-gray-900">
           {product.name}
         </h3>
         <p className="text-base font-black text-gray-950">{money(product.price)}</p>
