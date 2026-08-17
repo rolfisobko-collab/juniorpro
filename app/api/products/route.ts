@@ -138,7 +138,7 @@ export async function GET(req: Request) {
     const search = (searchParams.get("search") ?? "").trim()
     const hasCatalogFilter = Boolean((category && category !== "all") || subcategory || search)
     const useFeaturedCuration = sort === "featured" && !hasCatalogFilter
-    const effectiveSort = sort === "featured" && hasCatalogFilter ? "price_desc" : sort
+    const effectiveSort = sort === "featured" && hasCatalogFilter ? "latest" : sort
 
     if (isMirrorCatalogEnabled()) {
       const result = await getMirrorProducts({

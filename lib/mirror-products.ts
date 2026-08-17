@@ -531,13 +531,14 @@ export async function getMirrorProducts(filters: MirrorFilters = {}) {
   if (cached && cached.expiresAt > Date.now()) return cached.value
 
   const offset = (page - 1) * limit
-  const queryLimit = filters.requireImages ? Math.min(500, limit * 8) : limit
+  const queryLimit = filters.requireImages ? 5000 : limit
+  const queryOffset = filters.requireImages ? 0 : offset
   const where = buildWhere(filters)
   const pool = getPool()
   const includeTotal = filters.includeTotal !== false
 
   const orderBy = mapSort(filters.sort)
-  const rowsPromise = pool.query(`${selectSql()} ${where.sql} ORDER BY ${orderBy} LIMIT ? OFFSET ?`, [...where.params, queryLimit, offset])
+  const rowsPromise = pool.query(`${selectSql()} ${where.sql} ORDER BY ${orderBy} LIMIT ? OFFSET ?`, [...where.params, queryLimit, queryOffset])
   const countPromise = includeTotal
     ? pool.query(`SELECT COUNT(*) AS total FROM produtos p LEFT JOIN marcas m ON m.mrc_codigo = p.prd_marca LEFT JOIN grupos g ON g.grp_codigo = p.prd_grupo LEFT JOIN sgrupos sg ON sg.sgr_codigo = p.prd_subgrupo ${where.sql}`, where.params)
     : Promise.resolve([[{ total: page * limit }], []] as any)
@@ -549,13 +550,14 @@ export async function getMirrorProducts(filters: MirrorFilters = {}) {
   const imageCatalog = shouldUseLegacyImageMatching() ? await getImageCatalog() : []
   const imageOverrides = await getImageOverrides()
   const mapped = rows.map(row => mapMirrorProduct(row, imageCatalog, imageOverrides))
+  const usableProducts = filters.requireImages ? mapped.filter(hasUsableMirrorImage) : mapped
   const products = filters.requireImages
-    ? mapped.filter(hasUsableMirrorImage).slice(0, limit)
-    : mapped
+    ? usableProducts.slice(offset, offset + limit)
+    : usableProducts
 
   return rememberMirrorProducts(cacheKey, {
     products,
-    total: filters.requireImages ? products.length : total,
+    total: filters.requireImages ? usableProducts.length : total,
     page,
     limit,
   })
