@@ -56,6 +56,13 @@ const getInitialProducts = unstable_cache(
           ...excluded.map((kw) => ({ name: { contains: kw, mode: "insensitive" as const } })),
         ]
       }
+      if (normalizedSubcategory === "laptops") {
+        const excluded = ["ipad", "tablet", "control", "joystick", "capa", "maleta", "bolsa", "suporte"]
+        where.NOT = [
+          ...(where.NOT || []),
+          ...excluded.map((kw) => ({ name: { contains: kw, mode: "insensitive" as const } })),
+        ]
+      }
       where.image = { startsWith: "http", not: "/placeholder.svg" }
       const sort = normalizedSubcategory === "videojuegos"
         ? [{ price: "desc" as const }, { name: "asc" as const }, { id: "asc" as const }]

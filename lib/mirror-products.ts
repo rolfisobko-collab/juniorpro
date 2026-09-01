@@ -416,7 +416,11 @@ function buildWhere(filters: MirrorFilters) {
         ${nameExpr} NOT LIKE '%CAPA%' AND
         ${nameExpr} NOT LIKE '%MALETA%' AND
         ${nameExpr} NOT LIKE '%BOLSA%' AND
-        ${nameExpr} NOT LIKE '%SUPORTE%'
+        ${nameExpr} NOT LIKE '%SUPORTE%' AND
+        ${nameExpr} NOT LIKE '%IPAD%' AND
+        ${nameExpr} NOT LIKE '%TABLET%' AND
+        ${nameExpr} NOT LIKE '%CONTROL%' AND
+        ${nameExpr} NOT LIKE '%JOYSTICK%'
       )`)
     } else if (subcategory === "televisores") {
       where.push(`(

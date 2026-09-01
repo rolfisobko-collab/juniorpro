@@ -254,6 +254,13 @@ export async function GET(req: Request) {
           ...excluded.map((kw) => ({ name: { contains: kw, mode: "insensitive" as const } })),
         ]
       }
+      if (subcategory === "laptops") {
+        const excluded = ["ipad", "tablet", "control", "joystick", "capa", "maleta", "bolsa", "suporte"]
+        where.NOT = [
+          ...(where.NOT || []),
+          ...excluded.map((kw) => ({ name: { contains: kw, mode: "insensitive" as const } })),
+        ]
+      }
       // empty array = show all products in that category (no extra name filter)
     }
 
