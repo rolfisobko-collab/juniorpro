@@ -392,7 +392,7 @@ function buildWhere(filters: MirrorFilters) {
   }
 
   const subcategory = normalizeMirrorSubcategory(filters.subcategory)
-  const nameExpr = "UPPER(COALESCE(p.prd_nomelongo, p.prd_descricao, ''))"
+  const nameExpr = "UPPER(CONCAT_WS(' ', COALESCE(p.prd_nomelongo, ''), COALESCE(p.prd_descricao, '')))"
   const category = normalizeMirrorCategory(filters.category)
   const hasVirtualSubcategory = subcategory === "notebook" || subcategory === "televisores"
   if (category && category !== "all") {
