@@ -9,7 +9,7 @@ const slides = [
   {
     img: "/optimized/carousel/slide-1-desktop.webp",
     imgMobile: "/optimized/carousel/slide-1-mobile.webp",
-    href: "/products?category=electronics&subcategory=smartfone",
+    href: "/products?category=electronics&subcategory=smartphones",
     alt: "iPhone",
     bg: "#000000",
   },
@@ -23,7 +23,7 @@ const slides = [
   {
     img: "/optimized/carousel/slide-3-desktop.webp",
     imgMobile: "/optimized/carousel/slide-3-mobile.webp",
-    href: "/search?q=perfume",
+    href: "/products?category=perfumes",
     alt: "Perfumes",
     bg: "#1f1524",
   },

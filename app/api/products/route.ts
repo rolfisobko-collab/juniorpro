@@ -190,7 +190,7 @@ export async function GET(req: Request) {
         // electrodomesticos
         "ventiladores":          ["ventilador"],
         "aire-acondicionado":    ["aire acondicionado", "ar condicionado", "split", "inverter"],
-        "televisores":           ["televisor", "smart tv", "monitor tv", "oled", "qled"],
+        "televisores":           ["televisor", "smart tv", "monitor tv", "qled", "tv "],
         "climatizadores":        ["climatizador"],
         "sandwicheras":          ["sandwichera", "sandwicheira", "waflera"],
         "umidificadores":        ["umidificador", "humidificador"],
@@ -242,6 +242,13 @@ export async function GET(req: Request) {
           "caixa de som", "soundbar", "cadeira", "patinete", "capa", "case", "pelicula",
           "adaptador", "suporte", "power bank", "relogio", "watch", "tablet", " pad ",
         ]
+        where.NOT = [
+          ...(where.NOT || []),
+          ...excluded.map((kw) => ({ name: { contains: kw, mode: "insensitive" as const } })),
+        ]
+      }
+      if (subcategory === "televisores") {
+        const excluded = ["tv box", "mi tv stick", "fire tv", "receptor", "iptv", "nintendo switch"]
         where.NOT = [
           ...(where.NOT || []),
           ...excluded.map((kw) => ({ name: { contains: kw, mode: "insensitive" as const } })),

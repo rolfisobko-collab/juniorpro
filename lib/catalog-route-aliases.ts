@@ -2,6 +2,9 @@ const CATEGORY_ALIASES: Record<string, string> = {
   appliances: "electrodomesticos",
   appliance: "electrodomesticos",
   electrodomestico: "electrodomesticos",
+  computadoras: "computadoras",
+  notebooks: "computadoras",
+  laptops: "computadoras",
   electronics: "electronics",
   electronica: "electronics",
   electronicos: "electronics",
@@ -22,6 +25,9 @@ const SUBCATEGORY_ALIASES: Record<string, string> = {
   fones: "headphones",
   videogame: "videojuegos",
   videojuegos: "videojuegos",
+  televisores: "televisores",
+  televisor: "televisores",
+  tvs: "televisores",
   "tv-box": "accesorios",
   airfrayer: "freidoras",
   airfryer: "freidoras",
@@ -56,8 +62,8 @@ export function normalizeCatalogFilters(category?: string | null, subcategory?: 
   const normalizedCategory = normalizeCatalogCategoryParam(category)
   const normalizedSubcategory = normalizeCatalogSubcategoryParam(subcategory)
 
-  if (normalizedCategory === "electronics" && normalizedSubcategory === "laptops") {
-    return { category: "computadoras", subcategory: "" }
+  if (normalizedCategory === "computadoras") {
+    return { category: "electronics", subcategory: normalizedSubcategory || "laptops" }
   }
 
   return { category: normalizedCategory, subcategory: normalizedSubcategory }

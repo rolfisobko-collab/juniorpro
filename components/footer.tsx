@@ -107,7 +107,7 @@ export default function Footer() {
               </li>
               <li>
                 <Link
-                  href="/products?category=appliances"
+                  href="/products?category=electrodomesticos"
                   className="text-sm text-muted-foreground hover:text-primary transition-colors"
                 >
                   {t('Appliances')}
@@ -115,7 +115,7 @@ export default function Footer() {
               </li>
               <li>
                 <Link
-                  href="/products?category=electronics&subcategory=audios"
+                  href="/products?category=electronics&subcategory=headphones"
                   className="text-sm text-muted-foreground hover:text-primary transition-colors"
                 >
                   Audio y accesorios

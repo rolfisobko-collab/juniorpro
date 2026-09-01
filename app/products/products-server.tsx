@@ -14,7 +14,7 @@ const keywordMap: Record<string, string[]> = {
   "laptops":            ["notebook", "laptop", "macbook", "chromebook"],
   "headphones":         ["fone", "auricular", "headphone", "headset", "earphone", "earbuds", "tws", "buds"],
   "videojuegos":        ["playstation", "xbox", "nintendo", "joystick", "gamepad"],
-  "televisores":        ["tv ", "televisor", "television", "smart tv", "oled", "qled"],
+  "televisores":        ["tv ", "televisor", "television", "smart tv", "qled"],
   "accesorios":         ["cargador", "cable", "case", "capa", "carregador", "funda", "protector"],
   "aire-acondicionado": ["aire acondicionado", "ar condicionado", "split", "inverter"],
 }
@@ -48,6 +48,13 @@ const getInitialProducts = unstable_cache(
           "adaptador", "suporte", "power bank", "relogio", "watch", "tablet", " pad ",
         ]
         where.NOT = excluded.map((kw) => ({ name: { contains: kw, mode: "insensitive" as const } }))
+      }
+      if (normalizedSubcategory === "televisores") {
+        const excluded = ["tv box", "mi tv stick", "fire tv", "receptor", "iptv", "nintendo switch"]
+        where.NOT = [
+          ...(where.NOT || []),
+          ...excluded.map((kw) => ({ name: { contains: kw, mode: "insensitive" as const } })),
+        ]
       }
       where.image = { startsWith: "http", not: "/placeholder.svg" }
       const sort = normalizedSubcategory === "videojuegos"

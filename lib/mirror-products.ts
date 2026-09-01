@@ -109,6 +109,9 @@ const SUBCATEGORY_ALIASES: Record<string, string> = {
   notebooks: "notebook",
   computadoras: "notebook",
   tablets: "tablet",
+  televisores: "televisores",
+  televisor: "televisores",
+  tvs: "televisores",
   smartwatchs: "smartwatch",
   smartwatches: "smartwatch",
   auriculares: "audios",
@@ -388,20 +391,50 @@ function buildWhere(filters: MirrorFilters) {
     params.push(term, term, term, term, term, term, term, term)
   }
 
+  const subcategory = normalizeMirrorSubcategory(filters.subcategory)
+  const nameExpr = "UPPER(COALESCE(p.prd_nomelongo, p.prd_descricao, ''))"
   const category = normalizeMirrorCategory(filters.category)
+  const hasVirtualSubcategory = subcategory === "notebook" || subcategory === "televisores"
   if (category && category !== "all") {
     if (category === "perfumes") where.push("g.grp_descricao LIKE '%PERFUME%'")
     if (category === "toys") where.push("g.grp_descricao LIKE '%BRINQUEDO%'")
     if (category === "vapers") where.push("g.grp_descricao LIKE '%VAPER%'")
-    if (category === "electronics") where.push("g.grp_descricao LIKE '%ELECTRONICO%'")
-    if (category === "appliances") where.push("sg.sgr_descricao IN ('AIRFRAYER','ASPIRADOR','CAFETEIRA','PLANCHAS')")
+    if (category === "electronics" && !hasVirtualSubcategory) where.push("g.grp_descricao LIKE '%ELECTRONICO%'")
+    if (category === "appliances" && !hasVirtualSubcategory) where.push("sg.sgr_descricao IN ('AIRFRAYER','ASPIRADOR','CAFETEIRA','PLANCHAS')")
     if (category === "general") where.push("g.grp_descricao LIKE '%GERAL%'")
   }
 
-  if (filters.subcategory) {
-    const subcategory = normalizeMirrorSubcategory(filters.subcategory)
-    where.push("LOWER(REPLACE(sg.sgr_descricao, ' ', '-')) = ?")
-    params.push(subcategory.toLowerCase())
+  if (subcategory) {
+    if (subcategory === "notebook") {
+      where.push(`(
+        LOWER(REPLACE(sg.sgr_descricao, ' ', '-')) = 'notebook' OR
+        ${nameExpr} LIKE '%MACBOOK%' OR
+        ${nameExpr} LIKE '%NOTEBOOK%' OR
+        ${nameExpr} LIKE '%LAPTOP%'
+      )`)
+      where.push(`(
+        ${nameExpr} NOT LIKE '%CAPA%' AND
+        ${nameExpr} NOT LIKE '%MALETA%' AND
+        ${nameExpr} NOT LIKE '%BOLSA%' AND
+        ${nameExpr} NOT LIKE '%SUPORTE%'
+      )`)
+    } else if (subcategory === "televisores") {
+      where.push(`(
+        ${nameExpr} LIKE 'TV %' OR
+        ${nameExpr} LIKE '% SMART TV%' OR
+        ${nameExpr} LIKE '%QLED%'
+      )`)
+      where.push(`(
+        ${nameExpr} NOT LIKE '%TV BOX%' AND
+        ${nameExpr} NOT LIKE '%MI TV STICK%' AND
+        ${nameExpr} NOT LIKE '%FIRE TV%' AND
+        ${nameExpr} NOT LIKE '%RECEPTOR%' AND
+        ${nameExpr} NOT LIKE '%IPTV%'
+      )`)
+    } else {
+      where.push("LOWER(REPLACE(sg.sgr_descricao, ' ', '-')) = ?")
+      params.push(subcategory.toLowerCase())
+    }
 
     if (subcategory === "smartfone") {
       where.push(`(
